@@ -1,0 +1,94 @@
+"use client"
+import React, { useState } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { Button } from '../ui/button'
+import {
+  ChevronRight,
+  ChevronLeft,
+  Home,
+  Users,
+  List,
+  Clock,
+  CreditCard,
+  Settings,
+  LogOut,
+  FileText
+} from "lucide-react"
+
+interface Size {
+  setSize: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+const navItems = [
+  { path: '/dashboard', icon: Home, label: 'Dashboard' },
+  { path: '/dashboard/users', icon: Users, label: 'Utilisateurs' },
+  { path: '/dashboard/catalogues', icon: List, label: 'Catalogue' },
+  { path: '/dashboard/paiement', icon: CreditCard, label: 'Paiement' },
+  { path: '/dashboard/setting', icon: Settings, label: 'Parametre' },
+]
+
+function Slide({ setSize }: Size) {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const pathname = usePathname()
+  
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed)
+    setSize(!sidebarCollapsed)
+  }
+
+  return (
+    <div className={`${sidebarCollapsed ? 'w-18' : 'w-56'} bg-white/90 backdrop-blur-lg  absolute h-screen z-[1000]  left-0 pt-2  transition-all duration-300`}>
+      {/* Sidebar */}
+      <div className={`h-screen bg-white transition-all duration-300 flex flex-col shadow shadow-gray-50 absolute top-2 left-2 rounded-lg border border-gray-100 `}>
+        <div className="p-4 border-b flex items-center justify-between">
+          {!sidebarCollapsed ? (
+            <h1 className="text-xl font-bold">NISO</h1>
+          ) : (
+            <h1 className="text-xl font-bold">N</h1>
+          )}
+          <button onClick={toggleSidebar} className="p-1 rounded-lg hover:bg-orange-100">
+            {sidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          </button>
+        </div>
+        
+        <div className="flex-1 py-6">
+          <nav className="space-y-5 px-2">
+            {navItems.map((item) => {
+              const isActive = pathname.includes(item.path.split('board/')[1]) || pathname === item.path
+              const Icon = item.icon
+              
+              return (
+                <Link href={item.path} key={item.path} className='my-5' >
+                  <Button 
+                    variant="ghost" 
+                    className={`w-full my-1 ${sidebarCollapsed ? 'px-3 justify-center' : 'px-4 justify-start'} ${
+                      isActive 
+                        ? 'bg-[#FF4000] text-white hover:bg-[#FF4000] hover:text-white' 
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-500'
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    {!sidebarCollapsed && <span className="ml-3">{item.label}</span>}
+                  </Button>
+                </Link>
+              )
+            })}
+          </nav>
+        </div>
+
+        <div className="p-2 pb-10">
+          <Button 
+            variant="ghost" 
+            className={`w-full ${sidebarCollapsed ? 'px-3 justify-center' : 'px-4 justify-start'} text-gray-600 bg-gray-100 hover:bg-gray-200`}
+          >
+            <LogOut className="h-5 w-5" />
+            {!sidebarCollapsed && <span className="ml-3">Déconnexion</span>}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default Slide
