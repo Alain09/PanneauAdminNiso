@@ -17,13 +17,13 @@ function Optionlist({ opt, setOpen ,setTexteDelete }: Structre) {
                     <div className="flex justify-between mb-2">
                         <span className="text-[14px] font-medium text-gray-600 "> Option:</span>
                         <div className=" px-2 py-1 w-fit border border-gray-100 rounded-md bg-gray-800 flex justify-center items-center" >
-                            < span className="text-sm font-medium text-gray-50">{opt?.option.toString().padStart(2,"0")}</span>
+                            < span className="text-sm font-medium text-gray-50">{`${opt.option === "1"?  opt.option+"ère" : opt.option+"ème"} `}</span>
                         </div>
                     </div>
                     <div className="flex justify-between mb-2">
                         <span className="text-[14px] font-medium text-gray-600">Quantité :</span>
                         <div className=" px-2 py-1 w-fit border border-gray-100 rounded-md bg-gray-800 flex justify-center items-center" >
-                            < span className="text-sm font-medium text-gray-50" >{opt?.countOption.toString().padStart(2, "0")}</span>
+                            < span className="text-sm font-medium text-gray-50" >{String(opt?.countOption).padStart(2, "0")}</span>
                         </div>
                     </div>
                     <div className="flex justify-between mb-2">
@@ -40,7 +40,7 @@ function Optionlist({ opt, setOpen ,setTexteDelete }: Structre) {
 
                                     {opt?.components.map((item) => (
                                         <div key={item.id} className=" shadow-gray-100 px-2 py-1 w-fit border border-gray-200 rounded-md bg-white flex justify-center items-center" >
-                                            < span className="text-sm font-medium text-gray-600" >{item.item}</span>
+                                            < span className="text-sm font-medium text-gray-600" >{item.compose}</span>
                                         </div>
                                     ))}
 
@@ -54,7 +54,7 @@ function Optionlist({ opt, setOpen ,setTexteDelete }: Structre) {
 
             </div>
             <div className=" bg-[#FF4000]  rounded-full cursor-pointer p-2 "
-                onClick={() => { setOpen(true);  setTexteDelete(`l'option ${opt.option} de ${opt.catégory}`) }}
+                onClick={() => { setOpen(true);  setTexteDelete(`l'option ${opt.option === "1"?  opt.option+"ère" : opt.option+"ème"}  de  ${opt.category}`) }}
             >
                 <Trash2 className="w-4 h-4 text-white"
                 />

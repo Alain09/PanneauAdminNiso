@@ -8,7 +8,7 @@ import { Trash2, Upload } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { TabsList, TabsTrigger } from "@/src/components/ui/tabs";
 import { Tabs } from "@radix-ui/react-tabs";
-import { TontineOption, OptionComponent } from "@/type";
+import { TontineOption, OptionComponent, Donnees, UserProfile } from "@/type";
 import Optionlist from "@/src/components/users/Optionlist";
 import Bande from "@/src/components/users/bande";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/src/components/ui/dialog";
@@ -22,89 +22,55 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 
 export default function UserProfilNew() {
+
+  // declaration des donnees specifique a l'utilisateur
+  const [userUnique, setUserUnique] = useState<UserProfile>(Donnees[0])
+  const [userCoordonees, setUserCoordonnees] = useState({
+    firstName: userUnique.firstName,
+    lastName: userUnique.lastName,
+    image: userUnique.image,
+    email: userUnique.email,
+    contact: userUnique.contact,
+    provence: userUnique.provence,
+    position: userUnique.position,
+    role: userUnique.role,
+    description: userUnique.description
+  })
+
+
+  // recuperation des categories 
+  const categories = userUnique.DescriptionChoixOfEachUser?.flatMap((cat) => cat.category).sort() as string[]
+
+  // la mise a jour sur les details de la tontine choisie
+  const [selectCategories, setSelectCategories] = useState(categories[0])
+
+
+
+  // fonction pour la recuperatin des des otpionsDescriptions a une seule ocurence d'option par categories
+  // recuperationsd de tous ls OptionDescriptions
+  const OptionsDescriptions = userUnique.DescriptionChoixOfEachUser?.flatMap(items => items.choix?.flatMap(prev => prev.optionsDescription)) as TontineOption[]
+  // la fonction
+  const MiseAjout = (model: TontineOption[]) => {
+    const unique: TontineOption[] = [];
+    const seen = new Set();
+
+    for (const item of model) {
+      const key = `${item.category}-${item.option}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        unique.push(item);
+      }
+    }
+    return unique
+  }
+
+  // application de la function a optionTab
+  const [optionTab, setOptionTab] = useState<TontineOption[]>(MiseAjout(OptionsDescriptions))
+
+
   const [modal, setModal] = useState(false)
   const [selectedTontine, setSelectedTontine] = useState<string>("100 Fcfa");
-  const [options, setOptions] = useState<TontineOption[]>([
-    {
-      id: "1",
-      catégorie: "100",
-      option: "1",
-      count: "2",
-      amount: "3200",
-      components: [
-        {
-          id: "1",
-          item: "1 canette"
-
-        },
-        {
-          id: "2",
-          item: "6 plats"
-
-        },
-        {
-          id: "3",
-          item: "1 montre man"
-
-        },
-        {
-          id: "4",
-          item: "02 sacs de riz"
-
-        },
-        {
-          id: "5",
-          item: "pagne (6m)"
-
-        },
-        {
-          id: "6",
-          item: "2 glacières"
-
-        },
-      ]
-    },
-    {
-      id: "2",
-      catégorie: "200",
-      option: "2",
-      count: "2",
-      amount: "3200",
-      components: [
-        {
-          id: "1",
-          item: "1 canette"
-
-        },
-        {
-          id: "2",
-          item: "6 plats"
-
-        },
-        {
-          id: "3",
-          item: "1 montre man"
-
-        },
-        {
-          id: "4",
-          item: "02 sacs de riz"
-
-        },
-        {
-          id: "5",
-          item: "pagne (6m)"
-
-        },
-        {
-          id: "6",
-          item: "2 glacières"
-
-        },
-      ]
-    },
-
-  ]);
+ 
 
 
   const [selectedCategorie, setSelectedCategorie] = useState<string>("");
@@ -172,7 +138,12 @@ export default function UserProfilNew() {
                     <label className="text-md font-normal w-[120px]">Nom</label>
                     <Input
                       type="text"
-                      className="  w-full h-[45px]  "
+                      className="  w-full h-[45px] "
+                      value={userCoordonees.firstName}
+                      onChange={(e) => setUserCoordonnees((prev) => ({
+                        ...prev, firstName: e.target.value
+                      }))}
+
 
                     />
                   </div>
@@ -182,7 +153,10 @@ export default function UserProfilNew() {
                     <Input
                       type="text"
                       className=" w-full h-[45px]  "
-
+                      value={userCoordonees.lastName}
+                      onChange={(e) => setUserCoordonnees((prev) => ({
+                        ...prev, lastName: e.target.value
+                      }))}
                     />
                   </div>
                   { /* Email */}
@@ -191,7 +165,11 @@ export default function UserProfilNew() {
                     <Input
                       type="email"
                       className=" w-full h-[45px]  "
-
+                      value={userCoordonees.email}
+                      onChange={(e) => setUserCoordonnees((prev) => ({
+                        ...prev, email: e.target.value
+                      }))}
+                      required
                     />
                   </div>
 
@@ -201,7 +179,11 @@ export default function UserProfilNew() {
                     <Input
                       type="text"
                       className=" w-full h-[45px] "
-
+                      value={userCoordonees.contact}
+                      onChange={(e) => setUserCoordonnees((prev) => ({
+                        ...prev, contact: e.target.value
+                      }))}
+                      required
                     />
                   </div>
 
@@ -212,7 +194,11 @@ export default function UserProfilNew() {
                     <Input
                       type="text"
                       className=" w-full h-[45px] "
-
+                      value={userCoordonees.provence}
+                      onChange={(e) => setUserCoordonnees((prev) => ({
+                        ...prev, provence: e.target.value
+                      }))}
+                      required
                     />
                   </div>
 
@@ -222,7 +208,10 @@ export default function UserProfilNew() {
                     <Input
                       type="text"
                       className=" w-full h-[45px] "
-
+                      value={userCoordonees.role}
+                      onChange={(e) => setUserCoordonnees((prev) => ({
+                        ...prev, role: e.target.value
+                      }))}
                     />
                   </div>
 
@@ -232,7 +221,10 @@ export default function UserProfilNew() {
                     <Input
                       type="text"
                       className=" w-full h-[45px] "
-
+                      value={userCoordonees.position}
+                      onChange={(e) => setUserCoordonnees((prev) => ({
+                        ...prev, position: e.target.value
+                      }))}
                     />
                   </div>
 
@@ -243,7 +235,9 @@ export default function UserProfilNew() {
                       type="file"
                       className="  w-full h-[45px] "
                       placeholder=" entrer un image"
-
+                      onChange={(e) => setUserCoordonnees((prev) => ({
+                        ...prev, image: e.target.files?.[0]
+                      }))}
                     />
                   </div>
 
@@ -251,7 +245,10 @@ export default function UserProfilNew() {
                   <div className=" flex  items-center  gap-x-10  mx-5  ">
                     <label className="text-md font-normal w-[120px]">Description</label>
                     <Textarea
-
+                      value={userCoordonees.description}
+                      onChange={(e) => setUserCoordonnees((prev) => ({
+                        ...prev, description: e.target.value
+                      }))}
                       className=" w-full h-[100px] "
 
                     />
@@ -292,28 +289,38 @@ export default function UserProfilNew() {
 
           <CardContent className=" mt-6">
             {
-              options.length !== 0 ?
+              optionTab.length !== 0 ?
                 <div className="bg-white border border-gray-100 rounded-lg p-6 w-full h-fit  ">
 
                   <div className="px-6 pt-3 flex justify-between items-center">
                     <h4 className="text-lg font-medium mb-3">Tontine(s) choisi(es)</h4>
-                    <Tabs defaultValue={options[0]?.catégorie}>
+                    <Tabs defaultValue={categories[0]}>
                       <TabsList className=" h-8 items-center justify-center bg-gray-50">
-                        {options.map((item, index) => (
-                          <TabsTrigger
-                            onClick={() => { setSelectTontine(item.catégorie) }}
-                            key={index} value={`${item.catégorie}`} className="text-[16px] text-gray-300 px-2 data-[state=active]:bg-[#FF4000] data-[state=active]:text-white">{item.catégorie}F</TabsTrigger>
-                        ))}
+                        {categories.map((item, index) => {
+                          return (
+                            <TabsTrigger
+                              onClick={() => { setSelectCategories(item) }}
+                              key={index} value={item} className="text-[16px] text-gray-300 px-2 data-[state=active]:bg-[#FF4000] data-[state=active]:text-white">
+                              {item} Fcfa
+                            </TabsTrigger>
+                          )
+
+                        })}
                       </TabsList>
 
                     </Tabs>
                   </div>
                   <div className=" space-y-5 p-6 ">
                     {
-                      options?.map((term, index) => (
-                        <Optionlist opt={term} setOpen={setOpenDeleteModale} setTexteDelete={setNameActive} key={index} />
+                      optionTab?.map((term, index) => {
+                        if (term.category === selectCategories) {
+                          return (
+                            <Optionlist opt={term} setOpen={setOpenDeleteModale} setTexteDelete={setNameActive} key={index} />
+                          )
+                        }
 
-                      ))
+
+                      })
                     }
                   </div>
 

@@ -1,7 +1,7 @@
 // pages/dashboard.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     ChevronRight,
     ChevronLeft,
@@ -17,7 +17,12 @@ import {
     CalendarIcon,
     Eye, Pencil, Trash2,
     MoreVertical,
-    Filter
+    Filter,
+    Clock4,
+    Clock12,
+    User,
+    Loader2,
+    File
 } from "lucide-react";
 import {
     AreaChart,
@@ -82,114 +87,120 @@ import {
 
 import { Startscard } from "@/src/components/dash_composant/staticard";
 import { useRouter } from "next/navigation";
+import CounTimes from "@/src/components/dash_composant/CounTimes";
+import { Donnees, OptionsCounts, PaymentDataVariation, StatisticCategories, TontineOption, UserProfile, UsersLatePayment } from "@/type";
+import { generateId } from "@/src/lib/utils";
+import { DataAction , ConvertInKilo } from "@/src/components/hook_perso";
 
-// Données pour le graphique d'évolution
-const paymentData = [
-    { name: "Sem 1", value: 5000 },
-    { name: "Sem 2", value: 10000 },
-    { name: "Sem 3", value: 15000 },
-    { name: "Sem 4", value: 17000 },
-    { name: "Sem 5", value: 30000 },
-    { name: "Sem 6", value: 35000 },
-    { name: "Sem 7", value: 45000 },
-    { name: "Sem 8", value: 48000 },
-    { name: "Sem 9", value: 52000 },
-    { name: "Sem 10", value: 57000 },
-    { name: "Sem 11", value: 62000 },
-    { name: "Sem 12", value: 67000 },
-    { name: "Sem 13", value: 75000 },
-];
 
-// Données pour le graphique d'analyse
-const contentAnalysisData = [
-    { name: "Opt 1", value: 10, amount: "100F" },
-    { name: "Opt 2", value: 40, amount: "200F" },
-    { name: "Opt 3", value: 20, amount: "300F" },
-    { name: "Opt 4", value: 50, amount: "400F" },
-    { name: "Opt 5", value: 12, amount: "500F" },
-    { name: "Opt 6", value: 5, amount: "1000F" },
-];
 
-// Données des utilisateurs en retard
-const lateUsers = [
-    {
-        id: 1,
-        name: "John Carter",
-        email: "hello@johnexample.com",
-        date: "30 Mars 2025",
-        choice: "100 Fcfa",
-        timeElapsed: "4ème",
-        timeRemaining: "2ème",
-        amountPaid: "2000F"
-    },
-    {
-        id: 2,
-        name: "Alan Carter",
-        email: "hello@alanexample.com",
-        date: "30 Mars 2025",
-        choice: "100 Fcfa",
-        timeElapsed: "4ème",
-        timeRemaining: "2ème",
-        amountPaid: "2000F"
-    },
-    {
-        id: 3,
-        name: "John Carter",
-        email: "hello@johnexample.com",
-        date: "30 Mars 2025",
-        choice: "100 Fcfa",
-        timeElapsed: "4ème",
-        timeRemaining: "2ème",
-        amountPaid: "2000F"
-    },
-    {
-        id: 4,
-        name: "John Carter",
-        email: "hello@johnexample.com",
-        date: "30 Mars 2025",
-        choice: "100 Fcfa",
-        timeElapsed: "4ème",
-        timeRemaining: "2ème",
-        amountPaid: "2000F"
-    },
-    {
-        id: 5,
-        name: "John Carter",
-        email: "hello@johnexample.com",
-        date: "30 Mars 2025",
-        choice: "100 Fcfa",
-        timeElapsed: "4ème",
-        timeRemaining: "2ème",
-        amountPaid: "2000F"
-    },
-    {
-        id: 6,
-        name: "John Carter",
-        email: "hello@johnexample.com",
-        date: "30 Mars 2025",
-        choice: "100 Fcfa",
-        timeElapsed: "4ème",
-        timeRemaining: "2ème",
-        amountPaid: "2000F"
-    }
-];
+
 
 export default function Dashboard() {
 
+
+    // recuperationdes hook definis dans DataAction.ts
+    const { StructurationCategorie, VariationPaid, UsersLate  , CaracterisqueUniques} = DataAction({ enter: Donnees })
+
+    // recuperation de les des categorie et des semaines de retard
+    const {weekss, uniqueCategories, UserTotal}=CaracterisqueUniques()
+
+    // statisque financieres 
+
+    const { datas, TotalGobal,TotalWeekActive}= VariationPaid()
+
+
+
+    //----------------------- les gestionnaires d'etat---------------------------------//
+    // gestionnaire d'etat pour les filtres et les options de paiement
     const [filterDialogOpen, setFilterDialogOpen] = useState(false);
     const [selectedTontine, setSelectedTontine] = useState<string>("");
     const [paymentDate, setPaymentDate] = useState<Date | undefined>(undefined);
 
-    // Exemple de données de tontines - à remplacer par vos données réelles
-    const tontines = [
-        { id: "1", name: "100" },
-        { id: "2", name: "200" },
-        { id: "3", name: "300" },
-        { id: "4", name: "400" },
-        { id: "5", name: "500" },
-    ];
+    // gestionnaire d'etat pour les paiements et les statistiques
+    const [evolutionPaid, setEvolutionPaid] = useState<PaymentDataVariation[]>(datas)
+    const [catCounts, setCatCounts] = useState<StatisticCategories[]>(StructurationCategorie())
 
+    //gestion du categorie active dans les onglets
+    const [firstCat, setFirstCat] = useState<string>(catCounts[0].categorie as string)
+
+    // gestion des userLate : utilisateurs en retad de paiement
+    const [lateUsers, setLateUsers] = useState<UsersLatePayment[]>(UsersLate())
+
+
+
+
+    // filtre des utilisateurs
+
+    const [searchUser, setSearchUser] = useState<string>("");
+    const [selectedCategorie, setSelectedCategorie] = useState<string>("");
+    const [lastWeekPaidUser, setLastWeekPaidUser] = useState<string>("");
+    const [dataTabsUsers, setDataTabsUsers] = useState<UsersLatePayment[]>(lateUsers);
+  
+    const [filterModel, setFilterModel] = useState<boolean>(false);
+
+    // fonction de filtrage
+    const handleFilter = () => {
+        const filteredData = dataTabsUsers.filter((user) => {
+            const matchesCategory = selectedCategorie ? user?.category === selectedCategorie : true;
+            const matchesStatus = lastWeekPaidUser ? user.lastWeekPaid === lastWeekPaidUser : true;
+            return matchesCategory && matchesStatus;
+        });
+        setDataTabsUsers(filteredData);
+        setFilterModel(false);
+    };
+
+
+    // fonction de rechargement
+    const [load, setLoad] = useState(false)
+    const handleReload = () => {
+        setLoad(true)
+        setDataTabsUsers(lateUsers);
+        setSelectedCategorie("");
+        setSearchUser("");
+        setLastWeekPaidUser("");
+        setTimeout(() => {
+            setLoad(false)
+        }, 1000)
+
+    };
+
+    /// recherche d'un utilisateur
+    // fonction de recherche
+    const handleSearch = () => {
+        const filteredData = dataTabsUsers.filter((user) => { 
+            const searchBolean = searchUser  ?  (user?.firstName?.toLowerCase().includes(searchUser) || user?.lastName?.toLowerCase().includes(searchUser)) : true;
+            return searchBolean;
+        });
+
+        setDataTabsUsers(filteredData);
+    }
+
+
+ // Filter references when search query changes
+  useEffect(() => {
+    if (searchUser.trim() === '') {
+      setDataTabsUsers(lateUsers)
+    } else {
+      const filteredData = dataTabsUsers.filter((user) =>
+        user?.firstName?.toLowerCase().includes(searchUser) ||
+        user?.lastName?.toLowerCase().includes(searchUser))
+      setDataTabsUsers(filteredData);
+    }
+  }, [searchUser])
+
+
+
+
+
+
+
+    // navigation des page --------------------------------------------
     const route = useRouter()
+
+    // le chronometrage---------------------------------------------------------
+    const Standard = new Date('2025-06-30T00:00:00');
+
 
 
     return (
@@ -206,44 +217,22 @@ export default function Dashboard() {
                         <div className="bg-gradient-to-l from-[#FFAE91] to-[#FF4000] rounded-lg text-white p-6 mb-6 w-full h-[300px] ">
                             <h1 className="text-2xl font-bold mb-4">Hello, Everyone</h1>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <Startscard title="Utilisateurs" description="utilisateurs enregistrés " value="200" icon={<Users className="w-4 h-4 text-[#FF4000]" />} />
-                                <Startscard title="Cette semaine" description="reçu cette semaine" value="20K+" icon={<FileText className="w-4 h-4 text-[#FF4000]" />} />
-                                <Startscard title="Montant Total" description="montant total encaissé jusqu'ici" value="210K+" icon={<CreditCard className="w-4 h-4 text-[#FF4000]" />} />
+                                <Startscard title="Utilisateurs" description="utilisateurs enregistrés " value={`${ConvertInKilo({value : 500})} `.toString().padStart(2,"0")} icon={<Users className="w-4 h-4 text-[#FF4000]" />} />
+                                <Startscard title="Cette semaine" description="reçu cette semaine" value={`${ConvertInKilo({value :TotalWeekActive})}`}  icon={<FileText className="w-4 h-4 text-[#FF4000]" />} />
+                                <Startscard title="Montant Total" description="montant total encaissé jusqu'ici" value={`${ConvertInKilo({value : TotalGobal})}`}  icon={<CreditCard className="w-4 h-4 text-[#FF4000]" />} />
                             </div>
 
                         </div>
-                        {/* Semaine en cours */}
-                        <div className="bg-gradient-to-r from-[#FF4000] to-[#FFAE91] rounded-lg text-white p-6 w-1/3 h-[300px]  ">
-                            <h2 className="text-lg font-semibold mb-4">Semaine en cours</h2>
-                            <div className="flex justify-center flex-col items-center">
-                                <div className="relative h-36 w-36">
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="text-center">
-                                            <p className="text-4xl font-bold">21%</p>
+                        {/* Campagne / Chrononometre */}
+                        <div className="bg-gradient-to-l from-[#FFAE91] to-[#FF4000]/90 shadow shadow-gray-50 border border-gray-100  rounded-lg p-6 w-1/3 h-[300px]  ">
+                            <h2 className="text-lg text-center font-semibold mb-4 text-white ">CHRONOMETRE:</h2>
+                            <div className="flex justify-center  items-center flex-col  h-fit space-y-2  text-white">
 
-                                        </div>
-                                    </div>
-                                    <svg className="h-full w-full" viewBox="0 0 100 100">
-                                        <circle
-                                            cx="50" cy="50" r="40"
-                                            fill="none"
-                                            stroke="rgba(255,255,255,0.2)"
-                                            strokeWidth="10"
-                                        />
-                                        <circle
-                                            cx="50" cy="50" r="40"
-                                            fill="none"
-                                            stroke="white"
-                                            strokeWidth="10"
-                                            strokeDasharray="251.2"
-                                            strokeDashoffset="198.5"
-                                            transform="rotate(-90 50 50)"
-                                        />
-                                    </svg>
-                                </div>
-                                <div className=" mt-2 flex justify-center items-center flex-col ">
-                                    <p className="text-xs">semaines validées</p>
-                                    <p className="text-center text-xs mt-4">14 avril au 21 avril 2025</p>
+                                <div ><Clock12 className=" text-white  animate-spin duration-1000" strokeWidth={1.25} size={100} /></div>
+                                <div className=" ">{<CounTimes expiryTimestamp={Standard} />}</div>
+                                <div className=" flex justify-center  items-center flex-col ">
+                                    <p className="text-sm">Campagne de selection des articles</p>
+
                                 </div>
                             </div>
 
@@ -260,14 +249,14 @@ export default function Dashboard() {
                                 </div>
                                 <div className="h-[300px]">
                                     <ResponsiveContainer width="100%" height="100%">
-                                        <AreaChart data={paymentData} margin={{ top: 5, bottom: 5 }}>
+                                        <AreaChart data={evolutionPaid} margin={{ top: 5, bottom: 5 }}>
                                             <defs>
                                                 <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor="#FF4000" stopOpacity={0.8} />
                                                     <stop offset="95%" stopColor="#FF4000" stopOpacity={0.1} />
                                                 </linearGradient>
                                             </defs>
-                                            <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                                            <XAxis dataKey="weeks" tick={{ fontSize: 10 }} />
                                             <YAxis tick={{ fontSize: 10 }} />
                                             <Tooltip
                                                 contentStyle={{ borderRadius: "8px", backgroundColor: "#fff", border: "1px solid #cccccc" }}
@@ -285,34 +274,46 @@ export default function Dashboard() {
 
                             </CardContent>
                         </Card>
-                        <Tabs defaultValue="jour" className="w-[700px] h-full">
+                        <Tabs defaultValue={firstCat} className="w-[700px] h-full">
                             <Card className=" shadow shadow-gray-50 h-full ">
                                 <CardContent className="">
                                     <div className="flex justify-between items-center mb-4">
                                         <h2 className="font-semibold text-sm">Analyse de contenus</h2>
 
                                         <TabsList className=" h-8 items-center justify-center">
-                                            <TabsTrigger value="jour" className="text-xs px-2 data-[state=active]:bg-[#FF4000] data-[state=active]:text-white">100F</TabsTrigger>
-                                            <TabsTrigger value="mois" className="text-xs px-2 data-[state=active]:bg-[#FF4000] data-[state=active]:text-white">200F</TabsTrigger>
-                                            <TabsTrigger value="an" className="text-xs px-2 data-[state=active]:bg-[#FF4000] data-[state=active]:text-white">300F</TabsTrigger>
-                                            <TabsTrigger value="tout" className="text-xs px-2 data-[state=active]:bg-[#FF4000] data-[state=active]:text-white">500F</TabsTrigger>
+                                            {catCounts.map((cat) => (
+                                                <TabsTrigger key={cat.id} value={cat.categorie as string} className="text-xs px-2 data-[state=active]:bg-[#FF4000] data-[state=active]:text-white"
+                                                    onClick={() => setFirstCat(cat.categorie as string)}
+                                                >
+                                                    {cat.categorie}
+                                                </TabsTrigger>
+                                            ))}
                                         </TabsList>
 
                                     </div>
                                     <div className="h-[300px] ">
-                                        <TabsContent value="jour" className="h-full">
-                                            <ResponsiveContainer width="100%" height="100%">
-                                                <BarChart data={contentAnalysisData} margin={{ top: 5, bottom: 5 }}>
-                                                    <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                                                    <YAxis tick={{ fontSize: 10 }} />
-                                                    <Tooltip
-                                                        contentStyle={{ borderRadius: "8px", backgroundColor: "#fff", border: "1px solid #cccccc" }}
-                                                        formatter={(value, name, props) => [value, props.payload.amount]}
-                                                        labelFormatter={(value) => ` ${value}`}
-                                                    />
-                                                    <Bar dataKey="value" fill="#FF4000" />
-                                                </BarChart>
-                                            </ResponsiveContainer>
+                                        <TabsContent value={firstCat} className="h-full">
+                                            {catCounts.map((cat) => {
+                                                if (cat.categorie === firstCat) {
+                                                    return (
+                                                        <ResponsiveContainer key={cat.id} width="100%" height="100%">
+                                                            <BarChart data={cat.listeOptions} margin={{ top: 5, bottom: 5 }}>
+
+                                                                <XAxis dataKey="option" tick={{ fontSize: 10 }} />
+                                                                <YAxis tick={{ fontSize: 10 }} />
+                                                                <Tooltip
+                                                                    contentStyle={{ borderRadius: "8px", backgroundColor: "#fff", border: "1px solid #cccccc" }}
+                                                                    formatter={(count, option, props) => [count.toString().padStart(2, "0"), "quantité"]}
+                                                                    labelFormatter={(count) => ` option ${count}`}
+                                                                />
+                                                                <Bar dataKey="count" fill="#FF4000" />
+                                                            </BarChart>
+                                                        </ResponsiveContainer>
+                                                    )
+                                                }
+                                            }
+                                            )
+                                            }
 
                                         </TabsContent>
 
@@ -325,62 +326,132 @@ export default function Dashboard() {
 
                     {/* Tableau des utilisateurs en retard */}
                     <Card className="mt-6 shadow shadow-gray-50 ">
-                        <CardContent className="p-4">
-                            <div className="flex justify-between items-center mb-4">
-                                <div className="flex items-center space-x-2">
-                                    <div className="flex items-center space-x-2">
-                                        <span className="px-3 py-2 bg-[#FF4000] text-white rounded-md">Utilisateurs en retard</span>
-                                        <span className="px-3 py-2 border rounded-md">{lateUsers.length.toString().padStart(2, "0")}</span>
+                        <CardContent className="p-0">
+                
+                            <div className="flex items-center gap-10 mb-4 px-4 pt-4">
+                                <div className="flex items-center space-x-2 w-fit">
+                                    <div className="flex items-center space-x-2 w-fit">
+                                        <span className="px-3 py-1.5 bg-[#FF4000] text-white rounded-md  w-[180px] ">Utilisateurs en Retard</span>
+                                        <span className="px-2 py-1.5 border rounded-md">{dataTabsUsers.length.toString().padStart(2, "0")}</span>
                                     </div>
                                 </div>
+                                <div className="relative w-full">
+                                    <Input
+                                        type='text'
+                                        onChange={(e) => {
+                                            setSearchUser(e.target.value.toLowerCase());
+                                            handleSearch();
+                                        }}
+                                        value={searchUser}
+                                        className="pl-8 w-full "
+                                        placeholder="rechercher un nom"
+                                    />
+                                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                                </div>
+                                <div className="flex items-center space-x-4">
 
+                                    <Button
+                                        variant="destructive"
+                                        className="flex items-center bg-[#FF4000] hover:bg-[#FF4000]/90"
+                                        onClick={() => setFilterModel(true)}
+                                    >
+                                        <Filter className="mr-2 h-4 w-4"
 
-                                <div className="flex items-center">
-                                    <Button className=" flex items-center bg-black" onClick={() => setFilterDialogOpen(true)}>
-                                        <Filter className="mr-2 h-4 w-4"></Filter>
+                                        />
                                         Filtrer
                                     </Button>
+                                    <Button
+                                        variant="destructive"
+                                        className="flex items-center bg-[#FF4000] hover:bg-[#FF4000]/90"
+                                        onClick={handleReload}
+                                    >
+                                        <Loader2 className={`mr-2 h-4 w-4 ${load ? "animate-spin duration-300" : ""}`}
+
+                                        />
+                                        Recharger
+                                    </Button>
+
+
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" className=" p-2">
+                                                <MoreVertical className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent
+                                            align="end"
+                                            className="w-46 rounded-lg shadow-lg border border-gray-200 p-2"
+                                        >
+                                            {/* telecharger le pdf */}
+                                            <DropdownMenuItem className="px-3 py-2 text-sm cursor-pointer  hover:rounded-lg hover:shadow-gray-200">
+                                                <div className="flex items-center"
+
+                                                >
+                                                    <div className="bg-gray-100 p-1.5 rounded-full mr-3">
+                                                        <FileText className="h-4 w-4 text-gray-500" />
+                                                    </div>
+                                                    <span>Exporter le pdf</span>
+                                                </div>
+                                            </DropdownMenuItem>
+
+                                            {/* telecharger le fichier excel */}
+                                            <DropdownMenuItem className="px-3 py-2 text-sm cursor-pointer  hover:rounded-lg hover:shadow-gray-200">
+                                                <div className="flex items-center"
+
+                                                >
+                                                    <div className="bg-gray-100 p-1.5 rounded-full mr-3">
+                                                        <File className="h-4 w-4 text-gray-500" />
+                                                    </div>
+                                                    <span>Exporter l'excel</span>
+                                                </div>
+                                            </DropdownMenuItem>
+
+                                            {/* Item Supprimer */}
+
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
                             </div>
-
                             <div className="overflow-x-auto">
                                 <Table>
                                     <TableHeader >
                                         <TableRow className="">
                                             <TableHead className="text-left">Utilisateurs</TableHead>
-                                            <TableHead className="text-left">Date d'entrée</TableHead>
-                                            <TableHead className="text-left">Tontine choisie</TableHead>
+                                            <TableHead className="text-center">Statut</TableHead>
+                                            <TableHead className="text-center">Catégorie choisie</TableHead>
                                             <TableHead className="text-center">Semaine actuelle</TableHead>
                                             <TableHead className="text-center">Dernier paiement</TableHead>
-                                            <TableHead className="text-right">Montant payé</TableHead>
+                                            <TableHead className="text-center">Montant payé</TableHead>
                                             <TableHead>Action</TableHead>
                                         </TableRow>
 
                                     </TableHeader>
                                     <TableBody>
-                                        {lateUsers.map((user, index) => (
-                                            <TableRow key={user.id} className={`${index % 2 === 0 ? "bg-[#FFAE91]/10 " : ""} `} >
+                                        {dataTabsUsers.map((user, index) => (
+                                            <TableRow key={index} className={`${index % 2 === 0 ? "bg-[#FFAE91]/10 " : ""} `} >
                                                 <TableCell>
                                                     <div className="flex items-center">
                                                         <Avatar className="h-8 w-8 bg-[#FFAE91] text-white mr-2 flex items-center justify-center">
-                                                            <span className="text-xs">{user.name.charAt(0)}</span>
+                                                            <span className="text-xs">{user.lastName?.charAt(0)}</span>
                                                         </Avatar>
                                                         <div>
-                                                            <p className="font-medium">{user.name}</p>
+                                                            <p className="font-medium">{user.firstName} {user.lastName}</p>
                                                             <p className="text-xs text-gray-500">{user.email}</p>
                                                         </div>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell>{user.date}</TableCell>
-                                                <TableCell>{user.choice}</TableCell>
                                                 <TableCell className="text-center">
-                                                    <span className="text-xs text-green-600 bg-green-100 py-1 px-2 rounded">{user.timeElapsed}</span>
+                                                    <span className="text-xs text-red-600 bg-red-100 py-1 px-2 rounded">{user.status}</span>
+                                                </TableCell>
+                                                <TableCell className="text-center">{user.category} Fcfa</TableCell>
+                                                <TableCell className="text-center">
+                                                    <span className="text-xs text-green-600 bg-green-100 py-1 px-2 rounded">{user.weekActif}</span>
                                                 </TableCell>
                                                 <TableCell className="text-center">
-                                                    <span className="text-xs text-red-600 bg-red-100 py-1 px-2 rounded">{user.timeRemaining}</span>
+                                                    <span className="text-xs text-blue-600 bg-blue-100 py-1 px-2 rounded">{user.lastWeekPaid}</span>
                                                 </TableCell>
-                                                <TableCell className="text-right">{user.amountPaid}</TableCell>
-                                                <TableCell className="text-right">
+                                                <TableCell className="text-center">{user.amountPaidByWeek} Fcfa</TableCell>
+                                                <TableCell className="text-center">
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
                                                             <Button variant="ghost" className="h-8 w-8 p-0">
@@ -392,9 +463,9 @@ export default function Dashboard() {
                                                             className="w-46 rounded-lg shadow-lg border border-gray-200 p-2"
                                                         >
                                                             {/* Item Details */}
-                                                            <DropdownMenuItem className="px-3 py-2 text-sm cursor-pointer  hover:rounded-lg hover:shadow-gray-200">
+                                                            <DropdownMenuItem className="px-2 py-1 text-sm cursor-pointer  hover:rounded-lg hover:shadow-gray-200">
                                                                 <div className="flex items-center "
-                                                                    onClick={() => route.push(`/dashboard/users/edit/${user.id}`)}>
+                                                                    onClick={() => route.push(`/dashboard/users/view/${user.id}`)}>
                                                                     <div className="bg-gray-100 p-1.5 rounded-full mr-3">
                                                                         <Eye className="h-4 w-4 text-gray-500" />
                                                                     </div>
@@ -416,7 +487,7 @@ export default function Dashboard() {
 
             {/* Dialog de filtrage */}
 
-            <Dialog open={filterDialogOpen} onOpenChange={setFilterDialogOpen} >
+            <Dialog open={filterModel} onOpenChange={setFilterModel} >
                 <DialogContent className="sm:max-w-md ">
                     <DialogHeader>
                         <DialogTitle>Filtrage</DialogTitle>
@@ -429,15 +500,15 @@ export default function Dashboard() {
                         <div className="space-y-4">
                             {/* Sélecteur de tontine */}
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Tontine choisie</label>
-                                <Select onValueChange={setSelectedTontine} value={selectedTontine}>
+                                <label className="text-sm font-medium">Catégorie </label>
+                                <Select onValueChange={setSelectedCategorie} value={selectedCategorie}>
                                     <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Sélectionner une tontine" />
+                                        <SelectValue placeholder="Sélectionner une catégorie " />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {tontines.map((tontine) => (
-                                            <SelectItem key={tontine.id} value={tontine.id}>
-                                                {tontine.name}
+                                        {uniqueCategories.map((tontine , index) => (
+                                            <SelectItem key={index} value={tontine}>
+                                                {tontine}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -446,13 +517,19 @@ export default function Dashboard() {
 
                             {/* Sélecteur de date */}
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Dernier paiement</label>
-                                <Input
-                                    type="date"
-                                    value={paymentDate?.toISOString().split("T")[0]}
-                                    onChange={(e) => setPaymentDate(new Date(e.target.value))}
-                                    className="w-full"
-                                />
+                                <label className="text-sm font-medium">Semaine</label>
+                               <Select onValueChange={setLastWeekPaidUser} value={lastWeekPaidUser}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Sélectionner la semaine " />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {weekss.map((week , index) => (
+                                            <SelectItem key={index} value={week}>
+                                                {week}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
                     </div>
@@ -462,7 +539,10 @@ export default function Dashboard() {
                                 Annuler
                             </Button>
                         </DialogClose>
-                        <Button className="bg-[#FF4000] hover:bg-[#FF4000]/90">
+                        <Button
+                            type="button"
+                            onClick={handleFilter}
+                        className="bg-[#FF4000] hover:bg-[#FF4000]/90">
                             Confirmer
                         </Button>
                     </DialogFooter>

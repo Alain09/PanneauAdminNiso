@@ -1,7 +1,7 @@
 "use client"
 import { Startscard } from '@/src/components/dash_composant/staticard';
-import { CalendarIcon, Eye, FileText, Pencil, Trash2, UserCogIcon, Users } from 'lucide-react';
-import React, { useState } from 'react';
+import { CalendarIcon, Eye, File, FileText, Loader2, Pencil, Trash2, UserCogIcon, Users } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { Search, MoreVertical, Filter, Plus } from "lucide-react";
 
@@ -36,16 +36,17 @@ import { Badge } from "@/src/components/ui/badge";
 import { Card } from '@/src/components/ui/card';
 
 import { useRouter } from 'next/navigation';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/src/components/ui/dropdown-menu';
 // Types
-interface User {
+interface UserListPaiement {
   id: string;
   name: string;
   email: string;
   phone: string;
-  amountbyMouth: number;
-  amount: string;
-  amountbyWeek: number;
-  date: string;
+  currentlyPaiement: number;
+  categorie: string;
+  amountbyWeekOfCategoriy: number;
+  date: Date;
   status: "succès" | "succès";
 }
 
@@ -55,162 +56,202 @@ interface User {
 function page() {
   const route = useRouter()
   const generateId = () => Math.random().toString(36).substring(2) + Date.now().toString(36);
-  const [users, setUsers] = useState<User[]>(
-    
-    
-
-   [
-        {
-          id: generateId(),
-          name: "John Carter",
-          email: "hello@johncarter.com",
-          phone: "+229 0162538947",
-          amountbyMouth: 3500,
-          amount: "100 fcfa",
-          amountbyWeek: 1600,
-          date: "03/04/2025",
-          status: "succès",
-        },
-        {
-          id: generateId(),
-          name: "John Carter",
-          email: "hello@johncarter.com",
-          phone: "+229 0162538947",
-          amountbyMouth: 3500,
-          amount: "100 fcfa",
-          amountbyWeek: 1600,
-          date: "03/04/2025",
-          status: "succès",
-        },
-        {
-          id: generateId(),
-          name: "John Carter",
-          email: "hello@johncarter.com",
-          phone: "+229 0162538947",
-          amountbyMouth: 3500,
-          amount: "100 fcfa",
-          amountbyWeek: 1600,
-          date: "03/04/2025",
-          status: "succès",
-        },
-        {
-          id: generateId(),
-          name: "John Carter",
-          email: "hello@johncarter.com",
-          phone: "+229 0162538947",
-          amountbyMouth: 3500,
-          amount: "200 fcfa",
-          amountbyWeek: 1600,
-          date: "03/04/2025",
-          status: "succès",
-        },
-        {
-          id: generateId(),
-          name: "John Carter",
-          email: "hello@johncarter.com",
-          phone: "+229 0162538947",
-          amountbyMouth: 3500,
-          amount: "100 fcfa",
-          amountbyWeek: 1600,
-          date: "03/04/2025",
-          status: "succès",
-        },
-        {
-          id: generateId(),
-          name: "John Carter",
-          email: "hello@johncarter.com",
-          phone: "+229 0162538947",
-          amountbyMouth: 3500,
-          amount: "100 fcfa",
-          amountbyWeek: 1600,
-          date: "03/04/2025",
-          status: "succès",
-        },
-        {
-          id: generateId(),
-          name: "John Carter",
-          email: "hello@johncarter.com",
-          phone: "+229 0162538947",
-          amountbyMouth: 3500,
-          amount: "100 fcfa",
-          amountbyWeek: 1600,
-          date: "03/04/2025",
-          status: "succès",
-        },
-        {
-          id: generateId(),
-          name: "John Carter",
-          email: "hello@johncarter.com",
-          phone: "+229 0162538947",
-          amountbyMouth: 3500,
-          amount: "100 fcfa",
-          amountbyWeek: 1600,
-          date: "03/04/2025",
-          status: "succès",
-        },
-        {
-          id: generateId(),
-          name: "John Carter",
-          email: "hello@johncarter.com",
-          phone: "+229 0162538947",
-          amountbyMouth: 3500,
-          amount: "100 fcfa",
-          amountbyWeek: 1600,
-          date: "03/04/2025",
-          status: "succès",
-        },
-        {
-          id: generateId(),
-          name: "John Carter",
-          email: "hello@johncarter.com",
-          phone: "+229 0162538947",
-          amountbyMouth: 3500,
-          amount: "100 fcfa",
-          amountbyWeek: 1600,
-          date: "03/04/2025",
-          status: "succès",
-        },
-        {
-          id: generateId(),
-          name: "John Carter",
-          email: "hello@johncarter.com",
-          phone: "+229 0162538947",
-          amountbyMouth: 3500,
-          amount: "100 fcfa",
-          amountbyWeek: 1600,
-          date: "03/04/2025",
-          status: "succès",
-        },
-        {
-          id: generateId(),
-          name: "John Carter",
-          email: "hello@johncarter.com",
-          phone: "+229 0162538947",
-          amountbyMouth: 3500,
-          amount: "100 fcfa",
-          amountbyWeek: 1600,
-          date: "03/04/2025",
-          status: "succès",
-        },
+  const [usersPaiement, setUsersPaiement] = useState<UserListPaiement[]>(
+    [
+      {
+        id: generateId(),
+        name: "Kohn Carter",
+        email: "hello@johncarter.com",
+        phone: "+229 0162538947",
+        currentlyPaiement: 3500,
+        categorie: "100",
+        amountbyWeekOfCategoriy: 1600,
+        date: new Date(),
+        status: "succès",
+      },
+      {
+        id: generateId(),
+        name: "John Carter",
+        email: "hello@johncarter.com",
+        phone: "+229 0162538947",
+        currentlyPaiement: 3500,
+        categorie: "100",
+        amountbyWeekOfCategoriy: 1600,
+        date: new Date(),
+        status: "succès",
+      },
+      {
+        id: generateId(),
+        name: "John Carter",
+        email: "hello@johncarter.com",
+        phone: "+229 0162538947",
+        currentlyPaiement: 3500,
+        categorie: "100",
+        amountbyWeekOfCategoriy: 1600,
+        date: new Date(),
+        status: "succès",
+      },
+      {
+        id: generateId(),
+        name: "John Carter",
+        email: "hello@johncarter.com",
+        phone: "+229 0162538947",
+        currentlyPaiement: 3500,
+        categorie: "200",
+        amountbyWeekOfCategoriy: 1600,
+        date: new Date(),
+        status: "succès",
+      },
+      {
+        id: generateId(),
+        name: "John Carter",
+        email: "hello@johncarter.com",
+        phone: "+229 0162538947",
+        currentlyPaiement: 3500,
+        categorie: "100",
+        amountbyWeekOfCategoriy: 1600,
+        date: new Date(),
+        status: "succès",
+      },
+      {
+        id: generateId(),
+        name: "John Carter",
+        email: "hello@johncarter.com",
+        phone: "+229 0162538947",
+        currentlyPaiement: 3500,
+        categorie: "100",
+        amountbyWeekOfCategoriy: 1600,
+        date: new Date(),
+        status: "succès",
+      },
+      {
+        id: generateId(),
+        name: "John Carter",
+        email: "hello@johncarter.com",
+        phone: "+229 0162538947",
+        currentlyPaiement: 3500,
+        categorie: "100",
+        amountbyWeekOfCategoriy: 1600,
+        date: new Date(),
+        status: "succès",
+      },
+      {
+        id: generateId(),
+        name: "John Carter",
+        email: "hello@johncarter.com",
+        phone: "+229 0162538947",
+        currentlyPaiement: 3500,
+        categorie: "100",
+        amountbyWeekOfCategoriy: 1600,
+        date: new Date(),
+        status: "succès",
+      },
+      {
+        id: generateId(),
+        name: "John Carter",
+        email: "hello@johncarter.com",
+        phone: "+229 0162538947",
+        currentlyPaiement: 3500,
+        categorie: "100",
+        amountbyWeekOfCategoriy: 1600,
+        date: new Date(),
+        status: "succès",
+      },
+      {
+        id: generateId(),
+        name: "John Carter",
+        email: "hello@johncarter.com",
+        phone: "+229 0162538947",
+        currentlyPaiement: 3500,
+        categorie: "100",
+        amountbyWeekOfCategoriy: 1600,
+        date: new Date(),
+        status: "succès",
+      },
+      {
+        id: generateId(),
+        name: "John Carter",
+        email: "hello@johncarter.com",
+        phone: "+229 0162538947",
+        currentlyPaiement: 3500,
+        categorie: "100",
+        amountbyWeekOfCategoriy: 1600,
+        date: new Date(),
+        status: "succès",
+      },
+      {
+        id: generateId(),
+        name: "John Carter",
+        email: "hello@johncarter.com",
+        phone: "+229 0162538947",
+        currentlyPaiement: 3500,
+        categorie: "100",
+        amountbyWeekOfCategoriy: 1600,
+        date: new Date(),
+        status: "succès",
+      },
     ]);
 
 
+  const [usersData, setUsersData] = useState<UserListPaiement[]>(usersPaiement)
   const [filter, setFilter] = useState(false)
-  const [selectedTontine, setSelectedTontine] = useState<string>("");
-  const [selectedStatut, setSelectedStatut] = useState<string>("");
+  const [selectedCategorie, setSelectedCategorie] = useState<string>("");
+  const [searchUser, setSearchUser] = useState<string>("");
+  const [selectDate, setSelectDate] = useState<Date>()
   // Exemple de données de tontines - à remplacer par vos données réelles
-  const tontines = [
-    { id: "1", name: "100" },
-    { id: "2", name: "200" },
-    { id: "3", name: "300" },
-    { id: "4", name: "400" },
-    { id: "5", name: "500" },
-  ];
 
-  const statuts = [
-    { id: "1", name: "succès" },
-    { id: "2", name: "succès" },
-  ]
+
+
+  // recherche des categorie sans occurences 
+  const categories = [... new Set(usersPaiement.flatMap(prev => prev.categorie))]
+
+
+
+  // Filter references when search query changes
+  useEffect(() => {
+    if (searchUser.trim() === '') {
+      setUsersData(usersPaiement)
+    } else {
+      const filteredData = usersData.filter((user) =>
+        user?.name?.toLowerCase().includes(searchUser))
+      setUsersData(filteredData);
+    }
+  }, [searchUser])
+
+
+
+  // fonction de filtrage
+  const handleFilter = () => {
+    const filteredData = usersData.filter((user) => {
+      const matchesCategory = selectedCategorie ? user.categorie === selectedCategorie : true;
+      const matchesDate = selectDate ? user.date === selectDate : true;
+      return matchesCategory && matchesDate;
+    });
+    setUsersData(filteredData);
+    setFilter(false);
+  };
+
+
+  //----------------fonction de formatage 
+  const formatDate = (date: Date) => {
+    return date?.toISOString().split('T')[0] as string;
+  }
+
+  // fonction de rechargement
+  const [load, setLoad] = useState(false)
+  const handleReload = () => {
+    setLoad(true)
+    setUsersData(usersPaiement);
+    setSelectedCategorie("");
+    setSearchUser("");
+    setSelectDate(undefined);
+    setTimeout(() => {
+      setLoad(false)
+    }, 1000)
+
+  };
+
+
 
   return (
     <div>
@@ -222,18 +263,30 @@ function page() {
               <div className="flex items-center space-x-2">
                 <div className="flex items-center space-x-2">
                   <span className="px-3 py-1 bg-[#FF4000] text-white rounded-md">Effectif</span>
-                  <span className="px-2 py-1 border rounded-md">200</span>
+                  <span className="px-2 py-1 border rounded-md">{usersData.length.toString().padStart(2, "0")}</span>
                 </div>
               </div>
               <div className="relative w-full">
                 <Input
+                  type='text'
                   className="pl-8 w-full "
+                  value={searchUser}
+                  onChange={(e) => { setSearchUser(e.target.value.toLowerCase()) }}
                   placeholder="rechercher un nom"
                 />
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
               </div>
               <div className="flex items-center space-x-4">
+                <Button
+                  variant="destructive"
+                  className="flex items-center bg-[#FF4000] hover:bg-[#FF4000]/90"
+                  onClick={handleReload}
+                >
+                  <Loader2 className={`mr-2 h-4 w-4 ${load ? "animate-spin duration-300" : ""}`}
 
+                  />
+                  Recharger
+                </Button>
                 <Button
                   variant="destructive"
                   className="flex items-center bg-[#FF4000] hover:bg-[#FF4000]/90"
@@ -244,33 +297,71 @@ function page() {
                   />
                   Filtrer
                 </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className=" p-2">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-46 rounded-lg shadow-lg border border-gray-200 p-2"
+                  >
+                    {/* telecharger le pdf */}
+                    <DropdownMenuItem className="px-3 py-2 text-sm cursor-pointer  hover:rounded-lg hover:shadow-gray-200">
+                      <div className="flex items-center"
+
+                      >
+                        <div className="bg-gray-100 p-1.5 rounded-full mr-3">
+                          <FileText className="h-4 w-4 text-gray-500" />
+                        </div>
+                        <span>Exporter le pdf</span>
+                      </div>
+                    </DropdownMenuItem>
+
+                    {/* telecharger le fichier excel */}
+                    <DropdownMenuItem className="px-3 py-2 text-sm cursor-pointer  hover:rounded-lg hover:shadow-gray-200">
+                      <div className="flex items-center"
+
+                      >
+                        <div className="bg-gray-100 p-1.5 rounded-full mr-3">
+                          <File className="h-4 w-4 text-gray-500" />
+                        </div>
+                        <span>Exporter l'excel</span>
+                      </div>
+                    </DropdownMenuItem>
+
+                    {/* Item Supprimer */}
+
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
 
             <div className=" overflow-hidden">
               <Table>
                 <TableHeader className="bg-gray-50">
-                <TableRow className="">
+                  <TableRow className="">
                     <TableHead className="w-12"></TableHead>
                     <TableHead>Utilisateurs</TableHead>
                     <TableHead>Numero de transaction</TableHead>
                     <TableHead>Montant payé</TableHead>
-                    <TableHead>Tontine choisie</TableHead>
+                    <TableHead>Catégorie choisie</TableHead>
                     <TableHead>A payer/S</TableHead>
                     <TableHead>Date d'entrée</TableHead>
                     <TableHead>Statut</TableHead>
-                   </TableRow>
-                  
+                  </TableRow>
+
                 </TableHeader>
                 <TableBody>
-                  {users.map((user, index) => (
+                  {usersData.map((user, index) => (
                     <TableRow
                       key={user.id}
                       className={`${index % 2 === 0 ? "bg-[#FFAE91]/10" : ""}  `}
                     >
                       <TableCell>
                         <div className="flex items-center justify-center w-8 h-8 bg-[#FFAE91] text-white rounded-full">
-                          J
+                          {user.name.charAt(0)}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -280,10 +371,10 @@ function page() {
                         </div>
                       </TableCell>
                       <TableCell>{user.phone}</TableCell>
-                      <TableCell>{user.amountbyMouth}</TableCell>
-                      <TableCell>{user.amount}</TableCell>
-                      <TableCell>{user.amountbyWeek}</TableCell>
-                      <TableCell>{user.date}</TableCell>
+                      <TableCell>{user.currentlyPaiement}</TableCell>
+                      <TableCell>{user.categorie} Fcfa</TableCell>
+                      <TableCell>{user.amountbyWeekOfCategoriy}</TableCell>
+                      <TableCell>{new Date(user.date).toLocaleDateString()}</TableCell>
                       <TableCell>
                         <Badge
                           variant={user.status === "succès" ? "default" : "outline"}
@@ -296,7 +387,7 @@ function page() {
                           • {user.status === "succès" ? "succès" : "succès"}
                         </Badge>
                       </TableCell>
-                     
+
                     </TableRow>
                   ))}
                 </TableBody>
@@ -323,15 +414,15 @@ function page() {
             <div className="space-y-4">
               {/* Sélecteur de tontine */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Tontine choisie</label>
-                <Select onValueChange={setSelectedTontine} value={selectedTontine}>
+                <label className="text-sm font-medium">Catégorie</label>
+                <Select onValueChange={setSelectedCategorie} value={selectedCategorie}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Sélectionner une tontine" />
                   </SelectTrigger>
                   <SelectContent>
-                    {tontines.map((tontine) => (
-                      <SelectItem key={tontine.id} value={tontine.id}>
-                        {tontine.name}
+                    {categories.map((tontine, index) => (
+                      <SelectItem key={index} value={tontine}>
+                        {tontine}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -341,7 +432,9 @@ function page() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Date de paiement</label>
                 <Input
-                type='date'
+                  type='date'
+                  value={formatDate(selectDate as Date)}
+                  onChange={(e) => { setSelectDate(new Date(e.target.value)) }}
                   className=" w-full "
                   placeholder="entrer une provenance"
                 />
@@ -354,7 +447,9 @@ function page() {
                 Annuler
               </Button>
             </DialogClose>
-            <Button className="bg-[#FF4000] hover:bg-[#FF4000]/90">
+            <Button
+              onClick={handleFilter}
+              className="bg-[#FF4000] hover:bg-[#FF4000]/90">
               Confirmer
             </Button>
           </DialogFooter>

@@ -22,104 +22,69 @@ import Bande from "@/src/components/users/bande";
 import { Tabs, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
 import { Card, CardContent, CardTitle } from "@/src/components/ui/card";
 import { TabsContent } from "@radix-ui/react-tabs";
-import { StatsCardProps } from '@/type';
+import { Categories, CategoriesStatisquesPayement, Donnees, StatsCardProps, TontineOption, UniqueUser, UserProfile } from '@/type';
 import StatisCardUser from "@/src/components/users/statisCard";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/src/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/src/components/ui/select";
 import { Input } from "@/src/components/ui/input";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
-// Types
-interface TontinePayment {
-    id: string;
-    date: string;
-    amount: string;
-    options: string;
-    week: string;
-    amountToPay: string;
-    status: "Payé" | "Retard" | "En cours";
-}
-
-interface TontineItem {
-    name: string;
-    quantity: string;
-}
-
-// les articles a prendre
-
-const Article = [
-    {
-        id: "1",
-        item: "1 canette"
-
-    },
-    {
-        id: "2",
-        item: "6 plats"
-
-    },
-    {
-        id: "3",
-        item: "1 montre man"
-
-    },
-    {
-        id: "4",
-        item: "02 sacs de riz"
-
-    },
-    {
-        id: "5",
-        item: "pagne (6m)"
-
-    },
-    {
-        id: "6",
-        item: "2 glacières"
-
-    },
-
-
-]
-
-export default function UserProfilePage ({ params,
+export default function UserProfilePage({ params,
 }: { params: { id: string } }) {
-    
-const generateId = () => Math.random().toString(36).substring(2) + Date.now().toString(36);
+
 
     const { id } = params; // Extracting the ID from the URL parameters
     const route = useRouter()
 
-    const [payments, setPayments] = useState<TontinePayment[]>([
-        { id: generateId(), date: "03/04/2025", amount: "100 Fcfa", options: "1; 2; 3", week: "Sem 1", amountToPay: "3200", status: "Payé" },
-        { id: generateId(), date: "03/04/2025", amount: "100 Fcfa", options: "1; 2; 3", week: "Sem 2", amountToPay: "3000", status: "Payé" },
-        { id: generateId(), date: "03/04/2025", amount: "100 Fcfa", options: "1; 2; 3", week: "Sem 3", amountToPay: "3000", status: "Payé" },
-        { id: generateId(), date: "03/04/2025", amount: "100 Fcfa", options: "1; 2; 3", week: "Sem 4", amountToPay: "3000", status: "Payé" },
-        { id: generateId(), date: "03/04/2025", amount: "100 Fcfa", options: "1; 2; 3", week: "Sem 5", amountToPay: "3000", status: "Payé" },
-        { id: generateId(), date: "03/04/2025", amount: "100 Fcfa", options: "1; 2; 3", week: "Sem 6", amountToPay: "3000", status: "Retard" },
-        { id: generateId(), date: "03/04/2025", amount: "100 Fcfa", options: "1; 2; 3", week: "Sem 7", amountToPay: "3000", status: "Retard" },
-        { id: generateId(), date: "03/04/2025", amount: "100 Fcfa", options: "1; 2; 3", week: "Sem 8", amountToPay: "3000", status: "En cours" },
-        { id: generateId(), date: "03/04/2025", amount: "100 Fcfa", options: "1; 2; 3", week: "Sem 9", amountToPay: "3000", status: "En cours" },
-        { id: generateId(), date: "03/04/2025", amount: "100 Fcfa", options: "1; 2; 3", week: "Sem 10", amountToPay: "3000", status: "En cours" },
-        { id: generateId(), date: "03/04/2025", amount: "100 Fcfa", options: "1; 2; 3", week: "Sem 11", amountToPay: "3000", status: "En cours" },
-        { id: generateId(), date: "03/04/2025", amount: "100 Fcfa", options: "1; 2; 3", week: "Sem 12", amountToPay: "3000", status: "En cours" },
-        { id: generateId(), date: "03/04/2025", amount: "100 Fcfa", options: "1; 2; 3", week: "Sem 13", amountToPay: "3000", status: "En cours" },
-    ]);
 
-   
+    // declaration des donnees specifique a l'utilisateur
+    const [userUnique, setUserUnique] = useState<UserProfile>(Donnees[0])
 
-    const ViewTontine = [
-        '100', '200', '300', '500'
-    ]
+    // recuperation des categories 
+    const categories = userUnique.DescriptionChoixOfEachUser?.flatMap((cat) => cat.category).sort() as string[]
 
-    const tontines = [
-        { id: "1", name: "100" },
-        { id: "2", name: "200" },
-        { id: "3", name: "300" },
-        { id: "4", name: "400" },
-        { id: "5", name: "500" },
-    ];
+    // la mise a jour sur les details de la tontine choisie
+    const [selectCategories, setSelectCategories] = useState(categories[0])
+
+    // structuration des données pour l'affichage par selection 
+    const [uniqueUserData, setUniqueUserData] = useState<CategoriesStatisquesPayement[]>(userUnique.DescriptionChoixOfEachUser as CategoriesStatisquesPayement[]);
+
+
+
+
+    // fonction pour la recuperatin des des otpionsDescriptions a une seule ocurence d'option par categories
+    // recuperationsd de tous ls OptionDescriptions
+    const OptionsDescriptions = userUnique.DescriptionChoixOfEachUser?.flatMap(items => items.choix?.flatMap(prev => prev.optionsDescription)) as TontineOption[]
+    // la fonction
+    const MiseAjout = (model: TontineOption[]) => {
+        const unique: TontineOption[] = [];
+        const seen = new Set();
+
+        for (const item of model) {
+            const key = `${item.category}-${item.option}`;
+            if (!seen.has(key)) {
+                seen.add(key);
+                unique.push(item);
+            }
+        }
+        
+        return unique
+    }
+
+    // application de la function a optionTab
+    const [optionTab, setOptionTab] = useState<TontineOption[]>(MiseAjout(OptionsDescriptions))
+
+
+
+
+
+    useEffect(() => {
+        console.log("tab", optionTab)
+    }, [])
+
+
 
     const statuts = [
         { id: "1", name: "Payé" },
@@ -127,11 +92,10 @@ const generateId = () => Math.random().toString(36).substring(2) + Date.now().to
         { id: "3", name: "En cours" },
     ]
 
-    const [selectedMontant, setSelectedMontant] = useState<string>("");
+    const [selectedMontant, setSelectedMontant] = useState<number>();
     const [selectedStatut, setSelectedStatut] = useState<string>("");
 
-    // la mise a jour sur les details de la tontine choisie
-    const [selectTontine, setSelectTontine] = useState("100")
+
 
     //modal pour la mise a des donnees
     const [modal, setModal] = useState(false)
@@ -144,125 +108,126 @@ const generateId = () => Math.random().toString(36).substring(2) + Date.now().to
             { /* btn retour  */}
             <Bande />
             <div>
+                {/* Left Section - User details and transactions */}
                 <div className="flex  gap-6 w-full  relative">
-                    {/* Left Section - User details and transactions */}  { /* tab liste */}
-                    <Tabs className="flex-1 space-y-6 w-full " defaultValue="100" orientation="vertical">
-                        <Card className="bg-white px-1 rounded-lg shadow-gray-100 border border-gray-100">
-                            <CardContent>
-                                <div className="flex justify-between items-center mb-6">
-                                    <h1 className="text-4xl font-bold">
-                                        Hello, <span className="text-orange-500">Alain .H</span>
-                                    </h1>
-
-                                </div>
 
 
-                                <div className="mb-6 flex justify-between items-center">
-                                    <h2 className="text-lg font-medium mb-3">Tontine(s) choisi(es)</h2>
-                                    <TabsList className=" h-10 items-center justify-center bg-gray-100">
-                                        {ViewTontine.map((item, index) => (
-                                            <TabsTrigger
-                                                onClick={() => { setSelectTontine(item) }}
-                                                key={index} value={`${item}`} className="text-md text-gray-500 px-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">{item}F</TabsTrigger>
-                                        ))}
-                                    </TabsList>
-                                </div>
-                                {
-                                    ViewTontine.map((item, index) => (
-                                        <TabsContent value={item} className="mb-6">
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                                <StatisCardUser title="Montant total payé" value="20500f" icon={<Wallet className="w-4 h-4 text-orange-500" />} />
-                                                <StatisCardUser title="Semaines validées" value="5/15" icon={<Calendar className="w-4 h-4 text-orange-500" />} />
-                                                <StatisCardUser title="Total à payer " value="3200f" icon={<FileText className="w-4 h-4 text-orange-500" />} />
+                    <Tabs className="flex-1 space-y-6 w-full " defaultValue={categories[0]} orientation="vertical">
+                        {
+                            uniqueUserData.filter(user => user.category === selectCategories)
+                                .map((user, index) => (
+                                    <Card key={index} className="bg-white px-1 rounded-lg shadow-gray-100 border border-gray-100" >
+                                        <CardContent>
+                                            <div className="flex justify-between items-center mb-6">
+                                                <h1 className="text-4xl font-bold">
+                                                    Hello, <span className="text-orange-500">{userUnique.firstName} <span>.</span> {userUnique.lastName.toString().charAt(0)}</span>
+                                                </h1>
+
                                             </div>
 
-                                            <div className="flex justify-end gap-2 mb-4">
-                                                <Button className="rounded-md">
-                                                    Exporter sous
-                                                </Button>
-                                                <Button variant="ghost" className="p-2" onClick={() => { setModal(true) }}>
-                                                    <MoreVertical className="w-5 h-5" />
-                                                </Button>
+
+                                            <div className="mb-6 flex justify-between items-center">
+                                                <h2 className="text-lg font-medium mb-3">Catégorie(s) choisi(es)</h2>
+                                                <TabsList className=" h-10 items-center justify-center bg-gray-100">
+                                                    {categories?.map((item, index) => (
+                                                        <TabsTrigger
+                                                            onClick={() => { setSelectCategories(item); }}
+                                                            key={index} value={`${item}`} className="text-md text-gray-500 px-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">{item}F</TabsTrigger>
+                                                    ))}
+                                                </TabsList>
                                             </div>
 
-                                            <div className="border rounded-lg overflow-hidden">
-                                                <Table>
-                                                    <TableHeader className="bg-gray-50">
-                                                        <TableRow>
-                                                            <TableHead className="w-32">
-                                                                <div className="flex items-center ">
-                                                                    Date
-                                                                </div>
-                                                            </TableHead>
-                                                            <TableHead>
-                                                                <div className="flex items-center ">
+                                            <TabsContent value={selectCategories} className="mb-6">
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                                    <StatisCardUser title="Montant total payé" value={`${String(user.totalPaid)}`} icon={<Wallet className="w-4 h-4 text-orange-500" />} />
+                                                    <StatisCardUser title="Semaines validées" value={`${String(user.weekValided)}/15`} icon={<Calendar className="w-4 h-4 text-orange-500" />} />
+                                                    <StatisCardUser title="Total à payer " value={String(user.totalPaidByWeek)} icon={<FileText className="w-4 h-4 text-orange-500" />} />
+                                                </div>
 
-                                                                    Tontine choisie
-                                                                </div>
-                                                            </TableHead>
-                                                            <TableHead>
-                                                                <div className="flex items-center ">
-                                                                    Option(s)
-                                                                </div>
-                                                            </TableHead>
-                                                            <TableHead>
-                                                                <div className="flex items-center">
-                                                                    Semaines
-                                                                </div>
-                                                            </TableHead>
-                                                            <TableHead>
-                                                                <div className="flex items-center ">
+                                                <div className="flex justify-end gap-2 mb-4">
+                                                    <Button className="rounded-md">
+                                                        Exporter sous
+                                                    </Button>
+                                                    <Button variant="ghost" className="p-2" onClick={() => { setModal(true) }}>
+                                                        <MoreVertical className="w-5 h-5" />
+                                                    </Button>
+                                                </div>
 
-                                                                    Montant à payer
-                                                                </div>
-                                                            </TableHead>
-                                                            <TableHead>Statut</TableHead>
-                                                        </TableRow>
-                                                    </TableHeader>
-                                                    <TableBody>
-                                                        {payments.map((payment) => {
-                                                            useEffect(() => {
-                                                                setSelectedMontant(payment.amountToPay)
-                                                            })
+                                                <div className="border rounded-lg overflow-hidden">
+                                                    <Table>
+                                                        <TableHeader className="bg-gray-50">
+                                                            <TableRow>
+                                                                <TableHead className="w-32">
+                                                                    <div className="flex items-center ">
+                                                                        Date
+                                                                    </div>
+                                                                </TableHead>
+                                                                <TableHead>
+                                                                    <div className="flex items-center ">
 
-                                                            return (
-                                                                <TableRow key={payment.id} className="bg-orange-50/30">
-                                                                    <TableCell>{payment.date}</TableCell>
-                                                                    <TableCell>{payment.amount}</TableCell>
-                                                                    <TableCell>{payment.options}</TableCell>
-                                                                    <TableCell>{payment.week}</TableCell>
-                                                                    <TableCell>{payment.amountToPay}</TableCell>
-                                                                    <TableCell>
-                                                                        <Badge
-                                                                            variant="outline"
-                                                                            className={
-                                                                                payment.status === "Payé"
-                                                                                    ? "text-xs text-green-600 bg-green-100  py-1 px-2 rounded"
-                                                                                    : payment.status === "Retard"
-                                                                                        ? "text-xs text-red-600 bg-red-100 py-1 px-2 rounded"
-                                                                                        : "text-xs text-blue-600 bg-blue-100 py-1 px-2 rounded"
-                                                                            }
-                                                                        >
-                                                                            • {payment.status}
-                                                                        </Badge>
-                                                                    </TableCell>
-                                                                </TableRow>
-                                                            )
-                                                        })}
-                                                    </TableBody>
-                                                </Table>
-                                            </div>
+                                                                        Catégorie choisie
+                                                                    </div>
+                                                                </TableHead>
+                                                                <TableHead>
+                                                                    <div className="flex items-center ">
+                                                                        Option(s)
+                                                                    </div>
+                                                                </TableHead>
+                                                                <TableHead>
+                                                                    <div className="flex items-center">
+                                                                        Semaines
+                                                                    </div>
+                                                                </TableHead>
+                                                                <TableHead>
+                                                                    <div className="flex items-center ">
 
-                                        </TabsContent>
-                                    ))
+                                                                        Montant à payer
+                                                                    </div>
+                                                                </TableHead>
+                                                                <TableHead>Statut</TableHead>
+                                                            </TableRow>
+                                                        </TableHeader>
+                                                        <TableBody>
+                                                            {user.choix?.sort()?.map((payment, index) => {
+                                                                
+                                                                return (
+                                                                    <TableRow key={index} className="bg-orange-50/30">
+                                                                        <TableCell>{new Date(payment?.DatePaiement as Date).toLocaleDateString()}</TableCell>
+                                                                        <TableCell>{payment?.category} Fcfa</TableCell>
+                                                                        <TableCell>[{user.listOptions?.join('; ')}]</TableCell>
+                                                                        <TableCell>{payment?.week}</TableCell>
+                                                                        <TableCell>{payment?.totalToPayByWeekOfThisCategory} Fcfa</TableCell>
+                                                                        <TableCell>
+                                                                            <Badge
+                                                                                variant="outline"
+                                                                                className={
+                                                                                    payment?.status === "Payé"
+                                                                                        ? "text-xs text-green-600 bg-green-100  py-1 px-2 rounded"
+                                                                                        : payment?.status === "En retard"
+                                                                                            ? "text-xs text-red-600 bg-red-100 py-1 px-2 rounded"
+                                                                                            : "text-xs text-blue-600 bg-blue-100 py-1 px-2 rounded"
+                                                                                }
+                                                                            >
+                                                                                • {payment?.status}
+                                                                            </Badge>
+                                                                        </TableCell>
+                                                                    </TableRow>
+                                                                )
+                                                            })}
+                                                        </TableBody>
+                                                    </Table>
+                                                </div>
+
+                                            </TabsContent>
 
 
-                                }
+                                        </CardContent>
 
-                            </CardContent>
-
-                        </Card>
+                                    </Card>
+                                ))}
                     </Tabs>
+
+
 
                     {/* Right Section - User profile */}
                     <div className="w-96 space-y-6">
@@ -271,7 +236,7 @@ const generateId = () => Math.random().toString(36).substring(2) + Date.now().to
                                 <div className="flex justify-between items-center mb-4">
                                     <h1 className="text-2xl font-semibold text-orange-500">Profil</h1>
                                     <div className="p-3 bg-orange-100  rounded-full hover:bg-orange-200 cursor-pointer"
-                                     onClick={()=>route.push(`/dashboard/users/edit/${id}`)}
+                                        onClick={() => route.push(`/dashboard/users/edit/${userUnique.id}`)}
                                     >
                                         <Edit className="w-4 h-4  text-orange-500 " />
                                     </div>
@@ -279,8 +244,8 @@ const generateId = () => Math.random().toString(36).substring(2) + Date.now().to
                                 {/* User Profile Details */}
                                 <div>
                                     <div className="flex flex-col items-center mb-6">
-                                        <div className="w-32 h-32 bg-gray-100 rounded-full mb-4"></div>
-                                        <h2 className="text-2xl font-bold mb-1"> <span className=" font-medium">Alain T.</span> HOUNGA</h2>
+                                        <div className="w-32 h-32  rounded-full mb-4"><Image className=" rounded-full" width={150} height={150} src={`${userUnique.image}`} alt={`${userUnique.firstName}`} /></div>
+                                        <h2 className="text-2xl font-bold mb-1"> <span className=" font-medium">{userUnique.lastName}</span> {userUnique.firstName}</h2>
                                     </div>
                                     { /*  les coordonnees  */}
                                     <div className="flex items-center flex-col gap-4 text-sm text-gray-500 mb-4">
@@ -290,7 +255,7 @@ const generateId = () => Math.random().toString(36).substring(2) + Date.now().to
                                             </div>
 
                                             <div className=" px-2 py-1  w-fit border border-gray-100 rounded-md bg-gray-50" >
-                                                < span className="text-sm font-medium text-gray-600" >alain090901@gmail.com</span>
+                                                < span className="text-sm font-medium text-gray-600" >{userUnique.email}</span>
                                             </div>
 
                                         </div>
@@ -300,7 +265,7 @@ const generateId = () => Math.random().toString(36).substring(2) + Date.now().to
                                             </div>
 
                                             <div className=" px-2 py-1  w-fit border border-gray-100 rounded-md bg-gray-50" >
-                                                < span className="text-sm font-medium text-gray-600" >+229 0161624396</span>
+                                                < span className="text-sm font-medium text-gray-600" >{userUnique.contact}</span>
                                             </div>
 
                                         </div>
@@ -310,7 +275,7 @@ const generateId = () => Math.random().toString(36).substring(2) + Date.now().to
                                             </div>
 
                                             <div className=" px-2 py-1 w-fit border border-gray-100 rounded-md bg-gray-50" >
-                                                < span className="text-sm font-medium text-gray-600" >Cotonou</span>
+                                                < span className="text-sm font-medium text-gray-600" >{userUnique.provence}</span>
                                             </div>
 
                                         </div>
@@ -320,7 +285,7 @@ const generateId = () => Math.random().toString(36).substring(2) + Date.now().to
                                             </div>
 
                                             <div className=" px-2 py-1 w-fit border border-gray-100 rounded-md bg-gray-50" >
-                                                < span className="text-sm font-medium text-gray-600" >Etudiant</span>
+                                                < span className="text-sm font-medium text-gray-600" >{userUnique.position}</span>
                                             </div>
 
                                         </div>
@@ -334,97 +299,60 @@ const generateId = () => Math.random().toString(36).substring(2) + Date.now().to
                                 <div className="mb-4 mt-8 flex justify-between items-center gap-2">
                                     <h3 className="text-md font-medium mb-2">Tontine choisie</h3>
                                     <div className=" px-2 py-1 w-fit border border-orange-100 rounded-md bg-orange-500 flex justify-center items-center" >
-                                        < span className="text-sm font-medium text-gray-50" >{selectTontine}Fcfa</span>
+                                        < span className="text-sm font-medium text-gray-50" >{selectCategories}Fcfa</span>
                                     </div>
+
                                 </div>
                                 <div className=" space-y-4">
-                                    {/* les details sur les choix */}
-                                    <div className="border border-gray-100 rounded-lg p-4 bg-white shadow-gray-100 ">
-                                        <div className="mb-2">
-                                            <div className="flex justify-between mb-2">
-                                                <span className="text-[14px] font-medium text-gray-600 "> Option:</span>
-                                                <div className=" px-2 py-1 w-fit border border-gray-100 rounded-md bg-gray-800 flex justify-center items-center" >
-                                                    < span className="text-sm font-medium text-gray-50">1ere</span>
-                                                </div>
-                                            </div>
-                                            <div className="flex justify-between mb-2">
-                                                <span className="text-[14px] font-medium text-gray-600">Quantité :</span>
-                                                <div className=" px-2 py-1 w-fit border border-gray-100 rounded-md bg-gray-800 flex justify-center items-center" >
-                                                    < span className="text-sm font-medium text-gray-50" >01</span>
-                                                </div>
-                                            </div>
-                                            <div className="flex justify-between mb-2">
-                                                <span className="text-[14px] font-medium text-gray-600 ">A payer par/S :</span>
-                                                <div className=" px-2 py-1 w-fit border border-gray-100 rounded-md bg-gray-800 flex justify-center items-center" >
-                                                    < span className="text-sm font-medium text-gray-50" >800 Fcfa</span>
-                                                </div>
-                                            </div>
-                                            <div className="flex flex-col mb-1">
-                                                <span className="text-[14px] font-medium text-gray-600 ">Les articles à prendre:</span>
-                                                <div className=" mt-4">
-                                                    <div className=" p-2  w-full border border-gray-100 rounded-lg bg-gray-50" >
-                                                        <div className=" flex flex-wrap gap-1 ">
+                                    {
+                                        optionTab.filter(items => items.category === selectCategories)
+                                            .map((items, index) => (
+                                                <div key={index} className="border border-gray-100 rounded-lg p-4 bg-white shadow-gray-100 ">
 
-                                                            {Article.map((item) => (
-                                                                <div key={item.id} className=" shadow-gray-100 px-2 py-1 w-fit border border-gray-200 rounded-md bg-white flex justify-center items-center" >
-                                                                    < span className="text-sm font-medium text-gray-600" >{item.item}</span>
+                                                    <div className="mb-2">
+
+                                                        <div className="flex justify-between mb-2">
+                                                            <span className="text-[14px] font-medium text-gray-600 "> Option:</span>
+                                                            <div className=" px-2 py-1 w-fit border border-gray-100 rounded-md bg-gray-800 flex justify-center items-center" >
+                                                                < span className="text-sm font-medium text-gray-50">{`${items.option === "1" ? items.option + "ère" : items.option + "ème"} `}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex justify-between mb-2">
+                                                            <span className="text-[14px] font-medium text-gray-600">Quantité :</span>
+                                                            <div className=" px-2 py-1 w-fit border border-gray-100 rounded-md bg-gray-800 flex justify-center items-center" >
+                                                                < span className="text-sm font-medium text-gray-50" >{String(items.countOption).padStart(2, "0")}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex justify-between mb-2">
+                                                            <span className="text-[14px] font-medium text-gray-600 ">A payer par/S :</span>
+                                                            <div className=" px-2 py-1 w-fit border border-gray-100 rounded-md bg-gray-800 flex justify-center items-center" >
+                                                                < span className="text-sm font-medium text-gray-50" >{items.totalToPayByWeekOfThisOption} Fcfa</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-col mb-1">
+                                                            <span className="text-[14px] font-medium text-gray-600 ">Les articles à prendre:</span>
+                                                            <div className=" mt-4">
+                                                                <div className=" p-2  w-full border border-gray-100 rounded-lg bg-gray-50" >
+                                                                    <div className=" flex flex-wrap gap-1 ">
+
+                                                                        {items.components.map((item) => (
+                                                                            <div key={item.id} className=" shadow-gray-100 px-2 py-1 w-fit border border-gray-200 rounded-md bg-white flex justify-center items-center" >
+                                                                                < span className="text-sm font-medium text-gray-600" >{item.compose}</span>
+                                                                            </div>
+                                                                        ))}
+
+                                                                    </div>
+
                                                                 </div>
-                                                            ))}
+                                                            </div>
 
                                                         </div>
-
                                                     </div>
+
+
                                                 </div>
 
-                                            </div>
-                                        </div>
-
-
-                                    </div>
-                                    {/* les details sur les choix */}
-                                    <div className="border border-gray-100 rounded-lg p-4 bg-white shadow-gray-100 ">
-                                        <div className="mb-2">
-                                            <div className="flex justify-between mb-2">
-                                                <span className="text-[14px] font-medium text-gray-600 "> Option:</span>
-                                                <div className=" px-2 py-1 w-fit border border-gray-100 rounded-md bg-gray-800 flex justify-center items-center" >
-                                                    < span className="text-sm font-medium text-gray-50">2ème</span>
-                                                </div>
-                                            </div>
-                                            <div className="flex justify-between mb-2">
-                                                <span className="text-[14px] font-medium text-gray-600">Quantité :</span>
-                                                <div className=" px-2 py-1 w-fit border border-gray-100 rounded-md bg-gray-800 flex justify-center items-center" >
-                                                    < span className="text-sm font-medium text-gray-50" >01</span>
-                                                </div>
-                                            </div>
-                                            <div className="flex justify-between mb-2">
-                                                <span className="text-[14px] font-medium text-gray-600 ">A payer par/S :</span>
-                                                <div className=" px-2 py-1 w-fit border border-gray-100 rounded-md bg-gray-800 flex justify-center items-center" >
-                                                    < span className="text-sm font-medium text-gray-50" >800 Fcfa</span>
-                                                </div>
-                                            </div>
-                                            <div className="flex flex-col mb-1">
-                                                <span className="text-[14px] font-medium text-gray-600 ">Les articles à prendre:</span>
-                                                <div className=" mt-4">
-                                                    <div className=" p-2  w-full border border-gray-100 rounded-lg bg-gray-50" >
-                                                        <div className=" flex flex-wrap gap-1 ">
-
-                                                            {Article.map((item) => (
-                                                                <div key={item.id} className=" shadow-gray-100 px-2 py-1 w-fit border border-gray-200 rounded-md bg-white flex justify-center items-center" >
-                                                                    < span className="text-sm font-medium text-gray-600" >{item.item}</span>
-                                                                </div>
-                                                            ))}
-
-                                                        </div>
-
-                                                    </div>
-                                                </div>
-
-                                            </div>
-                                        </div>
-
-
-                                    </div>
-
+                                            ))}
                                 </div>
 
                             </CardContent>
@@ -454,7 +382,7 @@ const generateId = () => Math.random().toString(36).substring(2) + Date.now().to
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Tontine choisie</label>
                                 <Input
-                                    value={selectTontine}
+                                    value={selectCategories}
                                     className=" w-full "
                                     disabled
                                 />
@@ -469,7 +397,7 @@ const generateId = () => Math.random().toString(36).substring(2) + Date.now().to
                                     </SelectTrigger>
                                     <SelectContent>
                                         {statuts.map((statut) => (
-                                            <SelectItem key={statut.id} value={statut.id}>
+                                            <SelectItem key={statut.id} value={statut.name}>
                                                 {statut.name}
                                             </SelectItem>
                                         ))}
@@ -480,7 +408,7 @@ const generateId = () => Math.random().toString(36).substring(2) + Date.now().to
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Montant</label>
                                 <Input
-                                    value={selectedMontant}
+                                    value={selectedMontant as number}
                                     className=" w-full "
                                     disabled
                                 />

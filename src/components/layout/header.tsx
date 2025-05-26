@@ -29,21 +29,18 @@ function Header({ size }: Size) {
 
         <header className={`  transition-all duration-300 flex  ${size ? "ml-18" : "ml-56"} bg-white/90 backdrop-blur-lg   h-16  absolute left-0 right-0  `}  >
             <div className=' h-12  absolute top-2  flex left-6 right-6  gap-3' >
-                <div className=' flex justify-start px-5 items-center w-full bg-white shadow shadow-gray-50 border border-gray-100 rounded-lg  '>
+                <div className=' flex justify-start px-5 items-center w-[800px] bg-white shadow shadow-gray-50 border border-gray-100 rounded-lg  '>
                     <span>Dashboard</span>
 
                 </div>
 
-                <div className='flex justify-center items-center  w-[350px] shadow shadow-gray-50 border   border-gray-100 bg-white rounded-lg '>
-                    <div className=' p-2  flex items-center gap-0.5 font-mono text-sm'>
-                        <SlidingNumber value={currentTime.getHours()} padStart={true} />
-                        <span className='text-zinc-500'>:</span>
-                        <SlidingNumber value={currentTime.getMinutes()} padStart={true} />
-                        <span className='text-zinc-500'>:</span>
-                        <SlidingNumber value={currentTime.getSeconds()} padStart={true} />
+                <div className='flex justify-center items-center  w-full shadow shadow-gray-50 border   border-gray-100 bg-white rounded-lg '>
+                    <div className=' p-2  flex items-center gap-0.5 '>
+                      <span className=' text-gray-900'>{"<< L'imagination est plus importante que le savoir >>"} : </span><span className=' font-semibold'>Albert Eintein</span>
+                       
                     </div>
                 </div>
-                <div className="  w-[70px] shadow shadow-gray-50 bg-blue-600 border border-gray-100 rounded-lg flex justify-center items-center mr-2 ">
+                <div className="  w-[100px] shadow shadow-gray-50 bg-blue-600 border border-gray-100 rounded-lg flex justify-center items-center mr-2 ">
 
                     <span className="font-medium text-white text-sm">JD</span>
 
