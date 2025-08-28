@@ -48,7 +48,7 @@ export default function UserProfilNew() {
 
   // fonction pour la recuperatin des des otpionsDescriptions a une seule ocurence d'option par categories
   // recuperationsd de tous ls OptionDescriptions
-  const OptionsDescriptions = userUnique.DescriptionChoixOfEachUser?.flatMap(items => items.choix?.flatMap(prev => prev.optionsDescription)) as TontineOption[]
+  const OptionsDescriptions = userUnique.DescriptionChoixOfEachUser?.flatMap(items => items.optionsDescription) as TontineOption[]
   // la fonction
   const MiseAjout = (model: TontineOption[]) => {
     const unique: TontineOption[] = [];

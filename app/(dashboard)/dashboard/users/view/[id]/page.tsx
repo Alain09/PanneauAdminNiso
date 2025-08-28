@@ -17,7 +17,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/src/components/ui/dropdown-menu";
-import { Edit, MoreVertical, Calendar, FileText, Wallet } from "lucide-react";
+import { Edit, MoreVertical, Calendar, FileText, Wallet, Pencil } from "lucide-react";
 import Bande from "@/src/components/users/bande";
 import { Tabs, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
 import { Card, CardContent, CardTitle } from "@/src/components/ui/card";
@@ -56,8 +56,8 @@ export default function UserProfilePage({ params,
 
     // fonction pour la recuperatin des des otpionsDescriptions a une seule ocurence d'option par categories
     // recuperationsd de tous ls OptionDescriptions
-    const OptionsDescriptions = userUnique.DescriptionChoixOfEachUser?.flatMap(items => items.choix?.flatMap(prev => prev.optionsDescription)) as TontineOption[]
-    // la fonction
+    const OptionsDescriptions = userUnique.DescriptionChoixOfEachUser?.flatMap(items => items.optionsDescription) as TontineOption[]
+    // la fonction faisant l'unicite des options par categories 
     const MiseAjout = (model: TontineOption[]) => {
         const unique: TontineOption[] = [];
         const seen = new Set();
@@ -69,12 +69,12 @@ export default function UserProfilePage({ params,
                 unique.push(item);
             }
         }
-        
+
         return unique
     }
 
     // application de la function a optionTab
-    const [optionTab, setOptionTab] = useState<TontineOption[]>(MiseAjout(OptionsDescriptions))
+    const [optionTab, setOptionTab] = useState<TontineOption[]>(OptionsDescriptions)
 
 
 
@@ -89,7 +89,7 @@ export default function UserProfilePage({ params,
     const statuts = [
         { id: "1", name: "Payé" },
         { id: "2", name: "Retard" },
-        { id: "3", name: "En cours" },
+
     ]
 
     const [selectedMontant, setSelectedMontant] = useState<number>();
@@ -100,8 +100,18 @@ export default function UserProfilePage({ params,
     //modal pour la mise a des donnees
     const [modal, setModal] = useState(false)
 
-    //date de la mise a jour
-    const [paymentDate, setPaymentDate] = useState<Date | undefined>(undefined);
+
+    // pour prendre les donnes du modale
+
+    const [datamodal, setDatamodal] = useState({
+        id: "",
+        week: "",
+        category: "",
+        statut: "",
+        listOptions: [] as string[],
+        totalPaidByWeek: 0,
+        DatePaiement: new Date(Date.now()),
+    })
 
     return (
         <div className="px-6 py-3  min-h-screen">
@@ -148,9 +158,7 @@ export default function UserProfilePage({ params,
                                                     <Button className="rounded-md">
                                                         Exporter sous
                                                     </Button>
-                                                    <Button variant="ghost" className="p-2" onClick={() => { setModal(true) }}>
-                                                        <MoreVertical className="w-5 h-5" />
-                                                    </Button>
+
                                                 </div>
 
                                                 <div className="border rounded-lg overflow-hidden">
@@ -159,13 +167,13 @@ export default function UserProfilePage({ params,
                                                             <TableRow>
                                                                 <TableHead className="w-32">
                                                                     <div className="flex items-center ">
-                                                                        Date
+                                                                        Date de paiement
                                                                     </div>
                                                                 </TableHead>
                                                                 <TableHead>
                                                                     <div className="flex items-center ">
 
-                                                                        Catégorie choisie
+                                                                        Catégorie
                                                                     </div>
                                                                 </TableHead>
                                                                 <TableHead>
@@ -185,11 +193,12 @@ export default function UserProfilePage({ params,
                                                                     </div>
                                                                 </TableHead>
                                                                 <TableHead>Statut</TableHead>
+                                                                <TableHead>Action</TableHead>
                                                             </TableRow>
                                                         </TableHeader>
                                                         <TableBody>
-                                                            {user.choix?.sort()?.map((payment, index) => {
-                                                                
+                                                            {user.detailPaiementOfThisCategorie?.sort()?.map((payment, index) => {
+
                                                                 return (
                                                                     <TableRow key={index} className="bg-orange-50/30">
                                                                         <TableCell>{new Date(payment?.DatePaiement as Date).toLocaleDateString()}</TableCell>
@@ -210,6 +219,27 @@ export default function UserProfilePage({ params,
                                                                             >
                                                                                 • {payment?.status}
                                                                             </Badge>
+                                                                        </TableCell>
+                                                                        <TableCell>
+                                                                            {
+                                                                                payment?.status === "Payé" ? <span className="text-sm text-green-600 font-medium">aucune</span> :
+                                                                                    <Button variant="ghost" className="h-8 w-8 p-0" onClick={() => {
+                                                                                        setModal(true);
+                                                                                        setDatamodal({
+                                                                                            id: payment.id,
+                                                                                            week: payment.week as string,
+                                                                                            category: payment.category,
+                                                                                            statut: payment.status as string,
+                                                                                            listOptions: user.listOptions as string[],
+                                                                                            totalPaidByWeek: payment.totalToPayByWeekOfThisCategory as number,
+                                                                                            DatePaiement: payment.DatePaiement as Date,
+                                                                                        })
+                                                                                    }}>
+                                                                                        <MoreVertical className="h-4 w-4" />
+                                                                                    </Button>
+                                                                            }
+
+
                                                                         </TableCell>
                                                                     </TableRow>
                                                                 )
@@ -370,7 +400,7 @@ export default function UserProfilePage({ params,
             <Dialog open={modal} onOpenChange={setModal} >
                 <DialogContent className="sm:max-w-md ">
                     <DialogHeader>
-                        <DialogTitle>Mis à jout</DialogTitle>
+                        <DialogTitle>Mis à jout de statut de paiement</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 ">
                         <p className="text-sm text-muted-foreground">
@@ -382,7 +412,25 @@ export default function UserProfilePage({ params,
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Tontine choisie</label>
                                 <Input
-                                    value={selectCategories}
+                                    value={datamodal.category}
+                                    className=" w-full "
+                                    disabled
+                                />
+                            </div>
+                            {/* Options */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Options </label>
+                                <Input
+                                    value={`[${datamodal.listOptions?.join("; ")}]`}
+                                    className=" w-full "
+                                    disabled
+                                />
+                            </div>
+                            {/* Semaine */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Semaine</label>
+                                <Input
+                                    value={datamodal.week}
                                     className=" w-full "
                                     disabled
                                 />
@@ -391,7 +439,16 @@ export default function UserProfilePage({ params,
                             {/* Sélecteur de statut*/}
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Statut</label>
-                                <Select onValueChange={setSelectedStatut} value={selectedStatut}>
+                                <Select
+                                    onValueChange={(value) => {
+                                        setSelectedStatut(value);
+                                        setDatamodal(prev => ({
+                                            ...prev,
+                                            statut: value
+                                        }));
+                                    }}
+                                    value={selectedStatut}
+                                >
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Sélectionner un statut" />
                                     </SelectTrigger>
@@ -406,21 +463,11 @@ export default function UserProfilePage({ params,
                             </div>
                             {/* Montant */}
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Montant</label>
+                                <label className="text-sm font-medium">Montant Paye par Semaine</label>
                                 <Input
-                                    value={selectedMontant as number}
+                                    value={datamodal.totalPaidByWeek}
                                     className=" w-full "
                                     disabled
-                                />
-                            </div>
-                            {/* Date de paiement */}
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Date de paiement</label>
-                                <Input
-                                    type="date"
-                                    value={paymentDate?.toISOString().split("T")[0]}
-                                    onChange={(e) => setPaymentDate(new Date(e.target.value))}
-                                    className="w-full"
                                 />
                             </div>
 
@@ -432,7 +479,7 @@ export default function UserProfilePage({ params,
                                 Annuler
                             </Button>
                         </DialogClose>
-                        <Button className="bg-orange-500 hover:bg-orange-600">
+                        <Button className="bg-orange-500 hover:bg-orange-600" onClick={() => alert(datamodal.statut)}>
                             Confirmer
                         </Button>
                     </DialogFooter>

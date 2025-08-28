@@ -1,5 +1,6 @@
 import { generateId } from "./src/lib/utils";
 
+// pour les statistiques globale de la tontine
 export interface StatsCardProps {
   title: string;
   value: string | number;
@@ -8,7 +9,10 @@ export interface StatsCardProps {
   trend?: number;
 }
 
+// pour la formation des produits
 
+// ici ProductCalogue represente un objet de produit 
+// pour chaque  options dans une categories  
 export interface ProductCatalogue {
   id: string,
   categorie: string,
@@ -18,6 +22,7 @@ export interface ProductCatalogue {
   composant: ComposantCatalogue[]
 }
 
+// ici ComposantCatalogue represente un objet de composant la liste des articles aue constitue une option
 export interface ComposantCatalogue {
   id: string,
   product: string,
@@ -27,6 +32,8 @@ export interface ComposantCatalogue {
 
 }
 
+
+// pour les membres de l'equipe
 export type Role = 'Administrateur' | 'Sécrétaire' | 'developpeur' | 'Trésorière' | string;
 
 export interface TeamMember {
@@ -40,10 +47,13 @@ export interface TeamMember {
   image?: File | string
 }
 
+// pour la gestion des campagnes de la tontine
 export interface Campagne {
   id?: string;
   nom?: string;
   status?: string;
+  weekActif?: string;
+  campagneStatut?: string | "En cours" | "Terminé";
   dureeSelectionJours?: number;
   dureeTontineSemaines?: number;
   selectionStart?: Date;
@@ -54,6 +64,7 @@ export interface Campagne {
 }
 
 
+//
 export interface OptionComponent {
   id?: string,
   compose: string;
@@ -64,7 +75,7 @@ export interface TontineOption {
   category: string;
   option: string;
   countOption: number;
-  totalToPayByWeekOfThisOption: number;
+  totalToPayByWeekOfThisOption?: number;
   components: OptionComponent[];
 }
 
@@ -72,22 +83,23 @@ export interface Categories {
   id: string;
   category: string;
   week?: string;
-  status?: string | "Payé" | "En retard" | "En cours" | "En attente";
+  status?: string | "Payé" | "En retard" | "En cours";
   totalToPayByWeekOfThisCategory: number;
-  optionsDescription?: TontineOption[];
+
   DatePaiement?: Date;
 }
 
-/* here we calculate amount  associate by each category */ 
+/* here we calculate amount  associate by each category */
 export interface CategoriesStatisquesPayement {
   id: string;
   category: string; // 100fcfa
-  listOptions?: string[];
+  listOptions?: string[]; // ["1","2","3"]
   status?: string | "En cours" | "Terminé";
   totalPaid: number;// total semaines * montant herbdomadaire
   weekValided: number;// 03/15
   totalPaidByWeek: number;
-  choix?: Categories[]
+  optionsDescription?: TontineOption[];   // details des options choisies
+  detailPaiementOfThisCategorie?: Categories[]
 }
 
 export interface UserProfile {
@@ -133,37 +145,50 @@ export interface UniqueUser {
 }
 
 
-export interface OptionsCounts{
-  option? : string,
-  count?  : number
+// ici les typages pour les donnees aui servirons pour l'analyse en diagramme en barre
+export interface OptionsCounts {
+  option?: string,
+  count?: number
 }
-export interface StatisticCategories{
-  id? : string,
-  categorie? : string,
-  listeOptions? : OptionsCounts[]
+export interface StatisticCategories {
+  id?: string,
+  categorie?: string,
+  listeOptions?: OptionsCounts[]
 
 }
 
-//------------
-export interface PaymentDataVariation{
-    weeks: string;
-    value: number;
+//------------ ceci pour la courbe d'evolution des paiements par semaine
+export interface PaymentDataVariation {
+  weeks: string;
+  value: number;
 }
 
 
 //----- for the userlast
-export interface UsersLatePayment {  
+export interface UsersLatePayment {
   id?: string;
   firstName?: string;
   lastName?: string;
   email?: string;
-  status?: string 
+  status?: string
   category?: string;
   amountPaidByWeek?: number;
   weekActif?: string;
   lastWeekPaid?: string;
 }
 
+//------- for the payment history of weekActif
+export interface PaymentHistoryWeekActif {
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  status?: string
+  category?: string;
+  options?: string[];
+  amountPaidByWeek?: number;
+  weekActif?: string;
+}
 
 
 export const Donnees: UserProfile[] = [
@@ -177,7 +202,7 @@ export const Donnees: UserProfile[] = [
     position: "AutoGestion",
     image: "/profil.jpg",
     provence: "Alibori",
-    profession : " Etidante",
+    profession: " Etidante",
     description: "Membre fondateur de la tontine",
     status: "Terminé",
     montantTotalGlobal: 350000,
@@ -190,29 +215,56 @@ export const Donnees: UserProfile[] = [
         totalPaid: 150000,
         weekValided: 9,
         totalPaidByWeek: 215000,
-        choix: [
+        optionsDescription: [
+          {
+            category: "500",
+            option: "1",
+            countOption: 2,
+            totalToPayByWeekOfThisOption: 1500,
+            components: [
+              { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Appareil 1" },
+              { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Accessoire 1" },
+              { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Garantie 1 an" },
+              { id: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f5", compose: "Kit d'entretien 1" },
+              { id: "d0e1f2a3-b4c5-6d7e-8f9a-0b1c2d3e4f5a6", compose: "Manuel 1" }
+            ]
+          },
+          {
+
+            category: "500",
+            option: "2",
+            countOption: 1,
+            totalToPayByWeekOfThisOption: 2500,
+            components: [
+              { id: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a", compose: "Appareil 5" },
+              { id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b", compose: "Accessoire 5" },
+              { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Garantie 5 an" },
+              { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Kit d'entretien 5" },
+              { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Manuel 5" }
+            ]
+          },
+          {
+            category: "500",
+            option: "3",
+            countOption: 1,
+            totalToPayByWeekOfThisOption: 3500,
+            components: [
+              { id: "b0c1d2e3-f4a5-6b7c-8d9e-0f1a2b3c4d5e", compose: "Appareil 3" },
+              { id: "c1d2e3f4-a5b6-7c8d-9e0f-1a2b3c4d5e6f", compose: "Accessoire 3" },
+              { id: "d2e3f4a5-b6c7-8d9e-0f1a-2b3c4d5e6f7a", compose: "Garantie 3 an" },
+              { id: "e3f4a5b6-c7d8-9e0f-1a2b-3c4d5e6f7a8b", compose: "Kit d'entretien 3" },
+              { id: "f4a5b6c7-d8e9-0f1a-2b3c-4d5e6f7a8b9c", compose: "Manuel 3" }
+            ]
+          }
+        ],
+        detailPaiementOfThisCategorie: [
           {
             id: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a",
             category: "500",
             week: "sem 1",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 3500,
-            optionsDescription: [
-              {
-                
-                category: "500",
-                option: "1",
-                countOption: 2,
-                totalToPayByWeekOfThisOption: 1500,
-                components: [
-                  { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Appareil 1" },
-                  { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Accessoire 1" },
-                  { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Garantie 1 an" },
-                  { id: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f5", compose: "Kit d'entretien 1" },
-                  { id: "d0e1f2a3-b4c5-6d7e-8f9a-0b1c2d3e4f5a6", compose: "Manuel 1" }
-                ]
-              }
-            ],
+           
             DatePaiement: new Date(Date.now() - 86400000 * 28)
           },
           {
@@ -221,22 +273,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 2",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 2500,
-            optionsDescription: [
-              {
-              
-                category: "500",
-                option: "2",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 2500,
-                 components: [
-                  { id: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a", compose: "Appareil 5" },
-                  { id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b", compose: "Accessoire 5" },
-                  { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Garantie 5 an" },
-                  { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Kit d'entretien 5" },
-                  { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Manuel 5" }
-                ]
-              }
-            ],
+          
             DatePaiement: new Date(Date.now() - 86400000 * 21)
           },
           {
@@ -245,22 +282,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 3",
             status: "En retard",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-
-                category: "500",
-                option: "3",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 3500,
-                components: [
-                  { id: "b0c1d2e3-f4a5-6b7c-8d9e-0f1a2b3c4d5e", compose: "Appareil 3" },
-                  { id: "c1d2e3f4-a5b6-7c8d-9e0f-1a2b3c4d5e6f", compose: "Accessoire 3" },
-                  { id: "d2e3f4a5-b6c7-8d9e-0f1a-2b3c4d5e6f7a", compose: "Garantie 3 an" },
-                  { id: "e3f4a5b6-c7d8-9e0f-1a2b-3c4d5e6f7a8b", compose: "Kit d'entretien 3" },
-                  { id: "f4a5b6c7-d8e9-0f1a-2b3c-4d5e6f7a8b9c", compose: "Manuel 3" }
-                ]
-              }
-            ],
+          
             DatePaiement: new Date(Date.now() - 86400000 * 14)
           },
           {
@@ -269,22 +291,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 4",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 4500,
-            optionsDescription: [
-              {
-               
-                category: "500",
-                option: "1",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 1500,
-                components: [
-                  { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Appareil 1" },
-                  { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Accessoire 1" },
-                  { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Garantie 1 an" },
-                  { id: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f5", compose: "Kit d'entretien 1" },
-                  { id: "d0e1f2a3-b4c5-6d7e-8f9a-0b1c2d3e4f5a6", compose: "Manuel 1" }
-                ]
-              }
-            ],
+           
             DatePaiement: new Date(Date.now() - 86400000 * 7)
           },
           {
@@ -293,22 +300,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 5",
             status: "En cours",
             totalToPayByWeekOfThisCategory: 7000,
-            optionsDescription: [
-              {
-             
-                category: "500",
-                option: "2",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 2500,
-                components: [
-                  { id: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a", compose: "Appareil 5" },
-                  { id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b", compose: "Accessoire 5" },
-                  { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Garantie 5 an" },
-                  { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Kit d'entretien 5" },
-                  { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Manuel 5" }
-                ]
-              }
-            ],
+         
             DatePaiement: new Date(Date.now())
           }
         ]
@@ -321,29 +313,44 @@ export const Donnees: UserProfile[] = [
         totalPaid: 150000,
         weekValided: 9,
         totalPaidByWeek: 5000,
-        choix: [
+        optionsDescription: [
+          {
+            id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b",
+            category: "100",
+            option: "1",
+            countOption: 1,
+            totalToPayByWeekOfThisOption: 2500,
+            components: [
+              { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Appareil 1" },
+              { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Accessoire 1" },
+              { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Garantie 1 an" },
+              { id: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f5", compose: "Kit d'entretien 1" },
+              { id: "d0e1f2a3-b4c5-6d7e-8f9a-0b1c2d3e4f5a6", compose: "Manuel 1" }
+            ]
+          },
+          {
+            id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b",
+            category: "100",
+            option: "3",
+            countOption: 2,
+            totalToPayByWeekOfThisOption: 2500,
+            components: [
+              { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Appareil 1" },
+              { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Accessoire 1" },
+              { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Garantie 1 an" },
+              { id: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f5", compose: "Kit d'entretien 1" },
+              { id: "d0e1f2a3-b4c5-6d7e-8f9a-0b1c2d3e4f5a6", compose: "Manuel 1" }
+            ]
+          }
+        ],
+        detailPaiementOfThisCategorie: [
           {
             id: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a",
             category: "100",
             week: "sem 1",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 2500,
-            optionsDescription: [
-              {
-                id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b",
-                category: "100",
-                option: "1",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 2500,
-                components: [
-                  { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Appareil 1" },
-                  { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Accessoire 1" },
-                  { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Garantie 1 an" },
-                  { id: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f5", compose: "Kit d'entretien 1" },
-                  { id: "d0e1f2a3-b4c5-6d7e-8f9a-0b1c2d3e4f5a6", compose: "Manuel 1" }
-                ]
-              }
-            ],
+           
             DatePaiement: new Date(Date.now() - 86400000 * 28)
           },
           {
@@ -352,22 +359,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 2",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5500,
-            optionsDescription: [
-              {
-                id: "f7a8b9c0-d1e2-3f4a-5b6c-7d8e9f0a1b2c",
-                category: "100",
-                option: "3",
-                countOption: 2,
-                totalToPayByWeekOfThisOption: 5000,
-                components: [
-                  { id: "a8b9c0d1-e2f3-4a5b-6c7d-8e9f0a1b2c3d", compose: "Appareil 2" },
-                  { id: "b9c0d1e2-f3a4-5b6c-7d8e-9f0a1b2c3d4e", compose: "Accessoire 2" },
-                  { id: "c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f", compose: "Garantie 2 an" },
-                  { id: "d1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f6a", compose: "Kit d'entretien 2" },
-                  { id: "e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b", compose: "Manuel 2" }
-                ]
-              }
-            ],
+           
             DatePaiement: new Date(Date.now() - 86400000 * 21)
           },
           {
@@ -376,22 +368,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 3",
             status: "En retard",
             totalToPayByWeekOfThisCategory: 4500,
-            optionsDescription: [
-              {
-                id: "a9b0c1d2-e3f4-5a6b-7c8d-9e0f1a2b3c4d",
-                category: "100",
-                option: "3",
-                countOption: 2,
-                totalToPayByWeekOfThisOption: 5000,
-                components: [
-                  { id: "b0c1d2e3-f4a5-6b7c-8d9e-0f1a2b3c4d5e", compose: "Appareil 3" },
-                  { id: "c1d2e3f4-a5b6-7c8d-9e0f-1a2b3c4d5e6f", compose: "Accessoire 3" },
-                  { id: "d2e3f4a5-b6c7-8d9e-0f1a-2b3c4d5e6f7a", compose: "Garantie 3 an" },
-                  { id: "e3f4a5b6-c7d8-9e0f-1a2b-3c4d5e6f7a8b", compose: "Kit d'entretien 3" },
-                  { id: "f4a5b6c7-d8e9-0f1a-2b3c-4d5e6f7a8b9c", compose: "Manuel 3" }
-                ]
-              }
-            ],
+           
             DatePaiement: new Date(Date.now() - 86400000 * 14)
           },
           {
@@ -400,22 +377,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 4",
             status: "En cours",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e",
-                category: "100",
-                option: "1",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 2500,
-                components: [
-                  { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Appareil 1" },
-                  { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Accessoire 1" },
-                  { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Garantie 1 an" },
-                  { id: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f5", compose: "Kit d'entretien 1" },
-                  { id: "d0e1f2a3-b4c5-6d7e-8f9a-0b1c2d3e4f5a6", compose: "Manuel 1" }
-                ]
-              }
-            ],
+           
             DatePaiement: new Date(Date.now() - 86400000 * 7)
           },
           {
@@ -424,22 +386,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 5",
             status: "En attente",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f",
-                category: "100",
-                option: "1",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 2500,
-               components: [
-                  { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Appareil 1" },
-                  { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Accessoire 1" },
-                  { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Garantie 1 an" },
-                  { id: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f5", compose: "Kit d'entretien 1" },
-                  { id: "d0e1f2a3-b4c5-6d7e-8f9a-0b1c2d3e4f5a6", compose: "Manuel 1" }
-                ]
-              }
-            ],
+          
             DatePaiement: new Date(Date.now())
           }
         ]
@@ -469,29 +416,57 @@ export const Donnees: UserProfile[] = [
         totalPaid: 150000,
         weekValided: 9,
         totalPaidByWeek: 5000,
-        choix: [
+        optionsDescription: [
+          {
+            id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b",
+            category: "500",
+            option: "1",
+            countOption: 1,
+            totalToPayByWeekOfThisOption: 25000,
+            components: [
+              { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Appareil 1" },
+              { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Accessoire 1" },
+              { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Garantie 1 an" },
+              { id: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f5", compose: "Kit d'entretien 1" },
+              { id: "d0e1f2a3-b4c5-6d7e-8f9a-0b1c2d3e4f5a6", compose: "Manuel 1" }
+            ]
+          },
+          {
+            id: "f7a8b9c0-d1e2-3f4a-5b6c-7d8e9f0a1b2c",
+            category: "500",
+            option: "2",
+            countOption: 1,
+            totalToPayByWeekOfThisOption: 25000,
+            components: [
+              { id: "a8b9c0d1-e2f3-4a5b-6c7d-8e9f0a1b2c3d", compose: "Appareil 2" },
+              { id: "b9c0d1e2-f3a4-5b6c-7d8e-9f0a1b2c3d4e", compose: "Accessoire 2" },
+              { id: "c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f", compose: "Garantie 2 an" },
+              { id: "d1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f6a", compose: "Kit d'entretien 2" },
+              { id: "e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b", compose: "Manuel 2" }
+            ]
+          },
+          {
+            id: "a9b0c1d2-e3f4-5a6b-7c8d-9e0f1a2b3c4d",
+            category: "500",
+            option: "3",
+            countOption: 1,
+            totalToPayByWeekOfThisOption: 25000,
+            components: [
+              { id: "b0c1d2e3-f4a5-6b7c-8d9e-0f1a2b3c4d5e", compose: "Appareil 3" },
+              { id: "c1d2e3f4-a5b6-7c8d-9e0f-1a2b3c4d5e6f", compose: "Accessoire 3" },
+              { id: "d2e3f4a5-b6c7-8d9e-0f1a-2b3c4d5e6f7a", compose: "Garantie 3 an" },
+              { id: "e3f4a5b6-c7d8-9e0f-1a2b-3c4d5e6f7a8b", compose: "Kit d'entretien 3" },
+              { id: "f4a5b6c7-d8e9-0f1a-2b3c-4d5e6f7a8b9c", compose: "Manuel 3" }
+            ]
+          }
+        ],
+        detailPaiementOfThisCategorie: [
           {
             id: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a",
             category: "500",
             week: "sem 1",
             status: "Payé",
-            totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b",
-                category: "500",
-                option: "1",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Appareil 1" },
-                  { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Accessoire 1" },
-                  { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Garantie 1 an" },
-                  { id: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f5", compose: "Kit d'entretien 1" },
-                  { id: "d0e1f2a3-b4c5-6d7e-8f9a-0b1c2d3e4f5a6", compose: "Manuel 1" }
-                ]
-              }
-            ],
+            totalToPayByWeekOfThisCategory: 12000,
             DatePaiement: new Date(Date.now() - 86400000 * 28)
           },
           {
@@ -500,22 +475,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 2",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "f7a8b9c0-d1e2-3f4a-5b6c-7d8e9f0a1b2c",
-                category: "500",
-                option: "2",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "a8b9c0d1-e2f3-4a5b-6c7d-8e9f0a1b2c3d", compose: "Appareil 2" },
-                  { id: "b9c0d1e2-f3a4-5b6c-7d8e-9f0a1b2c3d4e", compose: "Accessoire 2" },
-                  { id: "c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f", compose: "Garantie 2 an" },
-                  { id: "d1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f6a", compose: "Kit d'entretien 2" },
-                  { id: "e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b", compose: "Manuel 2" }
-                ]
-              }
-            ],
+          
             DatePaiement: new Date(Date.now() - 86400000 * 21)
           },
           {
@@ -524,22 +484,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 3",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "a9b0c1d2-e3f4-5a6b-7c8d-9e0f1a2b3c4d",
-                category: "500",
-                option: "3",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "b0c1d2e3-f4a5-6b7c-8d9e-0f1a2b3c4d5e", compose: "Appareil 3" },
-                  { id: "c1d2e3f4-a5b6-7c8d-9e0f-1a2b3c4d5e6f", compose: "Accessoire 3" },
-                  { id: "d2e3f4a5-b6c7-8d9e-0f1a-2b3c4d5e6f7a", compose: "Garantie 3 an" },
-                  { id: "e3f4a5b6-c7d8-9e0f-1a2b-3c4d5e6f7a8b", compose: "Kit d'entretien 3" },
-                  { id: "f4a5b6c7-d8e9-0f1a-2b3c-4d5e6f7a8b9c", compose: "Manuel 3" }
-                ]
-              }
-            ],
+          
             DatePaiement: new Date(Date.now() - 86400000 * 14)
           },
           {
@@ -548,22 +493,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 4",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e",
-                category: "500",
-                option: "1",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "c2d3e4f5-a6b7-8c9d-0e1f-2a3b4c5d6e7f", compose: "Appareil 4" },
-                  { id: "d3e4f5a6-b7c8-9d0e-1f2a-3b4c5d6e7f8a", compose: "Accessoire 4" },
-                  { id: "e4f5a6b7-c8d9-0e1f-2a3b-4c5d6e7f8a9b", compose: "Garantie 4 an" },
-                  { id: "f5a6b7c8-d9e0-1f2a-3b4c-5d6e7f8a9b0c", compose: "Kit d'entretien 4" },
-                  { id: "a6b7c8d9-e0f1-2a3b-4c5d-6e7f8a9b0c1d", compose: "Manuel 4" }
-                ]
-              }
-            ],
+         
             DatePaiement: new Date(Date.now() - 86400000 * 7)
           },
           {
@@ -572,22 +502,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 5",
             status: "En cours",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f",
-                category: "500",
-                option: "2",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a", compose: "Appareil 5" },
-                  { id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b", compose: "Accessoire 5" },
-                  { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Garantie 5 an" },
-                  { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Kit d'entretien 5" },
-                  { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Manuel 5" }
-                ]
-              }
-            ],
+          
             DatePaiement: new Date(Date.now())
           }
         ]
@@ -617,29 +532,58 @@ export const Donnees: UserProfile[] = [
         totalPaid: 150000,
         weekValided: 9,
         totalPaidByWeek: 5000,
-        choix: [
+        optionsDescription: [
+          {
+            id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b",
+            category: "200",
+            option: "1",
+            countOption: 1,
+            totalToPayByWeekOfThisOption: 25000,
+            components: [
+              { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Appareil 1" },
+              { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Accessoire 1" },
+              { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Garantie 1 an" },
+              { id: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f5", compose: "Kit d'entretien 1" },
+              { id: "d0e1f2a3-b4c5-6d7e-8f9a-0b1c2d3e4f5a6", compose: "Manuel 1" }
+            ]
+          },
+          {
+            id: "f7a8b9c0-d1e2-3f4a-5b6c-7d8e9f0a1b2c",
+            category: "200",
+            option: "2",
+            countOption: 1,
+            totalToPayByWeekOfThisOption: 25000,
+            components: [
+              { id: "a8b9c0d1-e2f3-4a5b-6c7d-8e9f0a1b2c3d", compose: "Appareil 2" },
+              { id: "b9c0d1e2-f3a4-5b6c-7d8e-9f0a1b2c3d4e", compose: "Accessoire 2" },
+              { id: "c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f", compose: "Garantie 2 an" },
+              { id: "d1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f6a", compose: "Kit d'entretien 2" },
+              { id: "e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b", compose: "Manuel 2" }
+            ]
+          },
+          {
+            id: "a9b0c1d2-e3f4-5a6b-7c8d-9e0f1a2b3c4d",
+            category: "200",
+            option: "3",
+            countOption: 1,
+            totalToPayByWeekOfThisOption: 25000,
+            components: [
+              { id: "b0c1d2e3-f4a5-6b7c-8d9e-0f1a2b3c4d5e", compose: "Appareil 3" },
+              { id: "c1d2e3f4-a5b6-7c8d-9e0f-1a2b3c4d5e6f", compose: "Accessoire 3" },
+              { id: "d2e3f4a5-b6c7-8d9e-0f1a-2b3c4d5e6f7a", compose: "Garantie 3 an" },
+              { id: "e3f4a5b6-c7d8-9e0f-1a2b-3c4d5e6f7a8b", compose: "Kit d'entretien 3" },
+              { id: "f4a5b6c7-d8e9-0f1a-2b3c-4d5e6f7a8b9c", compose: "Manuel 3" }
+            ]
+          }
+        ],
+        detailPaiementOfThisCategorie: [
           {
             id: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a",
             category: "200",
             week: "sem 1",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b",
-                category: "200",
-                option: "1",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Appareil 1" },
-                  { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Accessoire 1" },
-                  { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Garantie 1 an" },
-                  { id: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f5", compose: "Kit d'entretien 1" },
-                  { id: "d0e1f2a3-b4c5-6d7e-8f9a-0b1c2d3e4f5a6", compose: "Manuel 1" }
-                ]
-              }
-            ],
+          
             DatePaiement: new Date(Date.now() - 86400000 * 28)
           },
           {
@@ -648,22 +592,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 2",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "f7a8b9c0-d1e2-3f4a-5b6c-7d8e9f0a1b2c",
-                category: "200",
-                option: "2",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "a8b9c0d1-e2f3-4a5b-6c7d-8e9f0a1b2c3d", compose: "Appareil 2" },
-                  { id: "b9c0d1e2-f3a4-5b6c-7d8e-9f0a1b2c3d4e", compose: "Accessoire 2" },
-                  { id: "c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f", compose: "Garantie 2 an" },
-                  { id: "d1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f6a", compose: "Kit d'entretien 2" },
-                  { id: "e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b", compose: "Manuel 2" }
-                ]
-              }
-            ],
+          
             DatePaiement: new Date(Date.now() - 86400000 * 21)
           },
           {
@@ -672,22 +601,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 3",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "a9b0c1d2-e3f4-5a6b-7c8d-9e0f1a2b3c4d",
-                category: "200",
-                option: "3",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "b0c1d2e3-f4a5-6b7c-8d9e-0f1a2b3c4d5e", compose: "Appareil 3" },
-                  { id: "c1d2e3f4-a5b6-7c8d-9e0f-1a2b3c4d5e6f", compose: "Accessoire 3" },
-                  { id: "d2e3f4a5-b6c7-8d9e-0f1a-2b3c4d5e6f7a", compose: "Garantie 3 an" },
-                  { id: "e3f4a5b6-c7d8-9e0f-1a2b-3c4d5e6f7a8b", compose: "Kit d'entretien 3" },
-                  { id: "f4a5b6c7-d8e9-0f1a-2b3c-4d5e6f7a8b9c", compose: "Manuel 3" }
-                ]
-              }
-            ],
+         
             DatePaiement: new Date(Date.now() - 86400000 * 14)
           },
           {
@@ -696,22 +610,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 4",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e",
-                category: "200",
-                option: "1",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "c2d3e4f5-a6b7-8c9d-0e1f-2a3b4c5d6e7f", compose: "Appareil 4" },
-                  { id: "d3e4f5a6-b7c8-9d0e-1f2a-3b4c5d6e7f8a", compose: "Accessoire 4" },
-                  { id: "e4f5a6b7-c8d9-0e1f-2a3b-4c5d6e7f8a9b", compose: "Garantie 4 an" },
-                  { id: "f5a6b7c8-d9e0-1f2a-3b4c-5d6e7f8a9b0c", compose: "Kit d'entretien 4" },
-                  { id: "a6b7c8d9-e0f1-2a3b-4c5d-6e7f8a9b0c1d", compose: "Manuel 4" }
-                ]
-              }
-            ],
+         
             DatePaiement: new Date(Date.now() - 86400000 * 7)
           },
           {
@@ -720,22 +619,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 5",
             status: "En retard",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f",
-                category: "200",
-                option: "2",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a", compose: "Appareil 5" },
-                  { id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b", compose: "Accessoire 5" },
-                  { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Garantie 5 an" },
-                  { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Kit d'entretien 5" },
-                  { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Manuel 5" }
-                ]
-              }
-            ],
+          
             DatePaiement: new Date(Date.now())
           }
         ]
@@ -765,29 +649,58 @@ export const Donnees: UserProfile[] = [
         totalPaid: 150000,
         weekValided: 9,
         totalPaidByWeek: 5000,
-        choix: [
+        optionsDescription: [
+          {
+            id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b",
+            category: "500",
+            option: "1",
+            countOption: 1,
+            totalToPayByWeekOfThisOption: 25000,
+            components: [
+              { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Appareil 1" },
+              { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Accessoire 1" },
+              { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Garantie 1 an" },
+              { id: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f5", compose: "Kit d'entretien 1" },
+              { id: "d0e1f2a3-b4c5-6d7e-8f9a-0b1c2d3e4f5a6", compose: "Manuel 1" }
+            ]
+          },
+          {
+            id: "f7a8b9c0-d1e2-3f4a-5b6c-7d8e9f0a1b2c",
+            category: "500",
+            option: "2",
+            countOption: 1,
+            totalToPayByWeekOfThisOption: 25000,
+            components: [
+              { id: "a8b9c0d1-e2f3-4a5b-6c7d-8e9f0a1b2c3d", compose: "Appareil 2" },
+              { id: "b9c0d1e2-f3a4-5b6c-7d8e-9f0a1b2c3d4e", compose: "Accessoire 2" },
+              { id: "c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f", compose: "Garantie 2 an" },
+              { id: "d1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f6a", compose: "Kit d'entretien 2" },
+              { id: "e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b", compose: "Manuel 2" }
+            ]
+          },
+          {
+            id: "a9b0c1d2-e3f4-5a6b-7c8d-9e0f1a2b3c4d",
+            category: "500",
+            option: "3",
+            countOption: 1,
+            totalToPayByWeekOfThisOption: 25000,
+            components: [
+              { id: "b0c1d2e3-f4a5-6b7c-8d9e-0f1a2b3c4d5e", compose: "Appareil 3" },
+              { id: "c1d2e3f4-a5b6-7c8d-9e0f-1a2b3c4d5e6f", compose: "Accessoire 3" },
+              { id: "d2e3f4a5-b6c7-8d9e-0f1a-2b3c4d5e6f7a", compose: "Garantie 3 an" },
+              { id: "e3f4a5b6-c7d8-9e0f-1a2b-3c4d5e6f7a8b", compose: "Kit d'entretien 3" },
+              { id: "f4a5b6c7-d8e9-0f1a-2b3c-4d5e6f7a8b9c", compose: "Manuel 3" }
+            ]
+          }
+        ],
+        detailPaiementOfThisCategorie: [
           {
             id: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a",
             category: "500",
             week: "sem 1",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b",
-                category: "500",
-                option: "1",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Appareil 1" },
-                  { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Accessoire 1" },
-                  { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Garantie 1 an" },
-                  { id: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f5", compose: "Kit d'entretien 1" },
-                  { id: "d0e1f2a3-b4c5-6d7e-8f9a-0b1c2d3e4f5a6", compose: "Manuel 1" }
-                ]
-              }
-            ],
+          
             DatePaiement: new Date(Date.now() - 86400000 * 28)
           },
           {
@@ -796,22 +709,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 2",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "f7a8b9c0-d1e2-3f4a-5b6c-7d8e9f0a1b2c",
-                category: "500",
-                option: "2",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "a8b9c0d1-e2f3-4a5b-6c7d-8e9f0a1b2c3d", compose: "Appareil 2" },
-                  { id: "b9c0d1e2-f3a4-5b6c-7d8e-9f0a1b2c3d4e", compose: "Accessoire 2" },
-                  { id: "c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f", compose: "Garantie 2 an" },
-                  { id: "d1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f6a", compose: "Kit d'entretien 2" },
-                  { id: "e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b", compose: "Manuel 2" }
-                ]
-              }
-            ],
+          
             DatePaiement: new Date(Date.now() - 86400000 * 21)
           },
           {
@@ -820,22 +718,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 3",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "a9b0c1d2-e3f4-5a6b-7c8d-9e0f1a2b3c4d",
-                category: "500",
-                option: "3",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "b0c1d2e3-f4a5-6b7c-8d9e-0f1a2b3c4d5e", compose: "Appareil 3" },
-                  { id: "c1d2e3f4-a5b6-7c8d-9e0f-1a2b3c4d5e6f", compose: "Accessoire 3" },
-                  { id: "d2e3f4a5-b6c7-8d9e-0f1a-2b3c4d5e6f7a", compose: "Garantie 3 an" },
-                  { id: "e3f4a5b6-c7d8-9e0f-1a2b-3c4d5e6f7a8b", compose: "Kit d'entretien 3" },
-                  { id: "f4a5b6c7-d8e9-0f1a-2b3c-4d5e6f7a8b9c", compose: "Manuel 3" }
-                ]
-              }
-            ],
+          
             DatePaiement: new Date(Date.now() - 86400000 * 14)
           },
           {
@@ -844,22 +727,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 4",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e",
-                category: "500",
-                option: "1",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "c2d3e4f5-a6b7-8c9d-0e1f-2a3b4c5d6e7f", compose: "Appareil 4" },
-                  { id: "d3e4f5a6-b7c8-9d0e-1f2a-3b4c5d6e7f8a", compose: "Accessoire 4" },
-                  { id: "e4f5a6b7-c8d9-0e1f-2a3b-4c5d6e7f8a9b", compose: "Garantie 4 an" },
-                  { id: "f5a6b7c8-d9e0-1f2a-3b4c-5d6e7f8a9b0c", compose: "Kit d'entretien 4" },
-                  { id: "a6b7c8d9-e0f1-2a3b-4c5d-6e7f8a9b0c1d", compose: "Manuel 4" }
-                ]
-              }
-            ],
+           
             DatePaiement: new Date(Date.now() - 86400000 * 7)
           },
           {
@@ -868,22 +736,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 5",
             status: "En retard",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f",
-                category: "500",
-                option: "2",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a", compose: "Appareil 5" },
-                  { id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b", compose: "Accessoire 5" },
-                  { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Garantie 5 an" },
-                  { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Kit d'entretien 5" },
-                  { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Manuel 5" }
-                ]
-              }
-            ],
+           
             DatePaiement: new Date(Date.now())
           }
         ]
@@ -913,29 +766,45 @@ export const Donnees: UserProfile[] = [
         totalPaid: 150000,
         weekValided: 9,
         totalPaidByWeek: 5000,
-        choix: [
+        optionsDescription: [
+          {
+            id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b",
+            category: "100",
+            option: "1",
+            countOption: 1,
+            totalToPayByWeekOfThisOption: 25000,
+            components: [
+              { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Appareil 1" },
+              { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Accessoire 1" },
+              { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Garantie 1 an" },
+              { id: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f5", compose: "Kit d'entretien 1" },
+              { id: "d0e1f2a3-b4c5-6d7e-8f9a-0b1c2d3e4f5a6", compose: "Manuel 1" }
+            ]
+          },
+          {
+            id: "f7a8b9c0-d1e2-3f4a-5b6c-7d8e9f0a1b2c",
+            category: "100",
+            option: "3",
+            countOption: 1,
+            totalToPayByWeekOfThisOption: 25000,
+            components: [
+              { id: "a8b9c0d1-e2f3-4a5b-6c7d-8e9f0a1b2c3d", compose: "Appareil 3" },
+              { id: "b9c0d1e2-f3a4-5b6c-7d8e-9f0a1b2c3d4e", compose: "Accessoire 3" },
+              { id: "c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f", compose: "Garantie 3 an" },
+              { id: "d1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f6a", compose: "Kit d'entretien 3" },
+              { id: "e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b", compose: "Manuel 3" }
+            ]
+          }
+
+        ],
+        detailPaiementOfThisCategorie: [
           {
             id: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a",
             category: "100",
             week: "sem 1",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b",
-                category: "100",
-                option: "1",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Appareil 1" },
-                  { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Accessoire 1" },
-                  { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Garantie 1 an" },
-                  { id: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f5", compose: "Kit d'entretien 1" },
-                  { id: "d0e1f2a3-b4c5-6d7e-8f9a-0b1c2d3e4f5a6", compose: "Manuel 1" }
-                ]
-              }
-            ],
+            
             DatePaiement: new Date(Date.now() - 86400000 * 28)
           },
           {
@@ -944,22 +813,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 2",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "f7a8b9c0-d1e2-3f4a-5b6c-7d8e9f0a1b2c",
-                category: "100",
-                option: "3",
-                countOption: 2,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "a8b9c0d1-e2f3-4a5b-6c7d-8e9f0a1b2c3d", compose: "Appareil 2" },
-                  { id: "b9c0d1e2-f3a4-5b6c-7d8e-9f0a1b2c3d4e", compose: "Accessoire 2" },
-                  { id: "c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f", compose: "Garantie 2 an" },
-                  { id: "d1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f6a", compose: "Kit d'entretien 2" },
-                  { id: "e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b", compose: "Manuel 2" }
-                ]
-              }
-            ],
+           
             DatePaiement: new Date(Date.now() - 86400000 * 21)
           },
           {
@@ -968,22 +822,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 3",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "a9b0c1d2-e3f4-5a6b-7c8d-9e0f1a2b3c4d",
-                category: "100",
-                option: "3",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "b0c1d2e3-f4a5-6b7c-8d9e-0f1a2b3c4d5e", compose: "Appareil 3" },
-                  { id: "c1d2e3f4-a5b6-7c8d-9e0f-1a2b3c4d5e6f", compose: "Accessoire 3" },
-                  { id: "d2e3f4a5-b6c7-8d9e-0f1a-2b3c4d5e6f7a", compose: "Garantie 3 an" },
-                  { id: "e3f4a5b6-c7d8-9e0f-1a2b-3c4d5e6f7a8b", compose: "Kit d'entretien 3" },
-                  { id: "f4a5b6c7-d8e9-0f1a-2b3c-4d5e6f7a8b9c", compose: "Manuel 3" }
-                ]
-              }
-            ],
+           
             DatePaiement: new Date(Date.now() - 86400000 * 14)
           },
           {
@@ -992,22 +831,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 4",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e",
-                category: "100",
-                option: "1",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "c2d3e4f5-a6b7-8c9d-0e1f-2a3b4c5d6e7f", compose: "Appareil 4" },
-                  { id: "d3e4f5a6-b7c8-9d0e-1f2a-3b4c5d6e7f8a", compose: "Accessoire 4" },
-                  { id: "e4f5a6b7-c8d9-0e1f-2a3b-4c5d6e7f8a9b", compose: "Garantie 4 an" },
-                  { id: "f5a6b7c8-d9e0-1f2a-3b4c-5d6e7f8a9b0c", compose: "Kit d'entretien 4" },
-                  { id: "a6b7c8d9-e0f1-2a3b-4c5d-6e7f8a9b0c1d", compose: "Manuel 4" }
-                ]
-              }
-            ],
+           
             DatePaiement: new Date(Date.now() - 86400000 * 7)
           },
           {
@@ -1016,22 +840,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 5",
             status: "En retard",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f",
-                category: "100",
-                option: "1",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a", compose: "Appareil 5" },
-                  { id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b", compose: "Accessoire 5" },
-                  { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Garantie 5 an" },
-                  { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Kit d'entretien 5" },
-                  { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Manuel 5" }
-                ]
-              }
-            ],
+           
             DatePaiement: new Date(Date.now())
           }
         ]
@@ -1044,29 +853,45 @@ export const Donnees: UserProfile[] = [
         totalPaid: 150000,
         weekValided: 9,
         totalPaidByWeek: 5000,
-        choix: [
+        optionsDescription: [
+          {
+            id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b",
+            category: "200",
+            option: "1",
+            countOption: 2,
+            totalToPayByWeekOfThisOption: 25000,
+            components: [
+              { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Appareil 1" },
+              { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Accessoire 1" },
+              { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Garantie 1 an" },
+              { id: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f5", compose: "Kit d'entretien 1" },
+              { id: "d0e1f2a3-b4c5-6d7e-8f9a-0b1c2d3e4f5a6", compose: "Manuel 1" }
+            ]
+          },
+          {
+            id: "f7a8b9c0-d1e2-3f4a-5b6c-7d8e9f0a1b2c",
+            category: "200",
+            option: "2",
+            countOption: 1,
+            totalToPayByWeekOfThisOption: 25000,
+            components: [
+              { id: "a8b9c0d1-e2f3-4a5b-6c7d-8e9f0a1b2c3d", compose: "Appareil 2" },
+              { id: "b9c0d1e2-f3a4-5b6c-7d8e-9f0a1b2c3d4e", compose: "Accessoire 2" },
+              { id: "c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f", compose: "Garantie 2 an" },
+              { id: "d1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f6a", compose: "Kit d'entretien 2" },
+              { id: "e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b", compose: "Manuel 2" }
+            ]
+          }
+
+        ],
+        detailPaiementOfThisCategorie: [
           {
             id: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a",
             category: "200",
             week: "sem 1",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b",
-                category: "200",
-                option: "1",
-                countOption: 2,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Appareil 1" },
-                  { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Accessoire 1" },
-                  { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Garantie 1 an" },
-                  { id: "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f5", compose: "Kit d'entretien 1" },
-                  { id: "d0e1f2a3-b4c5-6d7e-8f9a-0b1c2d3e4f5a6", compose: "Manuel 1" }
-                ]
-              }
-            ],
+           
             DatePaiement: new Date(Date.now() - 86400000 * 28)
           },
           {
@@ -1075,22 +900,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 2",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "f7a8b9c0-d1e2-3f4a-5b6c-7d8e9f0a1b2c",
-                category: "200",
-                option: "2",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "a8b9c0d1-e2f3-4a5b-6c7d-8e9f0a1b2c3d", compose: "Appareil 2" },
-                  { id: "b9c0d1e2-f3a4-5b6c-7d8e-9f0a1b2c3d4e", compose: "Accessoire 2" },
-                  { id: "c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f", compose: "Garantie 2 an" },
-                  { id: "d1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f6a", compose: "Kit d'entretien 2" },
-                  { id: "e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b", compose: "Manuel 2" }
-                ]
-              }
-            ],
+           
             DatePaiement: new Date(Date.now() - 86400000 * 21)
           },
           {
@@ -1099,22 +909,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 3",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "a9b0c1d2-e3f4-5a6b-7c8d-9e0f1a2b3c4d",
-                category: "200",
-                option: "1",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "b0c1d2e3-f4a5-6b7c-8d9e-0f1a2b3c4d5e", compose: "Appareil 3" },
-                  { id: "c1d2e3f4-a5b6-7c8d-9e0f-1a2b3c4d5e6f", compose: "Accessoire 3" },
-                  { id: "d2e3f4a5-b6c7-8d9e-0f1a-2b3c4d5e6f7a", compose: "Garantie 3 an" },
-                  { id: "e3f4a5b6-c7d8-9e0f-1a2b-3c4d5e6f7a8b", compose: "Kit d'entretien 3" },
-                  { id: "f4a5b6c7-d8e9-0f1a-2b3c-4d5e6f7a8b9c", compose: "Manuel 3" }
-                ]
-              }
-            ],
+           
             DatePaiement: new Date(Date.now() - 86400000 * 14)
           },
           {
@@ -1123,22 +918,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 4",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e",
-                category: "200",
-                option: "1",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "c2d3e4f5-a6b7-8c9d-0e1f-2a3b4c5d6e7f", compose: "Appareil 4" },
-                  { id: "d3e4f5a6-b7c8-9d0e-1f2a-3b4c5d6e7f8a", compose: "Accessoire 4" },
-                  { id: "e4f5a6b7-c8d9-0e1f-2a3b-4c5d6e7f8a9b", compose: "Garantie 4 an" },
-                  { id: "f5a6b7c8-d9e0-1f2a-3b4c-5d6e7f8a9b0c", compose: "Kit d'entretien 4" },
-                  { id: "a6b7c8d9-e0f1-2a3b-4c5d-6e7f8a9b0c1d", compose: "Manuel 4" }
-                ]
-              }
-            ],
+           
             DatePaiement: new Date(Date.now() - 86400000 * 7)
           },
           {
@@ -1147,22 +927,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 5",
             status: "En cours",
             totalToPayByWeekOfThisCategory: 5000,
-            optionsDescription: [
-              {
-                id: "c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f",
-                category: "200",
-                option: "2",
-                countOption: 1,
-                totalToPayByWeekOfThisOption: 25000,
-                components: [
-                  { id: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a", compose: "Appareil 5" },
-                  { id: "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b", compose: "Accessoire 5" },
-                  { id: "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c", compose: "Garantie 5 an" },
-                  { id: "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d", compose: "Kit d'entretien 5" },
-                  { id: "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e", compose: "Manuel 5" }
-                ]
-              }
-            ],
+           
             DatePaiement: new Date(Date.now())
           }
         ]

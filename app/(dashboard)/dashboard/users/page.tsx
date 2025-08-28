@@ -55,6 +55,31 @@ import { DataAction } from '@/src/components/hook_perso';
 
 
 function UserAll() {
+
+  // api e gestion de recuperation des donnees depuis la base de donnees
+  const [dataset, setDataset] = useState<UserProfile[]>();
+  const [loading, setLoading] = useState<boolean>(false);
+  useEffect(() => {
+    const ActionDonnee = async () => {
+      try {
+        const response = await fetch("/api/dashboard",
+          { method: "GET" }
+        );
+        const data = await response.json();
+
+        setLoading(false)
+      }
+      catch (error) {
+        console.log(error)
+      }
+
+    }
+
+    ActionDonnee();
+
+  }, [])
+
+///--------------------------------------------------- 
   const route = useRouter()
   const [dataUsers, setDataUsers] = useState<UserProfile[]>(Donnees)
 
