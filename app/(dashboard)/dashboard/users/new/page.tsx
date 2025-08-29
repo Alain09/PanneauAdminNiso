@@ -41,7 +41,8 @@ export default function UserProfilNew() {
   const [aut, setAut] = useState(true);
   const [openDeleteModale, setOpenDeleteModale] = useState(false);
   const targetEnter = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.target.value.toUpperCase() === "DELETE" ? setAut(false) : setAut(true);
+    const reseach= e.target.value.toUpperCase() === "DELETE" ? setAut(false) : setAut(true);
+    return reseach;
   };
 
   const [nameActive, setNameActive] = useState<string | undefined>("");
@@ -289,7 +290,7 @@ export default function UserProfilNew() {
               <div className="space-y-2">
                 <Input
                   className=" w-full "
-                  onChange={targetEnter}
+                  onChange={(e)=>targetEnter(e)}
                 />
               </div>
             </div>

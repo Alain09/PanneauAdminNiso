@@ -70,7 +70,8 @@ export default function Home() {
   const [autButon, setAutButon] = useState(true);
   const [openDeleteModale, setOpenDeleteModale] = useState(false);
   const targetEnter = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.target.value.toUpperCase() === "DELETE" ? setAutButon(false) : setAutButon(true);
+   const reseach= e.target.value.toUpperCase() === "DELETE" ? setAutButon(false) : setAutButon(true);
+   return reseach;
   };
   const [nameActive, setNameActive] = useState("");
 
@@ -118,7 +119,7 @@ export default function Home() {
               <div className="space-y-2">
                 <Input
                   className=" w-full "
-                  onChange={targetEnter}
+                  onChange={(e)=>targetEnter(e)}
                 />
               </div>
             </div>
