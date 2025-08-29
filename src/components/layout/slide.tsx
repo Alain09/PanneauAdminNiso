@@ -9,11 +9,9 @@ import {
   Home,
   Users,
   List,
- 
   CreditCard,
   Settings,
   LogOut,
- 
 } from "lucide-react"
 
 interface Size {
@@ -37,10 +35,18 @@ function Slide({ setSize }: Size) {
     setSize(!sidebarCollapsed)
   }
 
+  // Fonction corrigée pour déterminer si un lien est actif
+  const isLinkActive = (linkPath: string) => {
+    if (linkPath === '/dashboard') {
+      return pathname === '/dashboard'
+    }
+    return pathname.startsWith(linkPath)
+  }
+
   return (
-    <div className={`${sidebarCollapsed ? 'w-18' : 'w-56'} bg-white/90 backdrop-blur-lg  absolute h-screen z-[1000]  left-0 pt-2  transition-all duration-300`}>
+    <div className={`${sidebarCollapsed ? 'w-18' : 'w-56'} bg-white/90 backdrop-blur-lg absolute h-screen z-[1000] left-0 pt-2 transition-all duration-300`}>
       {/* Sidebar */}
-      <div className={`h-screen bg-white transition-all duration-300 flex flex-col shadow shadow-gray-50 absolute top-2 left-2 rounded-lg border border-gray-100 `}>
+      <div className={`h-screen bg-white transition-all duration-300 flex flex-col shadow shadow-gray-50 absolute top-2 left-2 rounded-lg border border-gray-100`}>
         <div className="p-4 border-b flex items-center justify-between">
           {!sidebarCollapsed ? (
             <h1 className="text-xl font-bold">NISO</h1>
@@ -55,7 +61,7 @@ function Slide({ setSize }: Size) {
         <div className="flex-1 py-6">
           <nav className="space-y-5 px-2">
             {navItems.map((item) => {
-              const isActive = pathname.includes(item.path.split('board/')[1]) || pathname === item.path
+              const isActive = isLinkActive(item.path)
               const Icon = item.icon
               
               return (
