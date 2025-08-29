@@ -73,7 +73,7 @@ export default function Catalogue() {
   //
   const route = useRouter()
 
-  // modalpour la supression
+  // modal pour la supression
   const [aut, setAut] = useState(true)
   const [openDeleteModale, setOpenDeleteModale] = useState(false)
   const targetEnter = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -175,7 +175,7 @@ export default function Catalogue() {
         </Card>
       )}
 
-      { /* POUR LA SUPPRESSION  */}
+      {/* POUR LA SUPPRESSION */}
       <Dialog open={openDeleteModale} onOpenChange={setOpenDeleteModale}>
         <DialogContent className="sm:max-w-md ">
           <DialogHeader>
