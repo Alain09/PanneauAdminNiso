@@ -96,7 +96,7 @@ export default function Dashboard() {
         const ActionDonnee = async () => {
             try {
                 setLoading(true);
-                const response = await fetch("/api/dashboard", { method: "GET" });
+                 await fetch("/api/dashboard", { method: "GET" });
                 
                 setLoading(false);
             } catch (error) {
@@ -658,7 +658,7 @@ export default function Dashboard() {
                                                     <div className="bg-gray-100 p-1.5 rounded-full mr-3">
                                                         <File className="h-4 w-4 text-gray-500" />
                                                     </div>
-                                                    <span>Exporter l'excel</span>
+                                                    <span>Exporter lexcel</span>
                                                 </div>
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>

@@ -191,7 +191,7 @@ export default function Catalogue() {
               <div className="space-y-2">
                 <Input
                   className=" w-full "
-                  onChange={targetEnter}
+                  onChange={(e) => targetEnter(e)}
                 />
               </div>
             </div>
