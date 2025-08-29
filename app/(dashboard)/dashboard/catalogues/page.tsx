@@ -77,7 +77,7 @@ export default function Catalogue() {
   const [aut, setAut] = useState(true)
   const [openDeleteModale, setOpenDeleteModale] = useState(false)
   const targetEnter = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.target.value.toUpperCase() === "DELETE" ? setAut(false) : setAut(true)
+    e.target.value.toUpperCase() === "DELETE" ? setAut(false) : setAut(true);
   }
 
   const [nameActive, setNameActive] = useState("")
