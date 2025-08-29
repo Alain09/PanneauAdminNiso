@@ -103,7 +103,7 @@ function Slide({ setSize }: Size) {
             className={`w-full ${sidebarCollapsed ? 'px-3 justify-center' : 'px-4 justify-start'} text-gray-600 bg-gray-100 hover:bg-gray-200`}
           >
             <LogOut className="h-5 w-5" />
-            {!sidebarCollapsed && <span className="ml-3">Déconnexion</span>}
+            {!sidebarCollapsed && <span className="ml-3">Déconnexion aaa</span>}
           </Button>
         </div>
       </div>
