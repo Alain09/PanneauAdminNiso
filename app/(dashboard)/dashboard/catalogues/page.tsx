@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -58,38 +58,72 @@ const initialData = [
 export default function Catalogue() {
   const [data] = useState(initialData);
   const [filter, setFilter] = useState("Tout");
+  const [selectedRow, setSelectedRow] = useState<CatalogueItem | null>();
+  const [open, setOpen] = useState(true); // Ouvrir par défaut
 
-  //slide gauche 
-  const [open, setOpen] = useState(false);
+  const route = useRouter();
+
+  interface CatalogueItem {
+    id: string; 
+    date: string;
+    categorie: string;
+    option: number;
+    prix: number;
+    composants: string;
+  }
+
+
+
 
   // Filtrer les données en fonction de la catégorie sélectionnée
-  const filteredData = filter === "Tout"
+  const filteredData : CatalogueItem[] = filter === "Tout"
     ? data
     : data.filter(item => item.categorie === filter);
 
   // Obtenir les catégories uniques pour le filtre
   const uniqueCategories = ["Tout", ...new Set(data.map(item => item.categorie))];
 
-  //
-  const route = useRouter()
+  // Sélectionner la première ligne par défaut
+  useEffect(() => {
+    if (filteredData.length > 0 && !selectedRow) {
+      setSelectedRow(filteredData[0] as CatalogueItem);
+    }
+  }, [filteredData, selectedRow]);
 
-  // modalpour la supression
-  const [aut, setAut] = useState(true)
-  const [openDeleteModale, setOpenDeleteModale] = useState(false)
+  // Mettre à jour la sélection lorsque les données filtrées changent
+  useEffect(() => {
+    if (filteredData.length > 0) {
+      // Si la ligne sélectionnée n'existe plus dans les données filtrées, sélectionner la première
+      if (!selectedRow || !filteredData.find(item => item.id === selectedRow.id)) {
+        setSelectedRow(filteredData[0]);
+      }
+    } else {
+      setSelectedRow(null);
+    }
+  }, [filteredData]);
+
+  // modal pour la suppression
+  const [aut, setAut] = useState(true);
+  const [openDeleteModale, setOpenDeleteModale] = useState(false);
   const targetEnter = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const reseach = e.target.value.toUpperCase() === "DELETE" ? setAut(false) : setAut(true);
-    return reseach
-  }
+    const research = e.target.value.toUpperCase() === "DELETE" ? setAut(false) : setAut(true);
+    return research;
+  };
 
-  const [nameActive, setNameActive] = useState("")
+  const [nameActive, setNameActive] = useState("");
+
+  const handleRowClick = (row: CatalogueItem) => {
+    setSelectedRow(row);
+    setOpen(true);
+  };
 
   return (
-    <div className="w-full flex gap-x-10 transition-all duration-300  p-6">
-      <div className="w-full ">
+    <div className="w-full flex gap-x-10 transition-all duration-300 p-6">
+      <div className="w-full">
         <div className="flex justify-between items-center mb-4">
           <Button
             className="bg-[#FF4000] hover:bg-[#FF4000]/90 text-white"
-            onClick={() => { route.push("/dashboard/catalogues/new") }}
+            onClick={() => { route.push("/dashboard/catalogues/new"); }}
           >
             New Catalogue
           </Button>
@@ -121,17 +155,21 @@ export default function Catalogue() {
             <TableBody>
               {filteredData.map((row, index) => (
                 <TableRow
-                  key={index}
-                  className={index % 2 === 0 ? "bg-[#FFAE91]/10 " : ""}
-                  onClick={() => setOpen(true)} // Ouvrir le slide gauche au clic
+                  key={row.id}
+                  className={`
+                    ${index % 2 === 0 ? "bg-[#FFAE91]/10 " : ""}
+                    ${selectedRow?.id === row.id ? "bg-blue-100 ring-2 ring-blue-300" : ""}
+                    cursor-pointer hover:bg-gray-50
+                  `}
+                  onClick={() => handleRowClick(row)}
                 >
                   <TableCell>{row.date}</TableCell>
                   <TableCell>{row.categorie}</TableCell>
                   <TableCell>{row.option}</TableCell>
                   <TableCell>{row.prix}</TableCell>
                   <TableCell className="truncate max-w-[150px]">{row.composants}</TableCell>
-                  <TableCell>
-                    <DropdownMenu >
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">
                           <MoreVertical className="h-4 w-4" />
@@ -147,7 +185,7 @@ export default function Catalogue() {
                           className="text-red-600"
                           onClick={() => {
                             setOpenDeleteModale(true);
-                            setNameActive(`l'option ${row.option} de ${row.categorie}`)
+                            setNameActive(`l'option ${row.option} de ${row.categorie}`);
                           }}
                         >
                           Supprimer
@@ -161,38 +199,50 @@ export default function Catalogue() {
           </Table>
         </div>
       </div>
-      {open && (
-        <Card className="h-screen transition-all duration-300 p-4 w-[500px]">
-          <div className="flex justify-between items-center pb-5  border-b">
+
+      {/* Slide droit avec les détails */}
+      {open && selectedRow && (
+        <Card className="h-screen transition-all duration-300 p-4 w-[500px] sticky top-6">
+          <div className="flex justify-between items-center pb-5 border-b">
             <h2 className="text-medium font-semibold">Détails du catalogue</h2>
-            <Button className=" text-sm py-1 px-2" onClick={() => setOpen(false)}>
+            <Button className="text-sm py-1 px-2" onClick={() => setOpen(false)}>
               Fermer
             </Button>
           </div>
-          <div className="p-4">
-            {/* Contenu du slide gauche */}
-            <p>Contenu du slide gauche</p>
+          <div className="p-4 space-y-4">
+            <div>
+              <h3 className="font-semibold text-gray-700">Informations</h3>
+              <p><strong>Date:</strong> {selectedRow.date}</p>
+              <p><strong>Catégorie:</strong> {selectedRow.categorie}</p>
+              <p><strong>Option:</strong> {selectedRow.option}</p>
+              <p><strong>Prix Hebdo:</strong> {selectedRow.prix} Fcfa</p>
+            </div>
+            
+            <div>
+              <h3 className="font-semibold text-gray-700">Composants</h3>
+              <p className="whitespace-normal break-words">{selectedRow.composants}</p>
+            </div>
           </div>
         </Card>
       )}
 
-      { /* POUR LA SUPPRESSION  */}
+      {/* Modal pour la suppression */}
       <Dialog open={openDeleteModale} onOpenChange={setOpenDeleteModale}>
-        <DialogContent className="sm:max-w-md ">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>SUPPRESSION</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 ">
+          <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Pour supprimer <span className=' font-semibold text-gray-900'>{nameActive}</span> entrer <span className='text-red-600 font-semibold'>DELETE</span> dans le formulaire ci-dessous
+              Pour supprimer <span className='font-semibold text-gray-900'>{nameActive}</span> entrer <span className='text-red-600 font-semibold'>DELETE</span> dans le formulaire ci-dessous
             </p>
 
             <div className="space-y-4">
-              {/* Entrer */}
               <div className="space-y-2">
                 <Input
-                  className=" w-full "
-                  onChange={(e) => targetEnter(e)}
+                  className="w-full"
+                  onChange={targetEnter}
+                  placeholder="Tapez DELETE pour confirmer"
                 />
               </div>
             </div>
@@ -205,9 +255,9 @@ export default function Catalogue() {
             </DialogClose>
             <Button
               disabled={aut}
-              type='submit'
-              onClick={() => { console.log("dddd") }}
-              className="bg-[#FF4000] hover:bg-[#FF4000]/90">
+              onClick={() => { console.log("Suppression confirmée"); }}
+              className="bg-[#FF4000] hover:bg-[#FF4000]/90"
+            >
               Confirmer
             </Button>
           </DialogFooter>

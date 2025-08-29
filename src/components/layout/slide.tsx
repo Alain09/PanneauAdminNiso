@@ -1,9 +1,8 @@
-"use client";
-
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { Button } from '../ui/button';
+"use client"
+import React, { useState } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { Button } from '../ui/button'
 import {
   ChevronRight,
   ChevronLeft,
@@ -13,102 +12,163 @@ import {
   CreditCard,
   Settings,
   LogOut,
-} from "lucide-react";
+} from "lucide-react"
 
-interface Size {
-  setSize: React.Dispatch<React.SetStateAction<boolean>>;
+interface SidebarProps {
+  setSize: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const navItems = [
-  { path: '/dashboard', icon: Home, label: 'Dashboard', exact: true },
+  { path: '/dashboard', icon: Home, label: 'Dashboard' },
   { path: '/dashboard/users', icon: Users, label: 'Utilisateurs' },
   { path: '/dashboard/catalogues', icon: List, label: 'Catalogue' },
   { path: '/dashboard/paiement', icon: CreditCard, label: 'Paiement' },
   { path: '/dashboard/setting', icon: Settings, label: 'Parametre' },
-];
+]
 
-function Slide({ setSize }: Size) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const pathname = usePathname();
-  const router = useRouter();
+function Slide({ setSize }: SidebarProps) {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const pathname = usePathname()
   
   const toggleSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
-    setSize(!sidebarCollapsed);
-  };
+    setSidebarCollapsed(prev => !prev)
+    setSize(prev => !prev)
+  }
 
-  // Fonction de navigation
-  const handleNavigation = (path: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    console.log('Navigation vers:', path); // Pour débugger
-    router.push(path);
-  };
-
-  // Fonction améliorée pour déterminer si un lien est actif
-  const isLinkActive = (linkPath: string, exact: boolean = false) => {
-    if (exact) {
-      return pathname === linkPath;
-    }
-    return pathname.startsWith(linkPath);
-  };
+  // Fonction améliorée pour déterminer si un élément est actif
+  const isActiveItem = (itemPath: string): boolean => {
+    if (pathname === itemPath) return true
+    if (itemPath === '/dashboard' && pathname === '/dashboard') return true
+    if (itemPath !== '/dashboard' && pathname.startsWith(itemPath)) return true
+    return false
+  }
 
   return (
-    <div className={`${sidebarCollapsed ? 'w-18' : 'w-56'} bg-white/90 backdrop-blur-lg absolute h-screen z-[1000] left-0 pt-2 transition-all duration-300`}>
-      {/* Sidebar */}
-      <div className={`h-screen bg-white transition-all duration-300 flex flex-col shadow shadow-gray-50 absolute top-2 left-2 rounded-lg border border-gray-100`}>
-        <div className="p-4 border-b flex items-center justify-between">
-          {!sidebarCollapsed ? (
-            <h1 className="text-xl font-bold">NISO</h1>
-          ) : (
-            <h1 className="text-xl font-bold">N</h1>
-          )}
+    <div 
+      className={`
+        ${sidebarCollapsed ? 'w-18' : 'w-56'} 
+        bg-white/90 
+        backdrop-blur-lg 
+        fixed 
+        h-screen 
+        z-[1000] 
+        left-0 
+        top-0
+        transition-all 
+        duration-300 
+        ease-in-out
+      `}
+    >
+      {/* Sidebar Content */}
+      <div 
+        className={`
+          h-full 
+          bg-white 
+          transition-all 
+          duration-300 
+          ease-in-out 
+          flex 
+          flex-col 
+          shadow-lg 
+          shadow-gray-100
+          m-2 
+          rounded-lg 
+          border 
+          border-gray-100
+          ${sidebarCollapsed ? 'w-14' : 'w-52'}
+        `}
+      >
+        {/* Header */}
+        <div className="p-4 border-b border-gray-100 flex items-center justify-between min-h-[60px]">
+          <div className="flex items-center overflow-hidden">
+            {!sidebarCollapsed ? (
+              <h1 className="text-xl font-bold text-gray-800 whitespace-nowrap">NISO</h1>
+            ) : (
+              <h1 className="text-xl font-bold text-gray-800">N</h1>
+            )}
+          </div>
           <button 
             onClick={toggleSidebar} 
-            className="p-1 rounded-lg hover:bg-orange-100"
+            className="p-1.5 rounded-lg hover:bg-orange-100 transition-colors duration-200 flex-shrink-0"
             aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            {sidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+            {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
           </button>
         </div>
         
-        <div className="flex-1 py-6">
-          <nav className="space-y-5 px-2">
+        {/* Navigation */}
+        <div className="flex-1 py-6 px-2">
+          <nav className="space-y-1">
             {navItems.map((item) => {
-              const isActive = isLinkActive(item.path, item.exact);
-              const Icon = item.icon;
+              const isActive = isActiveItem(item.path)
+              const Icon = item.icon
               
               return (
-                <div
+                <Link 
+                  href={item.path} 
                   key={item.path}
-                  onClick={(e) => handleNavigation(item.path, e)}
-                  className={`block rounded-lg transition-colors cursor-pointer ${
-                    isActive 
-                      ? 'bg-[#FF4000] text-white' 
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-500'
-                  }`}
+                  className="block"
                 >
-                  <div className={`flex items-center w-full p-3 rounded-lg ${sidebarCollapsed ? 'justify-center' : 'justify-start'}`}>
-                    <Icon className="h-5 w-5" />
-                    {!sidebarCollapsed && <span className="ml-3">{item.label}</span>}
-                  </div>
-                </div>
-              );
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className={`
+                      w-full 
+                      h-11
+                      ${sidebarCollapsed ? 'px-2 justify-center' : 'px-3 justify-start'} 
+                      transition-all 
+                      duration-200 
+                      ${isActive 
+                        ? 'bg-[#FF4000] text-white hover:bg-[#e63600] hover:text-white shadow-sm' 
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
+                      }
+                    `}
+                  >
+                    <Icon className="h-5 w-5 flex-shrink-0" />
+                    {!sidebarCollapsed && (
+                      <span className="ml-3 text-sm font-medium whitespace-nowrap overflow-hidden">
+                        {item.label}
+                      </span>
+                    )}
+                  </Button>
+                </Link>
+              )
             })}
           </nav>
         </div>
 
-        <div className="p-2 pb-10">
+        {/* Logout Button */}
+        <div className="p-2 border-t border-gray-100">
           <Button 
             variant="ghost" 
-            className={`w-full ${sidebarCollapsed ? 'px-3 justify-center' : 'px-4 justify-start'} text-gray-600 bg-gray-100 hover:bg-gray-200`}
+            size="sm"
+            className={`
+              w-full 
+              h-11
+              ${sidebarCollapsed ? 'px-2 justify-center' : 'px-3 justify-start'} 
+              text-gray-600 
+              bg-gray-50 
+              hover:bg-gray-100 
+              hover:text-gray-800
+              transition-all 
+              duration-200
+            `}
+            onClick={() => {
+              // Ajouter ici la logique de déconnexion
+              console.log('Déconnexion...')
+            }}
           >
-            <LogOut className="h-5 w-5" />
-            {!sidebarCollapsed && <span className="ml-3">Déconnexion aaa</span>}
+            <LogOut className="h-5 w-5 flex-shrink-0" />
+            {!sidebarCollapsed && (
+              <span className="ml-3 text-sm font-medium whitespace-nowrap">
+                Déconnexion
+              </span>
+            )}
           </Button>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default Slide;
+export default Slide
