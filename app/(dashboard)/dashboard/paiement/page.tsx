@@ -37,6 +37,7 @@ import { Card } from '@/src/components/ui/card';
 
 import { useRouter } from 'next/navigation';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/src/components/ui/dropdown-menu';
+
 // Types
 interface UserListPaiement {
   id: string;
@@ -50,13 +51,12 @@ interface UserListPaiement {
   status: "succès" | "succès";
 }
 
+const generateId = () => Math.random().toString(36).substring(2) + Date.now().toString(36);
 
-
-
-function page() {
+function Page() {
   const route = useRouter()
-  const generateId = () => Math.random().toString(36).substring(2) + Date.now().toString(36);
-  const [usersPaiement, setUsersPaiement] = useState<UserListPaiement[]>(
+  
+  const [usersPaiement] = useState<UserListPaiement[]>(
     [
       {
         id: generateId(),
@@ -192,37 +192,30 @@ function page() {
       },
     ]);
 
-
   const [usersData, setUsersData] = useState<UserListPaiement[]>(usersPaiement)
   const [filter, setFilter] = useState(false)
   const [selectedCategorie, setSelectedCategorie] = useState<string>("");
   const [searchUser, setSearchUser] = useState<string>("");
   const [selectDate, setSelectDate] = useState<Date>()
+  const [load, setLoad] = useState(false)
+
   // Exemple de données de tontines - à remplacer par vos données réelles
-
-
-
-  // recherche des categorie sans occurences 
   const categories = [... new Set(usersPaiement.flatMap(prev => prev.categorie))]
-
-
 
   // Filter references when search query changes
   useEffect(() => {
     if (searchUser.trim() === '') {
       setUsersData(usersPaiement)
     } else {
-      const filteredData = usersData.filter((user) =>
+      const filteredData = usersPaiement.filter((user) =>
         user?.name?.toLowerCase().includes(searchUser))
       setUsersData(filteredData);
     }
-  }, [searchUser])
-
-
+  }, [searchUser, usersPaiement])
 
   // fonction de filtrage
   const handleFilter = () => {
-    const filteredData = usersData.filter((user) => {
+    const filteredData = usersPaiement.filter((user) => {
       const matchesCategory = selectedCategorie ? user.categorie === selectedCategorie : true;
       const matchesDate = selectDate ? user.date === selectDate : true;
       return matchesCategory && matchesDate;
@@ -231,14 +224,13 @@ function page() {
     setFilter(false);
   };
 
-
   //----------------fonction de formatage 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date | undefined) => {
+    if (!date) return '';
     return date?.toISOString().split('T')[0] as string;
   }
 
   // fonction de rechargement
-  const [load, setLoad] = useState(false)
   const handleReload = () => {
     setLoad(true)
     setUsersData(usersPaiement);
@@ -248,10 +240,7 @@ function page() {
     setTimeout(() => {
       setLoad(false)
     }, 1000)
-
   };
-
-
 
   return (
     <div>
@@ -283,7 +272,6 @@ function page() {
                   onClick={handleReload}
                 >
                   <Loader2 className={`mr-2 h-4 w-4 ${load ? "animate-spin duration-300" : ""}`}
-
                   />
                   Recharger
                 </Button>
@@ -293,7 +281,6 @@ function page() {
                   onClick={() => setFilter(true)}
                 >
                   <Filter className="mr-2 h-4 w-4"
-
                   />
                   Filtrer
                 </Button>
@@ -310,7 +297,6 @@ function page() {
                     {/* telecharger le pdf */}
                     <DropdownMenuItem className="px-3 py-2 text-sm cursor-pointer  hover:rounded-lg hover:shadow-gray-200">
                       <div className="flex items-center"
-
                       >
                         <div className="bg-gray-100 p-1.5 rounded-full mr-3">
                           <FileText className="h-4 w-4 text-gray-500" />
@@ -322,17 +308,13 @@ function page() {
                     {/* telecharger le fichier excel */}
                     <DropdownMenuItem className="px-3 py-2 text-sm cursor-pointer  hover:rounded-lg hover:shadow-gray-200">
                       <div className="flex items-center"
-
                       >
                         <div className="bg-gray-100 p-1.5 rounded-full mr-3">
                           <File className="h-4 w-4 text-gray-500" />
                         </div>
-                        <span>Exporter l'excel</span>
+                        <span>Exporter l&apos;excel</span>
                       </div>
                     </DropdownMenuItem>
-
-                    {/* Item Supprimer */}
-
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -348,7 +330,7 @@ function page() {
                     <TableHead>Montant payé</TableHead>
                     <TableHead>Catégorie choisie</TableHead>
                     <TableHead>A payer/S</TableHead>
-                    <TableHead>Date d'entrée</TableHead>
+                    <TableHead>Date d&apos;entrée</TableHead>
                     <TableHead>Statut</TableHead>
                   </TableRow>
 
@@ -396,10 +378,7 @@ function page() {
           </Card>
 
         </div>
-
-
       </main>
-
 
       <Dialog open={filter} onOpenChange={setFilter} >
         <DialogContent className="sm:max-w-md ">
@@ -433,7 +412,7 @@ function page() {
                 <label className="text-sm font-medium">Date de paiement</label>
                 <Input
                   type='date'
-                  value={formatDate(selectDate as Date)}
+                  value={formatDate(selectDate)}
                   onChange={(e) => { setSelectDate(new Date(e.target.value)) }}
                   className=" w-full "
                   placeholder="entrer une provenance"
@@ -455,9 +434,8 @@ function page() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
     </div>
   )
 }
 
-export default page
+export default Page

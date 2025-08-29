@@ -4,27 +4,19 @@ import { useState } from "react";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Textarea } from "@/src/components/ui/textarea";
-import { Trash2, Upload } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { TabsList, TabsTrigger } from "@/src/components/ui/tabs";
 import { Tabs } from "@radix-ui/react-tabs";
-import { TontineOption, OptionComponent, Donnees, UserProfile } from "@/type";
+import { TontineOption, Donnees, UserProfile } from "@/type";
 import Optionlist from "@/src/components/users/Optionlist";
 import Bande from "@/src/components/users/bande";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/src/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/src/components/ui/select";
 
-
-
-//modal pour la mise a des donnees
-
-
-
-
 export default function UserProfilNew() {
 
   // declaration des donnees specifique a l'utilisateur
-  const [userUnique, setUserUnique] = useState<UserProfile>(Donnees[0])
+  const [userUnique] = useState<UserProfile>(Donnees[0]);
   const [userCoordonees, setUserCoordonnees] = useState({
     firstName: userUnique.firstName,
     lastName: userUnique.lastName,
@@ -35,20 +27,18 @@ export default function UserProfilNew() {
     position: userUnique.position,
     role: userUnique.role,
     description: userUnique.description
-  })
-
+  });
 
   // recuperation des categories 
-  const categories = userUnique.DescriptionChoixOfEachUser?.flatMap((cat) => cat.category).sort() as string[]
+  const categories = userUnique.DescriptionChoixOfEachUser?.flatMap((cat) => cat.category).sort() as string[];
 
   // la mise a jour sur les details de la tontine choisie
-  const [selectCategories, setSelectCategories] = useState(categories[0])
-
-
+  const [selectCategories, setSelectCategories] = useState(categories[0]);
 
   // fonction pour la recuperatin des des otpionsDescriptions a une seule ocurence d'option par categories
   // recuperationsd de tous ls OptionDescriptions
-  const OptionsDescriptions = userUnique.DescriptionChoixOfEachUser?.flatMap(items => items.optionsDescription) as TontineOption[]
+  const OptionsDescriptions = userUnique.DescriptionChoixOfEachUser?.flatMap(items => items.optionsDescription) as TontineOption[];
+  
   // la fonction
   const MiseAjout = (model: TontineOption[]) => {
     const unique: TontineOption[] = [];
@@ -61,22 +51,16 @@ export default function UserProfilNew() {
         unique.push(item);
       }
     }
-    return unique
-  }
+    return unique;
+  };
 
   // application de la function a optionTab
-  const [optionTab, setOptionTab] = useState<TontineOption[]>(MiseAjout(OptionsDescriptions))
+  const [optionTab] = useState<TontineOption[]>(MiseAjout(OptionsDescriptions));
 
-
-  const [modal, setModal] = useState(false)
-  const [selectedTontine, setSelectedTontine] = useState<string>("100 Fcfa");
- 
-
+  const [modal, setModal] = useState(false);
 
   const [selectedCategorie, setSelectedCategorie] = useState<string>("");
   const [selectedOption, setSelectedOption] = useState<string>("");
-
-
 
   const tontines = [
     { id: "1", name: "100" },
@@ -93,24 +77,16 @@ export default function UserProfilNew() {
     { id: "4", name: "4" },
     { id: "5", name: "5" },
     { id: "6", name: "6" },
-  ]
-
+  ];
 
   // modalpour la supression
-  const [aut, setAut] = useState(true)
-  const [openDeleteModale, setOpenDeleteModale] = useState(false)
+  const [aut, setAut] = useState(true);
+  const [openDeleteModale, setOpenDeleteModale] = useState(false);
   const targetEnter = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.target.value.toUpperCase() === "DELETE" ? setAut(false) : setAut(true)
-  }
+    e.target.value.toUpperCase() === "DELETE" ? setAut(false) : setAut(true);
+  };
 
-  const [nameActive, setNameActive] = useState<string | undefined>("")
-
-
-  ///
-
-
-
-  const [selectTontine, setSelectTontine] = useState("100")
+  const [nameActive, setNameActive] = useState<string | undefined>("");
 
   return (
     <div className=" max-w-4xl mx-auto p-6 ">
@@ -143,8 +119,6 @@ export default function UserProfilNew() {
                       onChange={(e) => setUserCoordonnees((prev) => ({
                         ...prev, firstName: e.target.value
                       }))}
-
-
                     />
                   </div>
                   { /* Prénom */}
@@ -250,7 +224,6 @@ export default function UserProfilNew() {
                         ...prev, description: e.target.value
                       }))}
                       className=" w-full h-[100px] "
-
                     />
                   </div>
 
@@ -259,14 +232,11 @@ export default function UserProfilNew() {
                   <Button className=" w-full">
                     Confirmer
                   </Button>
-
                 </div>
-
               </div>
             </CardContent>
           </div>
         </form>
-
 
         {/* Choix opérés section */}
         <div className=" pt-15">
@@ -280,63 +250,51 @@ export default function UserProfilNew() {
               </CardDescription>
             </CardHeader>
             <Button className="bg-[#FF4000] hover:bg-[#FF4000]/80 mr-6"
-              onClick={() => { setModal(true) }}
+              onClick={() => { setModal(true); }}
             >
               Ajouter une catégorie
             </Button>
-
           </div>
 
           <CardContent className=" mt-6">
             {
               optionTab.length !== 0 ?
                 <div className="bg-white border border-gray-100 rounded-lg p-6 w-full h-fit  ">
-
                   <div className="px-6 pt-3 flex justify-between items-center">
                     <h4 className="text-lg font-medium mb-3">Tontine(s) choisi(es)</h4>
                     <Tabs defaultValue={categories[0]}>
                       <TabsList className=" h-8 items-center justify-center bg-gray-50">
-                        {categories.map((item, index) => {
+                        {categories.map((item) => {
                           return (
                             <TabsTrigger
-                              onClick={() => { setSelectCategories(item) }}
-                              key={index} value={item} className="text-[16px] text-gray-300 px-2 data-[state=active]:bg-[#FF4000] data-[state=active]:text-white">
+                              onClick={() => { setSelectCategories(item); }}
+                              key={item} value={item} className="text-[16px] text-gray-300 px-2 data-[state=active]:bg-[#FF4000] data-[state=active]:text-white">
                               {item} Fcfa
                             </TabsTrigger>
-                          )
-
+                          );
                         })}
                       </TabsList>
-
                     </Tabs>
                   </div>
                   <div className=" space-y-5 p-6 ">
                     {
-                      optionTab?.map((term, index) => {
+                      optionTab?.map((term) => {
                         if (term.category === selectCategories) {
                           return (
-                            <Optionlist opt={term} setOpen={setOpenDeleteModale} setTexteDelete={setNameActive} key={index} />
-                          )
+                            <Optionlist opt={term} setOpen={setOpenDeleteModale} setTexteDelete={setNameActive} key={term.category + term.option} />
+                          );
                         }
-
-
+                        return null;
                       })
                     }
                   </div>
-
                 </div>
                 :
                 <div className=" p-2 bg-green-100 w-full flex justify-center items-center text-green-800 text-sm font-medium "> pas de choix opéré </div>
             }
           </CardContent>
-
-
         </div>
-
-
-
       </Card>
-
 
       {/* modal pour la mise a jour */}
       <Dialog open={modal} onOpenChange={setModal} >
@@ -388,13 +346,9 @@ export default function UserProfilNew() {
                 <label className="text-sm font-medium">Quantité</label>
                 <Input
                   type=" number"
-
                   className=" w-full "
-
                 />
               </div>
-
-
             </div>
           </div>
           <DialogFooter>
@@ -440,7 +394,7 @@ export default function UserProfilNew() {
             <Button
               disabled={aut}
               type='submit'
-              onClick={() => { console.log("dddd") }}
+              onClick={() => { console.log("dddd"); }}
               className="bg-[#FF4000] hover:bg-[#FF4000]/80">
               Confirmer
             </Button>
@@ -449,5 +403,4 @@ export default function UserProfilNew() {
       </Dialog>
     </div>
   );
-};
-
+}

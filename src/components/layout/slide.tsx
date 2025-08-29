@@ -9,11 +9,11 @@ import {
   Home,
   Users,
   List,
-  Clock,
+ 
   CreditCard,
   Settings,
   LogOut,
-  FileText
+ 
 } from "lucide-react"
 
 interface Size {

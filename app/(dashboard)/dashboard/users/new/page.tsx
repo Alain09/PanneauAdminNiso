@@ -4,32 +4,21 @@ import { useState } from "react";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Textarea } from "@/src/components/ui/textarea";
-import { Trash2, Upload } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { TabsList, TabsTrigger } from "@/src/components/ui/tabs";
 import { Tabs } from "@radix-ui/react-tabs";
-import { TontineOption, OptionComponent } from "@/type";
+import { TontineOption } from "@/type";
 import Optionlist from "@/src/components/users/Optionlist";
 import Bande from "@/src/components/users/bande";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/src/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/src/components/ui/select";
 
-
-
-//modal pour la mise a des donnees
-
-
-
-
 export default function UserProfilNew() {
-  const [modal, setModal] = useState(false)
-  const [options, setOptions] = useState<TontineOption[]>([]);
-
+  const [modal, setModal] = useState(false);
+  const [options] = useState<TontineOption[]>([]);
 
   const [selectedCategorie, setSelectedCategorie] = useState<string>("");
   const [selectedOption, setSelectedOption] = useState<string>("");
-
-
 
   const tontines = [
     { id: "1", name: "100" },
@@ -46,22 +35,16 @@ export default function UserProfilNew() {
     { id: "4", name: "4" },
     { id: "5", name: "5" },
     { id: "6", name: "6" },
-  ]
-
-
+  ];
 
   // modalpour la supression
-  const [aut, setAut] = useState(true)
-  const [openDeleteModale, setOpenDeleteModale] = useState(false)
+  const [aut, setAut] = useState(true);
+  const [openDeleteModale, setOpenDeleteModale] = useState(false);
   const targetEnter = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.target.value.toUpperCase() === "DELETE" ? setAut(false) : setAut(true)
-  }
+    e.target.value.toUpperCase() === "DELETE" ? setAut(false) : setAut(true);
+  };
 
-  const [nameActive, setNameActive] = useState<string | undefined>("")
-
-
-
-  const [selectTontine, setSelectTontine] = useState("100")
+  const [nameActive, setNameActive] = useState<string | undefined>("");
 
   return (
     <div className=" max-w-4xl mx-auto p-6 ">
@@ -90,7 +73,6 @@ export default function UserProfilNew() {
                     <Input
                       type="text"
                       className="  w-full h-[45px]  "
-
                     />
                   </div>
                   { /* Prénom */}
@@ -99,7 +81,6 @@ export default function UserProfilNew() {
                     <Input
                       type="text"
                       className=" w-full h-[45px]  "
-
                     />
                   </div>
                   { /* Email */}
@@ -108,7 +89,6 @@ export default function UserProfilNew() {
                     <Input
                       type="email"
                       className=" w-full h-[45px]  "
-
                     />
                   </div>
 
@@ -118,10 +98,8 @@ export default function UserProfilNew() {
                     <Input
                       type="text"
                       className=" w-full h-[45px] "
-
                     />
                   </div>
-
 
                   { /* Provenance */}
                   <div className=" flex  items-center  gap-x-10  mx-5 pb-5 border-b border-b-gray-100">
@@ -129,7 +107,6 @@ export default function UserProfilNew() {
                     <Input
                       type="text"
                       className=" w-full h-[45px] "
-
                     />
                   </div>
 
@@ -139,7 +116,6 @@ export default function UserProfilNew() {
                     <Input
                       type="text"
                       className=" w-full h-[45px] "
-
                     />
                   </div>
 
@@ -149,7 +125,6 @@ export default function UserProfilNew() {
                     <Input
                       type="text"
                       className=" w-full h-[45px] "
-
                     />
                   </div>
 
@@ -160,7 +135,6 @@ export default function UserProfilNew() {
                       type="file"
                       className="  w-full h-[45px] "
                       placeholder=" entrer un image"
-
                     />
                   </div>
 
@@ -168,9 +142,7 @@ export default function UserProfilNew() {
                   <div className=" flex  items-center  gap-x-10  mx-5  ">
                     <label className="text-md font-normal w-[120px]">Description</label>
                     <Textarea
-
                       className=" w-full h-[100px] "
-
                     />
                   </div>
 
@@ -179,14 +151,11 @@ export default function UserProfilNew() {
                   <Button className=" w-full">
                     Confirmer
                   </Button>
-
                 </div>
-
               </div>
             </CardContent>
           </div>
         </form>
-
 
         {/* Choix opérés section */}
         <div className=" pt-15">
@@ -200,57 +169,42 @@ export default function UserProfilNew() {
               </CardDescription>
             </CardHeader>
             <Button className="bg-[#FF4000] hover:bg-[#FF4000]/80 mr-6"
-              onClick={() => { setModal(true) }}
+              onClick={() => { setModal(true); }}
             >
               Ajouter une catégorie
             </Button>
-
           </div>
 
           <CardContent className=" mt-6">
             {
               options.length !== 0 ?
                 <div className="bg-white border border-gray-100 rounded-lg p-6 w-full h-fit  ">
-
                   <div className="px-6 pt-3 flex justify-between items-center">
                     <h4 className="text-lg font-medium mb-3">Tontine(s) choisi(es)</h4>
-                    <Tabs defaultValue={options[0]?.catégorie}>
+                    <Tabs defaultValue={options[0]?.category}>
                       <TabsList className=" h-8 items-center justify-center bg-gray-50">
                         {options.map((item, index) => (
                           <TabsTrigger
-                            onClick={() => { setSelectTontine(item.catégorie) }}
-                            key={index} value={`${item.catégorie}`} className="text-[16px] text-gray-300 px-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">{item.catégorie}F</TabsTrigger>
+                            key={index} value={`${item.category}`} className="text-[16px] text-gray-300 px-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">{item.category}F</TabsTrigger>
                         ))}
                       </TabsList>
-
                     </Tabs>
                   </div>
                   <div className=" space-y-5 p-6 ">
-
-
-
                     {
                       options?.map((term, index) => (
                         <Optionlist opt={term} setOpen={setOpenDeleteModale} setTexteDelete={setNameActive} key={index} />
-
                       ))
                     }
                   </div>
-
                 </div>
                 :
                 <div className=" p-2 bg-green-100 w-full flex justify-center items-center text-green-800 text-sm font-medium "> pas de choix opéré </div>
             }
           </CardContent>
-
-
         </div>
-
-
-
       </Card>
 
-      
       {/* modal pour la mise a jour */}
       <Dialog open={modal} onOpenChange={setModal} >
         <DialogContent className="sm:max-w-md ">
@@ -301,13 +255,9 @@ export default function UserProfilNew() {
                 <label className="text-sm font-medium">Quantité</label>
                 <Input
                   type=" number"
-
                   className=" w-full "
-
                 />
               </div>
-
-
             </div>
           </div>
           <DialogFooter>
@@ -353,7 +303,7 @@ export default function UserProfilNew() {
             <Button
               disabled={aut}
               type='submit'
-              onClick={() => { console.log("dddd") }}
+              onClick={() => { console.log("dddd"); }}
               className="bg-[#FF4000] hover:bg-[#FF4000]/80">
               Confirmer
             </Button>
@@ -362,5 +312,4 @@ export default function UserProfilNew() {
       </Dialog>
     </div>
   );
-};
-
+}

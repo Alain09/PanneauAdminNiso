@@ -4,13 +4,13 @@ import { generateId } from '@/src/lib/utils'
 import { BadgeCheck, ChevronRight, ShieldCheck, TimerReset, UserCog } from 'lucide-react'
 import React from 'react'
 
-function page() {
+function Page() {
 
    const  Content =[
       {
         id : generateId(),
         title : "Permission",
-        description : " gestion de la permission des utilisateurs de l'application ",
+        description : " gestion de la permission des utilisateurs de l&apos;application ",
         icon : <UserCog size={20} className=' text-[#FF4000]/70'/>,
         linkIcon : <ChevronRight size={20} className=' text-gray-500 hover:text-gray-100'/>,
         path : "/allowUsers",
@@ -18,7 +18,7 @@ function page() {
       {
         id : generateId(),
         title : "Role",
-        description : "gestion du roles des utilisateurs de l'application",
+        description : "gestion du roles des utilisateurs de l&apos;application",
         icon : <BadgeCheck size={20} className=' text-[#FF4000]/70'/>,
         linkIcon : <ChevronRight size={20} className=' text-gray-500 hover:text-gray-100'/>,
         path : "/roleUsers",
@@ -34,7 +34,7 @@ function page() {
       {
         id : generateId(),
         title : " Administration",
-        description : "gestion des administrateurs de l'application",
+        description : "gestion des administrateurs de l&apos;application",
         icon : <ShieldCheck size={20} className=' text-[#FF4000]/70'/>,
         linkIcon : <ChevronRight size={20} className=' text-gray-500 hover:text-gray-100'/>,
         path : "/admin",
@@ -51,13 +51,13 @@ function page() {
               Parametre
             </CardTitle>
             <CardDescription className="text-gray-500 text-sm  -mt-2 ">
-              Gestion des parametres de l'application
+              Gestion des parametres de l&apos;application
             </CardDescription>
           </CardHeader>
         </div>
         <CardContent className=' m-5 grid grid-cols-2 gap-5'>
           {
-            Content.map((item,index) =>(
+            Content.map((item) =>(
               <CardSetting key={item.id} title={item.title} description={item.description} icon={item.icon} linkIcon={item.linkIcon} path={item.path}/>
             ))
           }
@@ -70,4 +70,4 @@ function page() {
   )
 }
 
-export default page
+export default Page

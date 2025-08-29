@@ -45,14 +45,13 @@ const initialMembers: TeamMember[] = [
 export default function Home() {
   const [members, setMembers] = useState<TeamMember[]>(initialMembers);
   const [selectedMember, setSelectedMember] = useState<TeamMember>(members[0]);
-  const [memberDelete,setMemberDelete]=useState<TeamMember>() /// gestion d'etat pour la suppression des membres
-  const route = useRouter()
+  const [memberDelete, setMemberDelete] = useState<TeamMember>(); /// gestion d'etat pour la suppression des membres
+  const route = useRouter();
 
 
   //  reading when we click on member
   const handleMemberClick = (member: TeamMember) => {
     setSelectedMember(member);
-
   };
 
   // handle delete member
@@ -63,17 +62,17 @@ export default function Home() {
 
   // for update setSelectmember
   useEffect(() => {
-    setSelectedMember(members[0])
-  }, [members])
+    setSelectedMember(members[0]);
+  }, [members]);
 
 
   // modalpour la supression
-  const [autButon, setAutButon] = useState(true)
-  const [openDeleteModale, setOpenDeleteModale] = useState(false)
+  const [autButon, setAutButon] = useState(true);
+  const [openDeleteModale, setOpenDeleteModale] = useState(false);
   const targetEnter = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.target.value.toUpperCase() === "DELETE" ? setAutButon(false) : setAutButon(true)
-  }
-  const [nameActive, setNameActive] = useState("")
+    e.target.value.toUpperCase() === "DELETE" ? setAutButon(false) : setAutButon(true);
+  };
+  const [nameActive, setNameActive] = useState("");
 
 
   return (
@@ -85,7 +84,7 @@ export default function Home() {
             setMembers={setMembers} //use for update members if members change
             selectmember={selectedMember} // use to notifier the member actif
             onAddClick={() => {
-              route.push("/dashboard/setting/admin/new")
+              route.push("/dashboard/setting/admin/new");
             }}
             setNameActive={setNameActive}
             setOpenDeleteModale={setOpenDeleteModale}
@@ -135,17 +134,14 @@ export default function Home() {
               type='submit'
               onClick={() => { 
                 handleDelete();
-                setOpenDeleteModale(false)
+                setOpenDeleteModale(false);
               }}
-
               className="bg-[#FF4000] hover:bg-[#FF4000]/90">
               Confirmer
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
     </main>
   );
-
 }

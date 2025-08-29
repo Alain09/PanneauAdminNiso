@@ -20,7 +20,7 @@ function NewMemberTeam() {
 
  // here we wiil put a trust api route 
     const handleSubmit = ()=>{
-        alert("formorlaire enregristré")
+        alert("formulaire enregistré")
     }
   return (
     <div className='p-6'>
@@ -28,7 +28,7 @@ function NewMemberTeam() {
         <Card className=' shadow-gray-50 border-gray-100 mx-48'>
             <CardHeader className=' mb-5'>
                 <CardTitle className='text-[#FF4000]'>Edition </CardTitle>
-                <CardDescription>Mise a jout des coordonnées d'un membre Administratif </CardDescription>
+                <CardDescription>Mise à jour des coordonnées d&apos;un membre Administratif </CardDescription>
             </CardHeader>
             <CardContent>
                 

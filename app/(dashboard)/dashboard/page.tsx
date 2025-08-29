@@ -1,4 +1,3 @@
-// pages/dashboard.tsx
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
@@ -81,8 +80,6 @@ import {
 import { Calendar } from "@/src/components/ui/calendar";
 import {
     Popover,
-    PopoverContent,
-    PopoverTrigger,
 } from "@/src/components/ui/popover";
 import {
     Select,
@@ -95,14 +92,12 @@ import {
 import { Startscard } from "@/src/components/dash_composant/staticard";
 import { useRouter } from "next/navigation";
 import CounTimes from "@/src/components/dash_composant/CounTimes";
-import { Donnees, OptionsCounts, PaymentDataVariation, StatisticCategories, PaymentHistoryWeekActif, TontineOption, UserProfile, UsersLatePayment } from "@/type";
-import { generateId } from "@/src/lib/utils";
-import { DataAction, ConvertInKilo, calculerIntervalleSemaine, calculerDatesSemaine, formatDate } from "@/src/components/hook_perso";
+import { Donnees, PaymentDataVariation, StatisticCategories, PaymentHistoryWeekActif, UserProfile, UsersLatePayment } from "@/type";
+import { DataAction, ConvertInKilo, calculerDatesSemaine, formatDate } from "@/src/components/hook_perso";
 import { copyToClipboardForWhatsApp } from "@/src/components/dash_composant/ClibboardCopieWhatsapp";
 
 export default function Dashboard() {
     // api e gestion de recuperation des donnees depuis la base de donnees
-    const [dataset, setDataset] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
     useEffect(() => {
@@ -111,7 +106,6 @@ export default function Dashboard() {
                 setLoading(true);
                 const response = await fetch("/api/dashboard", { method: "GET" });
                 const data = await response.json();
-                setDataset(data);
                 setLoading(false);
             } catch (error) {
                 console.log(error);
@@ -126,7 +120,7 @@ export default function Dashboard() {
     const { StructurationCategorie, VariationPaid, UsersLate, CaracterisqueUniques, UserPaiementHistory } = DataAction({ enter: Donnees })
 
     // recuperation de les des categorie et des semaines de retard et la liste completes des semaines
-    const { weekss, uniqueCategories, UserTotal, uniqueWeeks } = CaracterisqueUniques()
+    const { weekss, uniqueCategories, uniqueWeeks } = CaracterisqueUniques()
 
     //------------- statisque financieres pour les cardre in top -----// 
     const { datas, TotalGobal, TotalWeekActive } = VariationPaid()
@@ -138,7 +132,7 @@ export default function Dashboard() {
     // Utiliser useMemo pour éviter les recréations inutiles
     const { listeHistoryPaiement, uniqueStatuts, uniqueCategoriesHistory } = useMemo(() =>
         UserPaiementHistory({ weekActived: firtWeek }),
-        [firtWeek]
+        [firtWeek, UserPaiementHistory]
     );
 
     //--------------------
@@ -151,7 +145,7 @@ export default function Dashboard() {
     // Synchroniser tabsUsersStory avec listeHistoryPaiement - CORRIGÉ
     useEffect(() => {
         setTabsUsersStory(listeHistoryPaiement);
-    }, [listeHistoryPaiement]); // ← Seulement quand la source change
+    }, [listeHistoryPaiement]);
 
     // Calcul des statistiques pour le diagramme en secteur
     const sectorStats = useMemo(() => {
@@ -220,12 +214,12 @@ export default function Dashboard() {
                 user?.lastName?.toLowerCase().includes(searchUserHistory))
             setTabsUsersStory(filteredDataHistory);
         }
-    }, [searchUserHistory]);
+    }, [searchUserHistory, listeHistoryPaiement]);
     //---------------- fin ------------------------------------------------//
 
     //------------- gestionnaire d'etat pour les paiements et les statistiques----------------//
-    const [evolutionPaid, setEvolutionPaid] = useState<PaymentDataVariation[]>(datas)
-    const [catCounts, setCatCounts] = useState<StatisticCategories[]>(StructurationCategorie())
+    const [evolutionPaid] = useState<PaymentDataVariation[]>(datas)
+    const [catCounts] = useState<StatisticCategories[]>(StructurationCategorie())
 
     //gestion du categorie active dans les onglets
     const [firstCat, setFirstCat] = useState<string>(catCounts[0]?.categorie as string || "")
@@ -234,7 +228,7 @@ export default function Dashboard() {
 
     // ----------------------- manage des utilisateurs en retard ------------------------------//
     // gestion des userLate : utilisateurs en retad de paiement
-    const [lateUsers, setLateUsers] = useState<UsersLatePayment[]>(UsersLate())
+    const [lateUsers] = useState<UsersLatePayment[]>(UsersLate())
 
     //--------------------
     const [searchUser, setSearchUser] = useState<string>("");
@@ -315,8 +309,6 @@ export default function Dashboard() {
             </div>
         );
     }
-
-
 
     return (
         <div className="">
@@ -450,7 +442,7 @@ export default function Dashboard() {
                                         <div className="flex items-center gap-5 mb-4 px-4 pt-4">
                                             <div className="flex items-center space-x-2 w-full">
                                                 <div className="  space-x-2 w-full">
-                                                    <span className="px-2 py-1.5 border rounded-md "> {formatDate(calculerDatesSemaine(firtWeek, new Date('2025-01-01')).dateFin)} </span>
+                                                    <span className="px-2 py-1.5 border rounded-md "> {formatDate(  calculerDatesSemaine(firtWeek, new Date('2025-01-01')).dateDebut)} </span>
                                                 </div>
                                             </div>
                                             <div className="relative w-fit ">

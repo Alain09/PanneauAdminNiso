@@ -1,4 +1,4 @@
-import { ComposantCatalogue, PaymentHistoryWeekActif, DataBaseUsersTabs, OptionComponent, OptionsCounts, PaymentDataVariation, ProductCatalogue, StatisticCategories, TontineOption, UserProfile, UsersLatePayment } from "@/type";
+import {PaymentHistoryWeekActif, DataBaseUsersTabs,  OptionsCounts, PaymentDataVariation, ProductCatalogue, StatisticCategories, TontineOption, UserProfile, UsersLatePayment } from "@/type";
 import React from "react";
 import { generateId } from "../lib/utils";
 

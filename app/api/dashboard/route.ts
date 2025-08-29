@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 
 //route api pour la recuperation de tous
-export async function GET(req: NextRequest) {
+export async function GET() {
     // Récupérer la clé API de l'en-tête de la requête
 
 

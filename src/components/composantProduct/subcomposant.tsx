@@ -1,7 +1,7 @@
 "use client"
 import React from 'react'
-import Usehook from '../hook_perso'
-import { ComposantCatalogue, ProductCatalogue } from '@/type'
+
+import { ComposantCatalogue, } from '@/type'
 import { Trash2 } from 'lucide-react';
 import { Input } from '../ui/input';
 

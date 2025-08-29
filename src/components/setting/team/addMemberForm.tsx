@@ -1,11 +1,10 @@
 // components/team/AddMemberForm.tsx
-import React, { useState } from "react";
+import React from "react";
 
 import { TeamMember } from "@/type";
 import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
 import { Button } from "@/src/components/ui/button";
-import { generateId } from "@/src/lib/utils";
 
 interface AddMemberFormProps {
   onSubmit: () => void;

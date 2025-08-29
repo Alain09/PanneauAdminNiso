@@ -1,17 +1,15 @@
 // app/login/page.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
+import {  useState } from 'react'
 import { Button } from "@/src/components/ui/button"
 import { Input } from "@/src/components/ui/input"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/src/components/ui/card"
+import { Card, CardContent, CardDescription, CardFooter} from "@/src/components/ui/card"
 
-import { Loader2 } from "lucide-react"
-//import { Alert, AlertDescription } from "@/src/components/ui/alert"
-import Image from "next/image"
+
 import { useRouter } from 'next/navigation'
 
-import { Globe } from "@/src/components/ui/globe"
+
 
 
 
@@ -43,7 +41,7 @@ export default function LoginPage() {
           <span className=" flex justify-center mt-10 text-gray-50 pointer-events-none whitespace-pre-wrap  bg-clip-text text-center text-8xl font-semibold leading-none  ">
            CONNEXION
           </span>
-          <Globe className="top-28" />
+          
           <div className="pointer-events-none absolute inset-0 h-full bg-[radial-gradient(circle_at_50%_200%,rgba(0,0,0,0.2),rgba(255,255,255,0))]" />
        
 

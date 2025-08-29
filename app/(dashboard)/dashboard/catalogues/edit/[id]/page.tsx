@@ -3,35 +3,19 @@
 import React, { useState } from "react";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
-import { Textarea } from "@/src/components/ui/textarea";
-import { Trash2, Upload } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card";
-import { TabsList, TabsTrigger } from "@/src/components/ui/tabs";
 import { Tabs } from "@radix-ui/react-tabs";
-import { TontineOption, OptionComponent, ProductCatalogue, ComposantCatalogue } from "@/type";
-import Optionlist from "@/src/components/users/Optionlist";
+import { ProductCatalogue } from "@/type";
 import Bande from "@/src/components/users/bande";
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/src/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/src/components/ui/select";
 import Subcomposant from "@/src/components/composantProduct/subcomposant";
 import Usehook from "@/src/components/hook_perso";
 
-
-//modal pour la mise a des donnees
-
-
-
-
 export default function CatalogueFormateEdit( { params }: { params: { id: string } }) {  
-// cette fonction permet de generer un id unique pour chaque composant
-const {id} = params
-
+  // cette fonction permet de generer un id unique pour chaque composant
   const generateId = () => {
     return Math.random().toString() + new Date().toString()
   }
-  const [modal, setModal] = useState(false)
 
-  //
   const [options, setOptions] = useState<ProductCatalogue>({
     id: generateId(),
     price: 0,
@@ -44,38 +28,23 @@ const {id} = params
         quantity: 1,
         product: "",
         image: ""
-
       },
       {
         id: generateId(),
         quantity: 3,
         product: "",
         image: ""
-
       },
       {
         id: generateId(),
         quantity: 4,
         product: "",
         image: ""
-
       }
-
-
     ]
-
   });
 
-
-
-
-
-
   const { remove, addProduct } = Usehook({ setOptions })
-
-  
-
-
 
   // cette fonction met a jour les etats dans le formulaire
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -113,7 +82,6 @@ const {id} = params
           <div>
             <CardHeader className=" w-full">
               <CardTitle className="text-[#FF4000] font-medium mb-1"
-
               >
                 Edition de catalogue
               </CardTitle>
@@ -137,7 +105,6 @@ const {id} = params
                       name="categorie"
                       id="categorie"
                       onChange={(e) => setOptions((prev) => ({ ...prev, categorie: e.target.value }))}
-
                     />
                   </div>
                   { /* Option */}
@@ -150,7 +117,6 @@ const {id} = params
                       name="option"
                       id="option"
                       onChange={(e) => setOptions((prev) => ({ ...prev, option: Number(e.target.value) }))}
-
                     />
                   </div>
                   { /* Prix hebdomendaire */}
@@ -163,7 +129,6 @@ const {id} = params
                       name="price"
                       id="price"
                       onChange={(e) => setOptions((prev) => ({ ...prev, price: Number(e.target.value) }))}
-
                     />
                   </div>
 
@@ -177,7 +142,6 @@ const {id} = params
                       name="total"
                       id="total"
                       onChange={(e) => setOptions((prev) => ({ ...prev, totalweek: Number(e.target.value) }))}
-
                     />
                   </div>
 
@@ -204,18 +168,13 @@ const {id} = params
               >
                 Ajoute un produit
               </Button>
-
             </div>
 
             <CardContent className=" mt-6">
               {
                 options?.composant?.length !== 0 ?
                   <div className="bg-white border border-gray-100 rounded-lg p-6 w-full h-fit  shadow-gray-100 ">
-
-
                     <div className=" space-y-10 p-3 ">
-
-
                       {
                         options?.composant?.map((term, index) => (
                           <Subcomposant
@@ -228,29 +187,19 @@ const {id} = params
                         ))
                       }
                     </div>
-
                   </div>
                   :
                   <div className=" p-2 bg-green-100 w-full flex justify-center items-center text-green-800 text-sm font-medium "> pas de composant </div>
               }
             </CardContent>
-
-
           </div>
 
           {/* soumission */}
           <Button className="bg-[#FF4000] hover:bg-[#FF4000]/90   mx-6 mt-10"
             type="submit" 
-              
-            > soumettre</Button>
+          > soumettre</Button>
         </form>
-
-
       </Card>
-
-
-   
     </div>
   );
 };
-

@@ -15,25 +15,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/src/components/ui/select";
 import { Button } from "@/src/components/ui/button";
 import { MoreVertical } from "lucide-react";
-import { Card } from "@/src/components/ui/card";
 
-import { useRouter } from "next/navigation";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/src/components/ui/dialog";
 import { Input } from "@/src/components/ui/input";
 import { Badge } from "@/src/components/ui/badge";
 
 // Données initiales pour le tableau
-
 const generateId = () => Math.random().toString(36).substring(2) + Date.now().toString(36);
+
 const campagnes = [
   {
     id: "camp1",
@@ -155,51 +146,22 @@ const campagnes = [
     tontineEnd: new Date("2025-09-23T08:00:00Z"),
     createdAt: new Date("2025-07-10T09:00:00Z"),
   }
-]
-
-
-const initialData = [
-  { id: generateId(), date: "20/04/2025", categorie: "100Fcfa", option: 1, prix: 800, composants: "2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz," },
-  { id: generateId(), date: "20/04/2025", categorie: "300Fcfa", option: 2, prix: 2400, composants: "2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz," },
-  { id: generateId(), date: "20/04/2025", categorie: "200Fcfa", option: 1, prix: 1600, composants: "2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz," },
-  { id: generateId(), date: "20/04/2025", categorie: "100Fcfa", option: 3, prix: 800, composants: "2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz," },
-  { id: generateId(), date: "20/04/2025", categorie: "100Fcfa", option: 5, prix: 800, composants: "2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz," },
-  { id: generateId(), date: "20/04/2025", categorie: "500Fcfa", option: 1, prix: 4000, composants: "2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz," },
-  { id: generateId(), date: "20/04/2025", categorie: "100Fcfa", option: 1, prix: 800, composants: "2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz," },
-  { id: generateId(), date: "20/04/2025", categorie: "100Fcfa", option: 1, prix: 800, composants: "2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz," },
-  { id: generateId(), date: "20/04/2025", categorie: "100Fcfa", option: 1, prix: 800, composants: "2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz," },
-  { id: generateId(), date: "20/04/2025", categorie: "100Fcfa", option: 1, prix: 800, composants: "2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz," },
-  { id: generateId(), date: "20/04/2025", categorie: "100Fcfa", option: 1, prix: 800, composants: "2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz," },
-  { id: generateId(), date: "20/04/2025", categorie: "100Fcfa", option: 1, prix: 800, composants: "2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz," },
-  { id: generateId(), date: "20/04/2025", categorie: "100Fcfa", option: 1, prix: 800, composants: "2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz," },
-  { id: generateId(), date: "20/04/2025", categorie: "100Fcfa", option: 1, prix: 800, composants: "2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz," },
-  { id: generateId(), date: "20/04/2025", categorie: "100Fcfa", option: 1, prix: 800, composants: "2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz," },
-  { id: generateId(), date: "20/04/2025", categorie: "100Fcfa", option: 1, prix: 800, composants: "2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz," },
-  { id: generateId(), date: "20/04/2025", categorie: "100Fcfa", option: 1, prix: 800, composants: "2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz," },
-  { id: generateId(), date: "20/04/2025", categorie: "100Fcfa", option: 1, prix: 800, composants: "2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz, 2 bidon, 1 sac de riz," },
 ];
 
 export default function Campagn() {
-  const [data, setData] = useState(campagnes);
-
-  //slide gauche 
-  const [open, setOpen] = useState(false);
-
-
-  const route = useRouter()
+  const [data] = useState(campagnes);
 
   // modalpour la supression
-  const [aut, setAut] = useState(true)
-  const [openDeleteModale, setOpenDeleteModale] = useState(false)
+  const [aut, setAut] = useState(true);
+  const [openDeleteModale, setOpenDeleteModale] = useState(false);
   const targetEnter = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.target.value.toUpperCase() === "DELETE" ? setAut(false) : setAut(true)
-  }
+    e.target.value.toUpperCase() === "DELETE" ? setAut(false) : setAut(true);
+  };
 
-  const [nameActive, setNameActive] = useState("")
-
+  const [nameActive, setNameActive] = useState("");
 
   // modal pour le formulaire d'ajout de creation de campagne
-  const [openNewModale, setOpenNewModale] = useState(false)
+  const [openNewModale, setOpenNewModale] = useState(false);
 
   return (
     <div className="w-full flex gap-x-10 transition-all duration-300  p-6">
@@ -207,11 +169,10 @@ export default function Campagn() {
         <div className="flex justify-between items-center mb-4">
           <Button
             className="bg-[#FF4000] hover:bg-[#FF4000]/90 text-white"
-            onClick={() => { setOpenNewModale(true) }}
+            onClick={() => { setOpenNewModale(true); }}
           >
             Créer une Campagne
           </Button>
-
         </div>
 
         <div className="rounded-md border">
@@ -232,7 +193,6 @@ export default function Campagn() {
                 <TableRow
                   key={index}
                   className={index % 2 === 0 ? "bg-[#FFAE91]/10 " : ""}
-                  onClick={() => setOpen(true)} // Ouvrir le slide gauche au clic
                 >
                   <TableCell>{row.nom}</TableCell>
                   <TableCell>{new Date(row.selectionStart).toLocaleDateString()}</TableCell>
@@ -241,7 +201,6 @@ export default function Campagn() {
                   <TableCell >{new Date(row.tontineEnd).toLocaleDateString()}</TableCell>
                   <TableCell >
                     <Badge
-
                       className={
                         row.status === "TERMINER"
                           ? "text-xs text-green-600 bg-green-100 py-1 px-2 rounded"
@@ -250,8 +209,6 @@ export default function Campagn() {
                     >
                       • {row.status}
                     </Badge>
-
-
                   </TableCell>
                   <TableCell>
                     <DropdownMenu >
@@ -265,9 +222,8 @@ export default function Campagn() {
                           className="text-red-600"
                           onClick={() => {
                             setOpenDeleteModale(true);
-                            setNameActive(` ${row.nom} `)
+                            setNameActive(` ${row.nom} `);
                           }}
-
                         >
                           Supprimer
                         </DropdownMenuItem>
@@ -311,8 +267,7 @@ export default function Campagn() {
             <Button
               disabled={aut}
               type='submit'
-              onClick={() => { console.log("dddd") }}
-
+              onClick={() => { console.log("dddd"); }}
               className="bg-[#FF4000] hover:bg-[#FF4000]/90">
               Confirmer
             </Button>
@@ -323,14 +278,13 @@ export default function Campagn() {
       { /* POUR LA CREATION DE CAMPAGNE  */}
       <Dialog open={openNewModale} onOpenChange={setOpenNewModale} >
         <DialogContent className="sm:max-w-md ">
-          <form action={() => { alert("succes") }}>
+          <form action={() => { alert("succes"); }}>
             <DialogHeader className=" mb-5">
               <DialogTitle>CREATION DE CAMPAGNE</DialogTitle>
-              <DialogDescription>Ce formaulaire sert de création d'une nouvelle campagne</DialogDescription>
+              <DialogDescription>Ce formulaire sert de création d&apos;une nouvelle campagne</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4">
-
               {/* nom */}
               <div className="space-y-6">
                 <label className="text-sm font-medium">Nom:</label>
@@ -353,7 +307,6 @@ export default function Campagn() {
                   name="selectionStart"
                   className=" w-full "
                   required
-
                 />
               </div>
 
@@ -366,7 +319,6 @@ export default function Campagn() {
                   name="dureeSelectionJours"
                   className=" w-full "
                   required
-
                 />
               </div>
 
@@ -379,7 +331,6 @@ export default function Campagn() {
                   name=" dureeTontineSemaines"
                   className=" w-full "
                   required
-
                 />
               </div>
             </div>
@@ -391,16 +342,12 @@ export default function Campagn() {
                 </Button>
               </DialogClose>
               <Button type='submit' className="bg-[#FF4000]">
-
                 Confirmer
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
-
-
     </div>
-
   );
 }

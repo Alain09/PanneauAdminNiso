@@ -1,5 +1,5 @@
 // components/team/TeamList.tsx
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { TeamMember } from "@/type";
 import { Button } from "@/src/components/ui/button";
 import TeamMemberCard from "./teamMembersCard";

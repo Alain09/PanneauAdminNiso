@@ -1,7 +1,7 @@
 "use client"
-import { Search } from 'lucide-react'
+
 import React, { useEffect, useState } from 'react'
-import { SlidingNumber } from '../ui/sliding-number';
+
 
 
 interface Size {
@@ -10,20 +10,8 @@ interface Size {
 
 function Header({ size }: Size) {
 
-    const [currentTime, setCurrentTime] = useState(new Date());
+   
 
-    useEffect(() => {
-        // Mettre en place un intervalle qui met à jour l'heure chaque seconde
-        const timer = setInterval(() => {
-            const time = new Date();
-            // time.setDate(time.getDate() + 5).toString()
-            // alert(time.toString())
-            setCurrentTime(time);
-        }, 1000);
-
-        // Nettoyer l'intervalle quand le composant est démonté
-        return () => clearInterval(timer);
-    }, []);
 
     return (
 

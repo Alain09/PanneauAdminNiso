@@ -56,7 +56,7 @@ const initialData = [
 ];
 
 export default function Catalogue() {
-  const [data, setData] = useState(initialData);
+  const [data] = useState(initialData);
   const [filter, setFilter] = useState("Tout");
 
   //slide gauche 
@@ -81,9 +81,6 @@ export default function Catalogue() {
   }
 
   const [nameActive, setNameActive] = useState("")
-
-
-  ///
 
   return (
     <div className="w-full flex gap-x-10 transition-all duration-300  p-6">
@@ -142,16 +139,15 @@ export default function Catalogue() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
                           onClick={() => route.push(`/dashboard/catalogues/edit/${row.id}`)}
-
-                        >Modifier
+                        >
+                          Modifier
                         </DropdownMenuItem>
                         <DropdownMenuItem
                          className="text-red-600"
-                         onClick={()=>{
+                         onClick={() => {
                           setOpenDeleteModale(true);
                           setNameActive(`l'option ${row.option} de ${row.categorie}`)
-                        }}
-                         
+                         }}
                          >
                           Supprimer
                         </DropdownMenuItem>
@@ -164,9 +160,8 @@ export default function Catalogue() {
           </Table>
         </div>
       </div>
-      {
-        open &&
-        <Card className={` h-screen transition-all duration-300 p-4  ${open ? "w-[500px]" : ""}  `} >
+      {open && (
+        <Card className="h-screen transition-all duration-300 p-4 w-[500px]">
           <div className="flex justify-between items-center pb-5  border-b">
             <h2 className="text-medium font-semibold">Détails du catalogue</h2>
             <Button className=" text-sm py-1 px-2" onClick={() => setOpen(false)}>
@@ -177,13 +172,11 @@ export default function Catalogue() {
             {/* Contenu du slide gauche */}
             <p>Contenu du slide gauche</p>
           </div>
-
         </Card>
-
-      }
+      )}
 
       { /* POUR LA SUPPRESSION  */}
-      <Dialog open={openDeleteModale} onOpenChange={setOpenDeleteModale} >
+      <Dialog open={openDeleteModale} onOpenChange={setOpenDeleteModale}>
         <DialogContent className="sm:max-w-md ">
           <DialogHeader>
             <DialogTitle>SUPPRESSION</DialogTitle>
@@ -213,16 +206,12 @@ export default function Catalogue() {
               disabled={aut}
               type='submit'
               onClick={() => { console.log("dddd") }}
-
               className="bg-[#FF4000] hover:bg-[#FF4000]/90">
               Confirmer
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-
     </div>
-
   );
 }

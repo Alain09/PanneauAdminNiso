@@ -1,14 +1,12 @@
 "use client"
 import { Startscard } from '@/src/components/dash_composant/staticard';
-import { CalendarIcon, Eye, File, FileText, Loader, Loader2, Pencil, Trash2, UserCogIcon, Users } from 'lucide-react';
+import { Eye, File, FileText, Loader2, Pencil, Trash2, UserCogIcon, Users } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { Search, MoreVertical, Filter, Plus } from "lucide-react";
-import { Calendar } from "@/src/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
-  PopoverTrigger,
 } from "@/src/components/ui/popover";
 import {
   Dialog,
@@ -46,53 +44,22 @@ import { Badge } from "@/src/components/ui/badge";
 import { Card } from '@/src/components/ui/card';
 
 import { useRouter } from 'next/navigation';
-import { DataBaseUsersTabs, Donnees, UserProfile } from '@/type';
-import { set } from 'date-fns';
-import { generateId } from '@/src/lib/utils';
+import { Donnees } from '@/type';
 import { DataAction } from '@/src/components/hook_perso';
 
-
-
-
 function UserAll() {
-
-  // api e gestion de recuperation des donnees depuis la base de donnees
-  const [dataset, setDataset] = useState<UserProfile[]>();
-  const [loading, setLoading] = useState<boolean>(false);
-  useEffect(() => {
-    const ActionDonnee = async () => {
-      try {
-        const response = await fetch("/api/dashboard",
-          { method: "GET" }
-        );
-        const data = await response.json();
-
-        setLoading(false)
-      }
-      catch (error) {
-        console.log(error)
-      }
-
-    }
-
-    ActionDonnee();
-
-  }, [])
-
-///--------------------------------------------------- 
-  const route = useRouter()
-  const [dataUsers, setDataUsers] = useState<UserProfile[]>(Donnees)
+  const route = useRouter();
+  const [dataUsers] = useState(Donnees);
 
   // la destructuration des dataActions
-  const { UsersStructuration, CaracterisqueUniques } = DataAction({ enter: Donnees })
+  const { UsersStructuration, CaracterisqueUniques } = DataAction({ enter: Donnees });
 
   // destructuration de Caracterisqtique 
-  const { uniqueCategories, uniqueStatuts, valuesEncours, valuesTermine } = CaracterisqueUniques()
-
+  const { uniqueCategories, uniqueStatuts, valuesEncours, valuesTermine } = CaracterisqueUniques();
 
   // chargement de donnees
-  const [dataTabsUsers, setDataTabsUsers] = useState(UsersStructuration()) // les donnees du tableau
-  const [dataTabsUsersrRload, setDataTabsUsersReload] = useState(UsersStructuration()) // les donnees du tableau recharger
+  const [dataTabsUsers, setDataTabsUsers] = useState(UsersStructuration()); // les donnees du tableau
+  const [dataTabsUsersrRload] = useState(UsersStructuration()); // les donnees du tableau recharger
 
   const total = valuesEncours + valuesTermine;
   const SectorSat = [
@@ -100,22 +67,17 @@ function UserAll() {
     { name: 'Statut Terminé', value: Math.round((valuesTermine / total) * 100), color: '#24D26D' }
   ];
 
-
-
-
   // modal pour la supression
   // fiiltrage  
-  const [filter, setFilter] = useState(false)
-  const [aut, setAut] = useState(true)
-  const [openDeleteModale, setOpenDeleteModale] = useState(false)
+  const [filter, setFilter] = useState(false);
+  const [aut, setAut] = useState(true);
+  const [openDeleteModale, setOpenDeleteModale] = useState(false);
   const targetEnter = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.target.value.toUpperCase() === "DELETE" ? setAut(false) : setAut(true)
-  }
-
+    e.target.value.toUpperCase() === "DELETE" ? setAut(false) : setAut(true);
+  };
 
   // texte afficher dans la modale de suppression
-  const [nameActive, setNameActive] = useState<string | undefined>("")
-
+  const [nameActive, setNameActive] = useState<string | undefined>("");
 
   /// pour les valeurs du modal servant pour le filtrage
   const [selectedCategorie, setSelectedCategorie] = useState<string>("");
@@ -132,24 +94,18 @@ function UserAll() {
     setFilter(false);
   };
 
-
   // fonction de rechargement
-  const [load, setLoad] = useState(false)
+  const [load, setLoad] = useState(false);
   const handleReload = () => {
-    setLoad(true)
+    setLoad(true);
     setDataTabsUsers(dataTabsUsersrRload);
     setSelectedCategorie("");
     setSelectedStatutCategorie("");
     setSearchUser("");
     setTimeout(() => {
-      setLoad(false)
-    }, 1000)
-
+      setLoad(false);
+    }, 1000);
   };
-
-
-
-
 
   /// recherche d'un utilisateur
   const [searchUser, setSearchUser] = useState("");
@@ -157,18 +113,14 @@ function UserAll() {
   // Filter references when search query changes
   useEffect(() => {
     if (searchUser.trim() === '') {
-      setDataTabsUsers(dataTabsUsersrRload)
+      setDataTabsUsers(dataTabsUsersrRload);
     } else {
-      const filteredData = dataTabsUsers.filter((user) =>
+      const filteredData = dataTabsUsersrRload.filter((user) =>
         user?.firstName?.toLowerCase().includes(searchUser) ||
-        user?.lastName?.toLowerCase().includes(searchUser))
+        user?.lastName?.toLowerCase().includes(searchUser));
       setDataTabsUsers(filteredData);
     }
-  }, [searchUser])
-
-  useEffect(() => {
-    console.log("tab", dataTabsUsers)
-  },)
+  }, [searchUser, dataTabsUsersrRload]);
 
   return (
     <div>
@@ -180,13 +132,10 @@ function UserAll() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Startscard title="Utilisateurs" description="utilisateurs enregistrés " value={200} icon={<Users className="w-4 h-4 text-[#FF4000]" />} />
               <Startscard title="Cas particuliers" description="utilisateurs analphabètes" value="20" icon={<UserCogIcon className="w-4 h-4 text-[#FF4000]" />} />
-
             </div>
-
           </div>
           <Card className=" p-6 rounded-lg sborder border-gray-100 shadow-gray-100  w-2/3 h-[300px]">
             <h2 className="text-2xl font-bold mb-4 ">Statut des Utilisateurs </h2>
-
             <div className="flex items-center">
               {/* Graphique */}
               <div className="w-40 h-40">
@@ -229,7 +178,6 @@ function UserAll() {
               </div>
             </div>
           </Card>
-
         </div>
         { /* tableau  */}
         <div className="w-full">
@@ -254,14 +202,12 @@ function UserAll() {
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
               </div>
               <div className="flex items-center space-x-4">
-
                 <Button
                   variant="destructive"
                   className="flex items-center bg-[#FF4000] hover:bg-[#FF4000]/90"
                   onClick={() => setFilter(true)}
                 >
                   <Filter className="mr-2 h-4 w-4"
-
                   />
                   Filtrer
                 </Button>
@@ -271,7 +217,6 @@ function UserAll() {
                   onClick={handleReload}
                 >
                   <Loader2 className={`mr-2 h-4 w-4 ${load ? "animate-spin duration-300" : ""}`}
-
                   />
                   Recharger
                 </Button>
@@ -297,7 +242,6 @@ function UserAll() {
                     {/* telecharger le pdf */}
                     <DropdownMenuItem className="px-3 py-2 text-sm cursor-pointer  hover:rounded-lg hover:shadow-gray-200">
                       <div className="flex items-center"
-
                       >
                         <div className="bg-gray-100 p-1.5 rounded-full mr-3">
                           <FileText className="h-4 w-4 text-gray-500" />
@@ -309,17 +253,13 @@ function UserAll() {
                     {/* telecharger le fichier excel */}
                     <DropdownMenuItem className="px-3 py-2 text-sm cursor-pointer  hover:rounded-lg hover:shadow-gray-200">
                       <div className="flex items-center"
-
                       >
                         <div className="bg-gray-100 p-1.5 rounded-full mr-3">
                           <File className="h-4 w-4 text-gray-500" />
                         </div>
-                        <span>Exporter l'excel</span>
+                        <span>Exporter l&apos;excel</span>
                       </div>
                     </DropdownMenuItem>
-
-                    {/* Item Supprimer */}
-
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -335,7 +275,7 @@ function UserAll() {
                     <TableHead>Provenance</TableHead>
                     <TableHead >Catégories</TableHead>
                     <TableHead>Option(s)</TableHead>
-                    <TableHead>Date d'entrée</TableHead>
+                    <TableHead>Date d&apos;entrée</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead>Action</TableHead>
                   </TableRow>
@@ -366,7 +306,6 @@ function UserAll() {
                       <TableCell>{user?.dateEntree}</TableCell>
                       <TableCell>
                         <Badge
-
                           className={
                             user?.status === "Terminé"
                               ? "text-xs text-green-600 bg-green-100 py-1 px-2 rounded"
@@ -416,7 +355,7 @@ function UserAll() {
                               <div className="flex items-center"
                                 onClick={() => {
                                   setOpenDeleteModale(true);
-                                  setNameActive(`la catégorie ${user?.category}Fcfa de  ${user?.firstName} ${user?.lastName}`)
+                                  setNameActive(`la catégorie ${user?.category}Fcfa de  ${user?.firstName} ${user?.lastName}`);
                                 }}
                               >
                                 <div className="bg-gray-100 p-1.5 rounded-full mr-3">
@@ -434,10 +373,7 @@ function UserAll() {
               </Table>
             </div>
           </Card>
-
         </div>
-
-
       </main>
 
       {/* dialogue pour le filtrage */}
@@ -486,7 +422,6 @@ function UserAll() {
                     </SelectContent>
                   </Select>
                 </div>
-
               </div>
             </div>
             <DialogFooter className=' mt-5'>
@@ -533,17 +468,15 @@ function UserAll() {
             <Button
               disabled={aut}
               type='submit'
-              onClick={() => { console.log("dddd") }}
-
+              onClick={() => { console.log("dddd"); }}
               className="bg-orange-500 hover:bg-orange-600">
               Confirmer
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
     </div>
-  )
+  );
 }
 
-export default UserAll
+export default UserAll;

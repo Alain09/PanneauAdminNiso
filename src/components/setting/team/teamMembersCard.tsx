@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/src/components/ui/avatar";
+import { Avatar} from "@/src/components/ui/avatar";
 
 export interface TeamMemberCardProps {
   member: TeamMember;
