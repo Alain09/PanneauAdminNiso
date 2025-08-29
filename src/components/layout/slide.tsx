@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '../ui/button';
 import {
   ChevronRight,
@@ -30,10 +30,18 @@ const navItems = [
 function Slide({ setSize }: Size) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
     setSize(!sidebarCollapsed);
+  };
+
+  // Fonction de navigation
+  const handleNavigation = (path: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    console.log('Navigation vers:', path); // Pour débugger
+    router.push(path);
   };
 
   // Fonction améliorée pour déterminer si un lien est actif
@@ -70,21 +78,20 @@ function Slide({ setSize }: Size) {
               const Icon = item.icon;
               
               return (
-                <Link 
-                  href={item.path} 
+                <div
                   key={item.path}
-                  className={`block rounded-lg transition-colors ${
+                  onClick={(e) => handleNavigation(item.path, e)}
+                  className={`block rounded-lg transition-colors cursor-pointer ${
                     isActive 
                       ? 'bg-[#FF4000] text-white' 
                       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-500'
                   }`}
-                  prefetch={true}
                 >
                   <div className={`flex items-center w-full p-3 rounded-lg ${sidebarCollapsed ? 'justify-center' : 'justify-start'}`}>
                     <Icon className="h-5 w-5" />
                     {!sidebarCollapsed && <span className="ml-3">{item.label}</span>}
                   </div>
-                </Link>
+                </div>
               );
             })}
           </nav>
