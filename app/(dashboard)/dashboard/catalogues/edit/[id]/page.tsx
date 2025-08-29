@@ -1,5 +1,6 @@
+"use client";
 
-import React, { useState } from "react";
+import React, { useState ,use } from "react";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card";
@@ -10,9 +11,9 @@ import Subcomposant from "@/src/components/composantProduct/subcomposant";
 import Usehook from "@/src/components/hook_perso";
 
 // Ajoutez async à la fonction et await pour les params
-export default async function CatalogueFormateEdit({ params }: { params: Promise<{ id: string }> }) {  
+export default function CatalogueFormateEdit({ params }: { params: Promise<{ id: string }> }) {  
   // Résolvez la promesse des params
-  const resolvedParams = await params;
+  const {id}=use(params);
   
   // cette fonction permet de generer un id unique pour chaque composant
   const generateId = () => {
@@ -86,7 +87,7 @@ export default async function CatalogueFormateEdit({ params }: { params: Promise
             <CardHeader className=" w-full">
               <CardTitle className="text-[#FF4000] font-medium mb-1"
               >
-                Edition de catalogue {resolvedParams.id} {/* Utilisez resolvedParams.id */}
+                Edition de catalogue {id} {/* Utilisez resolvedParams.id */}
               </CardTitle>
               <CardDescription className="text-gray-500 text-sm  ">
                 ces informations seront conservées dans la base de données

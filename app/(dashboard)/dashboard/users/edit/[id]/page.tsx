@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState,use } from "react";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Textarea } from "@/src/components/ui/textarea";
@@ -13,7 +13,7 @@ import Bande from "@/src/components/users/bande";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/src/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/src/components/ui/select";
 
-export default async function UserProfilNew({ params }: { params: Promise<{ id: string }> }){
+export default function UserProfilNew({ params }: { params: Promise<{ id: string }> }){
 
   // declaration des donnees specifique a l'utilisateur
   const [userUnique] = useState<UserProfile>(Donnees[0]);
@@ -91,13 +91,13 @@ export default async function UserProfilNew({ params }: { params: Promise<{ id: 
 
 
    // Résolvez la promesse des params
-  const resolvedParams = await params;
+  const {id}=use(params);
 
   return (
     <div className=" max-w-4xl mx-auto p-6 ">
       <Bande />
       <Card className=" p-6 shadow-gray-100 border border-gray-100">
-        <div>{resolvedParams.id}</div>
+        <div>{id}</div>
         <form action="">
 
           {/* Information personnelle section */}
