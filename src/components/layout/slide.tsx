@@ -35,11 +35,13 @@ function Slide({ setSize }: Size) {
     setSize(!sidebarCollapsed)
   }
 
-  // Fonction corrigée pour déterminer si un lien est actif
+  // Fonction CORRIGÉE pour déterminer si un lien est actif
   const isLinkActive = (linkPath: string) => {
     if (linkPath === '/dashboard') {
+      // Pour le dashboard, on veut une correspondance exacte
       return pathname === '/dashboard'
     }
+    // Pour les autres routes, on vérifie si le pathname commence par le lien
     return pathname.startsWith(linkPath)
   }
 
@@ -65,7 +67,11 @@ function Slide({ setSize }: Size) {
               const Icon = item.icon
               
               return (
-                <Link href={item.path} key={item.path} className='my-5' >
+                <Link 
+                  href={item.path} 
+                  key={item.path} 
+                  className='my-5 block'
+                >
                   <Button 
                     variant="ghost" 
                     className={`w-full my-1 ${sidebarCollapsed ? 'px-3 justify-center' : 'px-4 justify-start'} ${
