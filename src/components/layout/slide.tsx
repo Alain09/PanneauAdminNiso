@@ -73,27 +73,17 @@ function Slide({ setSize }: Size) {
                 <Link 
                   href={item.path} 
                   key={item.path}
-                  className={`my-5 block rounded-lg transition-colors ${
+                  className={`block rounded-lg transition-colors ${
                     isActive 
                       ? 'bg-[#FF4000] text-white' 
                       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-500'
                   }`}
-                  prefetch={true} // Activation du préchargement pour une navigation plus rapide:cite[1]
+                  prefetch={true}
                 >
-                  <Button 
-                    variant="ghost" 
-                    className={`w-full my-1 ${sidebarCollapsed ? 'px-3 justify-center' : 'px-4 justify-start'} ${
-                      isActive 
-                        ? 'bg-[#FF4000] text-white hover:bg-[#FF4000] hover:text-white' 
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-500'
-                    }`}
-                    asChild // Permet à Button de s'adapter correctement comme enfant de Link
-                  >
-                    <div className="flex items-center">
-                      <Icon className="h-5 w-5" />
-                      {!sidebarCollapsed && <span className="ml-3">{item.label}</span>}
-                    </div>
-                  </Button>
+                  <div className={`flex items-center w-full p-3 rounded-lg ${sidebarCollapsed ? 'justify-center' : 'justify-start'}`}>
+                    <Icon className="h-5 w-5" />
+                    {!sidebarCollapsed && <span className="ml-3">{item.label}</span>}
+                  </div>
                 </Link>
               );
             })}
