@@ -65,7 +65,6 @@ export default function RootLayout({
                     size={size} 
                     isMobile={isMobile}
                     isTablet={isTablet}
-                    mobileMenuOpen={mobileMenuOpen}
                     setMobileMenuOpen={setMobileMenuOpen}
                 />
             </div>

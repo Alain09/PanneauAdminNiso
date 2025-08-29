@@ -202,7 +202,7 @@ export default function Dashboard() {
                 user?.lastName?.toLowerCase().includes(searchUserHistory))
             setTabsUsersStory(filteredDataHistory);
         }
-    }, [searchUserHistory]);
+    }, [searchUserHistory,listeHistoryPaiement]);
     //---------------- fin ------------------------------------------------//
 
     //------------- gestionnaire d'etat pour les paiements et les statistiques----------------//

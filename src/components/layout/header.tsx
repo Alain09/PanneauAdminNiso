@@ -7,11 +7,10 @@ interface Size {
     size: boolean
     isMobile: boolean
     isTablet: boolean
-    mobileMenuOpen: boolean
     setMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-function Header({ size, isMobile, isTablet, mobileMenuOpen, setMobileMenuOpen }: Size) {
+function Header({ size, isMobile, isTablet, setMobileMenuOpen }: Size) {
     return (
         <header 
             className={`

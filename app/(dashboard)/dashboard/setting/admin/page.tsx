@@ -117,7 +117,7 @@ export default function Home() {
       <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
         <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Détails de l'administrateur</DialogTitle>
+            <DialogTitle>Détails de ladministrateur</DialogTitle>
           </DialogHeader>
           {selectedMember && (
             <MemberDetails member={selectedMember} />

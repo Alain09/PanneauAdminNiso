@@ -98,7 +98,7 @@ export default function Catalogue() {
     } else {
       setSelectedRow(null);
     }
-  }, [filteredData]);
+  }, [filteredData,selectedRow]);
 
   // modal pour la suppression
   const [aut, setAut] = useState(true);
