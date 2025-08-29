@@ -1,8 +1,9 @@
-"use client"
-import React, { useState } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Button } from '../ui/button'
+"use client";
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Button } from '../ui/button';
 import {
   ChevronRight,
   ChevronLeft,
@@ -12,38 +13,36 @@ import {
   CreditCard,
   Settings,
   LogOut,
-} from "lucide-react"
+} from "lucide-react";
 
 interface Size {
-  setSize: React.Dispatch<React.SetStateAction<boolean>>
+  setSize: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const navItems = [
-  { path: '/dashboard', icon: Home, label: 'Dashboard' },
+  { path: '/dashboard', icon: Home, label: 'Dashboard', exact: true },
   { path: '/dashboard/users', icon: Users, label: 'Utilisateurs' },
   { path: '/dashboard/catalogues', icon: List, label: 'Catalogue' },
   { path: '/dashboard/paiement', icon: CreditCard, label: 'Paiement' },
   { path: '/dashboard/setting', icon: Settings, label: 'Parametre' },
-]
+];
 
 function Slide({ setSize }: Size) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const pathname = usePathname()
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const pathname = usePathname();
   
   const toggleSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed)
-    setSize(!sidebarCollapsed)
-  }
+    setSidebarCollapsed(!sidebarCollapsed);
+    setSize(!sidebarCollapsed);
+  };
 
-  // Fonction CORRIGÉE pour déterminer si un lien est actif
-  const isLinkActive = (linkPath: string) => {
-    if (linkPath === '/dashboard') {
-      // Pour le dashboard, on veut une correspondance exacte
-      return pathname === '/dashboard'
+  // Fonction améliorée pour déterminer si un lien est actif
+  const isLinkActive = (linkPath: string, exact: boolean = false) => {
+    if (exact) {
+      return pathname === linkPath;
     }
-    // Pour les autres routes, on vérifie si le pathname commence par le lien
-    return pathname.startsWith(linkPath)
-  }
+    return pathname.startsWith(linkPath);
+  };
 
   return (
     <div className={`${sidebarCollapsed ? 'w-18' : 'w-56'} bg-white/90 backdrop-blur-lg absolute h-screen z-[1000] left-0 pt-2 transition-all duration-300`}>
@@ -55,7 +54,11 @@ function Slide({ setSize }: Size) {
           ) : (
             <h1 className="text-xl font-bold">N</h1>
           )}
-          <button onClick={toggleSidebar} className="p-1 rounded-lg hover:bg-orange-100">
+          <button 
+            onClick={toggleSidebar} 
+            className="p-1 rounded-lg hover:bg-orange-100"
+            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
             {sidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
           </button>
         </div>
@@ -63,14 +66,19 @@ function Slide({ setSize }: Size) {
         <div className="flex-1 py-6">
           <nav className="space-y-5 px-2">
             {navItems.map((item) => {
-              const isActive = isLinkActive(item.path)
-              const Icon = item.icon
+              const isActive = isLinkActive(item.path, item.exact);
+              const Icon = item.icon;
               
               return (
                 <Link 
                   href={item.path} 
-                  key={item.path} 
-                  className='my-5 block'
+                  key={item.path}
+                  className={`my-5 block rounded-lg transition-colors ${
+                    isActive 
+                      ? 'bg-[#FF4000] text-white' 
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-500'
+                  }`}
+                  prefetch={true} // Activation du préchargement pour une navigation plus rapide:cite[1]
                 >
                   <Button 
                     variant="ghost" 
@@ -79,12 +87,15 @@ function Slide({ setSize }: Size) {
                         ? 'bg-[#FF4000] text-white hover:bg-[#FF4000] hover:text-white' 
                         : 'text-gray-600 hover:bg-gray-100 hover:text-gray-500'
                     }`}
+                    asChild // Permet à Button de s'adapter correctement comme enfant de Link
                   >
-                    <Icon className="h-5 w-5" />
-                    {!sidebarCollapsed && <span className="ml-3">{item.label}</span>}
+                    <div className="flex items-center">
+                      <Icon className="h-5 w-5" />
+                      {!sidebarCollapsed && <span className="ml-3">{item.label}</span>}
+                    </div>
                   </Button>
                 </Link>
-              )
+              );
             })}
           </nav>
         </div>
@@ -100,7 +111,7 @@ function Slide({ setSize }: Size) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default Slide
+export default Slide;
