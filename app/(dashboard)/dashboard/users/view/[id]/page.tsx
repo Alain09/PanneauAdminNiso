@@ -26,8 +26,7 @@ import { Input } from "@/src/components/ui/input";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-export default function UserProfilePage({ params,
-}: { params: { id: string } }) {
+export default async function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
 
     const route = useRouter();
 
@@ -74,6 +73,9 @@ export default function UserProfilePage({ params,
         DatePaiement: new Date(Date.now()),
     });
 
+
+     // Résolvez la promesse des params
+  const resolvedParams = await params;
     return (
         <div className="px-6 py-3  min-h-screen">
             { /* btn retour  */}
@@ -89,7 +91,7 @@ export default function UserProfilePage({ params,
                                         <CardContent>
                                             <div className="flex justify-between items-center mb-6">
                                                 <h1 className="text-4xl font-bold">
-                                                    Hello, {params.id} <span className="text-orange-500">{userUnique.firstName} <span>.</span> {userUnique.lastName.toString().charAt(0)}</span>
+                                                    Hello, {resolvedParams.id} <span className="text-orange-500">{userUnique.firstName} <span>.</span> {userUnique.lastName.toString().charAt(0)}</span>
                                                 </h1>
                                             </div>
 

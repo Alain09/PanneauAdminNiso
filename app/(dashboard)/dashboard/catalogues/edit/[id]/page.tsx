@@ -10,7 +10,11 @@ import Bande from "@/src/components/users/bande";
 import Subcomposant from "@/src/components/composantProduct/subcomposant";
 import Usehook from "@/src/components/hook_perso";
 
-export default function CatalogueFormateEdit( { params }: { params: { id: string } }) {  
+// Ajoutez async à la fonction et await pour les params
+export default async function CatalogueFormateEdit({ params }: { params: Promise<{ id: string }> }) {  
+  // Résolvez la promesse des params
+  const resolvedParams = await params;
+  
   // cette fonction permet de generer un id unique pour chaque composant
   const generateId = () => {
     return Math.random().toString() + new Date().toString()
@@ -83,7 +87,7 @@ export default function CatalogueFormateEdit( { params }: { params: { id: string
             <CardHeader className=" w-full">
               <CardTitle className="text-[#FF4000] font-medium mb-1"
               >
-                Edition de catalogue {params.id}
+                Edition de catalogue {resolvedParams.id} {/* Utilisez resolvedParams.id */}
               </CardTitle>
               <CardDescription className="text-gray-500 text-sm  ">
                 ces informations seront conservées dans la base de données

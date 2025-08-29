@@ -6,38 +6,43 @@ import { generateId } from '@/src/lib/utils'
 import { TeamMember } from '@/type'
 import React, { useState } from 'react'
 
-function NewMemberTeam() {
-     const [formData, setFormData] = useState<TeamMember>({
-        id:generateId(),
-        firstName: "Alain",
-        lastName: "HOUNGA",
-        email: "alain09@gmail.com",
-        contact: "+229 0161624396",
-        role: "Co-fondateur",
-        position: "Chef service informatique",
-        image:""
-      });
+// Si ce composant reçoit des params, ajoutez cette signature
+export default async function NewMemberTeam ({ params }: { params: Promise<{ id: string }> }) {
+  // Si vous avez besoin des params, résolvez-les
+  // const resolvedParams = params ? await params : {};
+  
+  const [formData, setFormData] = useState<TeamMember>({
+    id: generateId(),
+    firstName: "Alain",
+    lastName: "HOUNGA",
+    email: "alain09@gmail.com",
+    contact: "+229 0161624396",
+    role: "Co-fondateur",
+    position: "Chef service informatique",
+    image: ""
+  });
 
- // here we wiil put a trust api route 
-    const handleSubmit = ()=>{
-        alert("formulaire enregistré")
-    }
+  // here we wiil put a trust api route 
+  const handleSubmit = () => {
+    alert("formulaire enregistré")
+  }
+  
+  // Le rendu du composant
+   // Résolvez la promesse des params
+  const resolvedParams = await params;
+
   return (
     <div className='p-6'>
-        <Bande/>
-        <Card className=' shadow-gray-50 border-gray-100 mx-48'>
-            <CardHeader className=' mb-5'>
-                <CardTitle className='text-[#FF4000]'>Edition </CardTitle>
-                <CardDescription>Mise à jour des coordonnées d&apos;un membre Administratif </CardDescription>
-            </CardHeader>
-            <CardContent>
-                
-                <AddMemberForm formData={formData} setFormData={setFormData} onSubmit={handleSubmit}/>      
-            </CardContent>
-        </Card>
-
+      <Bande/>
+      <Card className=' shadow-gray-50 border-gray-100 mx-48'>
+        <CardHeader className=' mb-5'>
+          <CardTitle className='text-[#FF4000]'>Edition  {resolvedParams.id} </CardTitle>
+          <CardDescription>Mise à jour des coordonnées d&apos;un membre Administratif </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AddMemberForm formData={formData} setFormData={setFormData} onSubmit={handleSubmit}/>      
+        </CardContent>
+      </Card>
     </div>
   )
 }
-
-export default NewMemberTeam
