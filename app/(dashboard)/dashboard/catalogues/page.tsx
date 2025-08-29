@@ -73,11 +73,12 @@ export default function Catalogue() {
   //
   const route = useRouter()
 
-  // modal pour la supression
+  // modalpour la supression
   const [aut, setAut] = useState(true)
   const [openDeleteModale, setOpenDeleteModale] = useState(false)
   const targetEnter = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.target.value.toUpperCase() === "DELETE" ? setAut(false) : setAut(true);
+    const reseach = e.target.value.toUpperCase() === "DELETE" ? setAut(false) : setAut(true);
+    return reseach
   }
 
   const [nameActive, setNameActive] = useState("")
@@ -175,7 +176,7 @@ export default function Catalogue() {
         </Card>
       )}
 
-      {/* POUR LA SUPPRESSION */}
+      { /* POUR LA SUPPRESSION  */}
       <Dialog open={openDeleteModale} onOpenChange={setOpenDeleteModale}>
         <DialogContent className="sm:max-w-md ">
           <DialogHeader>
