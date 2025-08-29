@@ -2,27 +2,23 @@
 
 import { useEffect, useState, useMemo } from "react";
 import {
-    ChevronRight,
-    ChevronLeft,
-    Home,
+ 
     Users,
-    List,
-    Clock,
+   
     CreditCard,
-    Settings,
-    LogOut,
+   
     Search,
     FileText,
-    CalendarIcon,
-    Eye, Pencil, Trash2,
+   
+    Eye,  
     MoreVertical,
     Filter,
-    Clock4,
+  
     Clock12,
-    User,
+
     Loader2,
     File,
-    Check,
+    
     Copy,
     CopyCheck
 } from "lucide-react";
@@ -55,7 +51,7 @@ import {
     DialogFooter,
     DialogClose
 } from "@/src/components/ui/dialog";
-import { Checkbox } from "@/src/components/ui/checkbox";
+
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -77,10 +73,6 @@ import {
     TabsTrigger,
 } from "@/src/components/ui/tabs";
 
-import { Calendar } from "@/src/components/ui/calendar";
-import {
-    Popover,
-} from "@/src/components/ui/popover";
 import {
     Select,
     SelectContent,
@@ -92,7 +84,7 @@ import {
 import { Startscard } from "@/src/components/dash_composant/staticard";
 import { useRouter } from "next/navigation";
 import CounTimes from "@/src/components/dash_composant/CounTimes";
-import { Donnees, PaymentDataVariation, StatisticCategories, PaymentHistoryWeekActif, UserProfile, UsersLatePayment } from "@/type";
+import { Donnees, PaymentDataVariation, StatisticCategories, PaymentHistoryWeekActif, UsersLatePayment } from "@/type";
 import { DataAction, ConvertInKilo, calculerDatesSemaine, formatDate } from "@/src/components/hook_perso";
 import { copyToClipboardForWhatsApp } from "@/src/components/dash_composant/ClibboardCopieWhatsapp";
 
@@ -105,7 +97,7 @@ export default function Dashboard() {
             try {
                 setLoading(true);
                 const response = await fetch("/api/dashboard", { method: "GET" });
-                const data = await response.json();
+                
                 setLoading(false);
             } catch (error) {
                 console.log(error);

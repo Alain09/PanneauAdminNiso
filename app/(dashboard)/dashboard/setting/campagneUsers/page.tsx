@@ -23,7 +23,7 @@ import { Input } from "@/src/components/ui/input";
 import { Badge } from "@/src/components/ui/badge";
 
 // Données initiales pour le tableau
-const generateId = () => Math.random().toString(36).substring(2) + Date.now().toString(36);
+
 
 const campagnes = [
   {

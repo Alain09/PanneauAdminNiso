@@ -143,12 +143,12 @@ export default function Catalogue() {
                           Modifier
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                         className="text-red-600"
-                         onClick={() => {
-                          setOpenDeleteModale(true);
-                          setNameActive(`l'option ${row.option} de ${row.categorie}`)
-                         }}
-                         >
+                          className="text-red-600"
+                          onClick={() => {
+                            setOpenDeleteModale(true);
+                            setNameActive(`l'option ${row.option} de ${row.categorie}`)
+                          }}
+                        >
                           Supprimer
                         </DropdownMenuItem>
                       </DropdownMenuContent>

@@ -11,18 +11,13 @@ import {
 } from "@/src/components/ui/table";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger
-} from "@/src/components/ui/dropdown-menu";
-import { Edit, MoreVertical, Calendar, FileText, Wallet, Pencil } from "lucide-react";
+
+import { Edit, MoreVertical, Calendar, FileText, Wallet, } from "lucide-react";
 import Bande from "@/src/components/users/bande";
 import { Tabs, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
-import { Card, CardContent, CardTitle } from "@/src/components/ui/card";
+import { Card, CardContent } from "@/src/components/ui/card";
 import { TabsContent } from "@radix-ui/react-tabs";
-import { Categories, CategoriesStatisquesPayement, Donnees, StatsCardProps, TontineOption, UniqueUser, UserProfile } from '@/type';
+import { CategoriesStatisquesPayement, Donnees, TontineOption, UserProfile } from '@/type';
 import StatisCardUser from "@/src/components/users/statisCard";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/src/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/src/components/ui/select";
@@ -34,75 +29,41 @@ import Image from "next/image";
 export default function UserProfilePage({ params,
 }: { params: { id: string } }) {
 
-
-    const { id } = params; // Extracting the ID from the URL parameters
-    const route = useRouter()
-
+    const route = useRouter();
 
     // declaration des donnees specifique a l'utilisateur
-    const [userUnique, setUserUnique] = useState<UserProfile>(Donnees[0])
+    const [userUnique] = useState<UserProfile>(Donnees[0]);
 
     // recuperation des categories 
-    const categories = userUnique.DescriptionChoixOfEachUser?.flatMap((cat) => cat.category).sort() as string[]
+    const categories = userUnique.DescriptionChoixOfEachUser?.flatMap((cat) => cat.category).sort() as string[];
 
     // la mise a jour sur les details de la tontine choisie
-    const [selectCategories, setSelectCategories] = useState(categories[0])
+    const [selectCategories, setSelectCategories] = useState(categories[0]);
 
     // structuration des données pour l'affichage par selection 
-    const [uniqueUserData, setUniqueUserData] = useState<CategoriesStatisquesPayement[]>(userUnique.DescriptionChoixOfEachUser as CategoriesStatisquesPayement[]);
+    const [uniqueUserData] = useState<CategoriesStatisquesPayement[]>(userUnique.DescriptionChoixOfEachUser as CategoriesStatisquesPayement[]);
 
-
-
-
-    // fonction pour la recuperatin des des otpionsDescriptions a une seule ocurence d'option par categories
     // recuperationsd de tous ls OptionDescriptions
-    const OptionsDescriptions = userUnique.DescriptionChoixOfEachUser?.flatMap(items => items.optionsDescription) as TontineOption[]
-    // la fonction faisant l'unicite des options par categories 
-    const MiseAjout = (model: TontineOption[]) => {
-        const unique: TontineOption[] = [];
-        const seen = new Set();
-
-        for (const item of model) {
-            const key = `${item.category}-${item.option}`;
-            if (!seen.has(key)) {
-                seen.add(key);
-                unique.push(item);
-            }
-        }
-
-        return unique
-    }
+    const OptionsDescriptions = userUnique.DescriptionChoixOfEachUser?.flatMap(items => items.optionsDescription) as TontineOption[];
 
     // application de la function a optionTab
-    const [optionTab, setOptionTab] = useState<TontineOption[]>(OptionsDescriptions)
-
-
-
-
+    const [optionTab] = useState<TontineOption[]>(OptionsDescriptions);
 
     useEffect(() => {
-        console.log("tab", optionTab)
-    }, [])
-
-
+        console.log("tab", optionTab);
+    }, [optionTab]);
 
     const statuts = [
         { id: "1", name: "Payé" },
         { id: "2", name: "Retard" },
+    ];
 
-    ]
-
-    const [selectedMontant, setSelectedMontant] = useState<number>();
     const [selectedStatut, setSelectedStatut] = useState<string>("");
 
-
-
     //modal pour la mise a des donnees
-    const [modal, setModal] = useState(false)
-
+    const [modal, setModal] = useState(false);
 
     // pour prendre les donnes du modale
-
     const [datamodal, setDatamodal] = useState({
         id: "",
         week: "",
@@ -111,7 +72,7 @@ export default function UserProfilePage({ params,
         listOptions: [] as string[],
         totalPaidByWeek: 0,
         DatePaiement: new Date(Date.now()),
-    })
+    });
 
     return (
         <div className="px-6 py-3  min-h-screen">
@@ -120,8 +81,6 @@ export default function UserProfilePage({ params,
             <div>
                 {/* Left Section - User details and transactions */}
                 <div className="flex  gap-6 w-full  relative">
-
-
                     <Tabs className="flex-1 space-y-6 w-full " defaultValue={categories[0]} orientation="vertical">
                         {
                             uniqueUserData.filter(user => user.category === selectCategories)
@@ -130,11 +89,9 @@ export default function UserProfilePage({ params,
                                         <CardContent>
                                             <div className="flex justify-between items-center mb-6">
                                                 <h1 className="text-4xl font-bold">
-                                                    Hello, <span className="text-orange-500">{userUnique.firstName} <span>.</span> {userUnique.lastName.toString().charAt(0)}</span>
+                                                    Hello, {params.id} <span className="text-orange-500">{userUnique.firstName} <span>.</span> {userUnique.lastName.toString().charAt(0)}</span>
                                                 </h1>
-
                                             </div>
-
 
                                             <div className="mb-6 flex justify-between items-center">
                                                 <h2 className="text-lg font-medium mb-3">Catégorie(s) choisi(es)</h2>
@@ -158,7 +115,6 @@ export default function UserProfilePage({ params,
                                                     <Button className="rounded-md">
                                                         Exporter sous
                                                     </Button>
-
                                                 </div>
 
                                                 <div className="border rounded-lg overflow-hidden">
@@ -172,7 +128,6 @@ export default function UserProfilePage({ params,
                                                                 </TableHead>
                                                                 <TableHead>
                                                                     <div className="flex items-center ">
-
                                                                         Catégorie
                                                                     </div>
                                                                 </TableHead>
@@ -188,7 +143,6 @@ export default function UserProfilePage({ params,
                                                                 </TableHead>
                                                                 <TableHead>
                                                                     <div className="flex items-center ">
-
                                                                         Montant à payer
                                                                     </div>
                                                                 </TableHead>
@@ -198,7 +152,6 @@ export default function UserProfilePage({ params,
                                                         </TableHeader>
                                                         <TableBody>
                                                             {user.detailPaiementOfThisCategorie?.sort()?.map((payment, index) => {
-
                                                                 return (
                                                                     <TableRow key={index} className="bg-orange-50/30">
                                                                         <TableCell>{new Date(payment?.DatePaiement as Date).toLocaleDateString()}</TableCell>
@@ -233,31 +186,23 @@ export default function UserProfilePage({ params,
                                                                                             listOptions: user.listOptions as string[],
                                                                                             totalPaidByWeek: payment.totalToPayByWeekOfThisCategory as number,
                                                                                             DatePaiement: payment.DatePaiement as Date,
-                                                                                        })
+                                                                                        });
                                                                                     }}>
                                                                                         <MoreVertical className="h-4 w-4" />
                                                                                     </Button>
                                                                             }
-
-
                                                                         </TableCell>
                                                                     </TableRow>
-                                                                )
+                                                                );
                                                             })}
                                                         </TableBody>
                                                     </Table>
                                                 </div>
-
                                             </TabsContent>
-
-
                                         </CardContent>
-
                                     </Card>
                                 ))}
                     </Tabs>
-
-
 
                     {/* Right Section - User profile */}
                     <div className="w-96 space-y-6">
@@ -283,64 +228,49 @@ export default function UserProfilePage({ params,
                                             <div className="text-sm font-medium text-gray-600">
                                                 <span>Email</span>
                                             </div>
-
                                             <div className=" px-2 py-1  w-fit border border-gray-100 rounded-md bg-gray-50" >
                                                 < span className="text-sm font-medium text-gray-600" >{userUnique.email}</span>
                                             </div>
-
                                         </div>
                                         <div className="flex items-center justify-between w-full gap-1 border-b border-gray-200 pb-3">
                                             <div className="text-sm font-medium text-gray-600">
                                                 <span>Contact</span>
                                             </div>
-
                                             <div className=" px-2 py-1  w-fit border border-gray-100 rounded-md bg-gray-50" >
                                                 < span className="text-sm font-medium text-gray-600" >{userUnique.contact}</span>
                                             </div>
-
                                         </div>
                                         <div className="flex items-center justify-between w-full gap-1 border-b border-gray-200 pb-3">
                                             <div className="text-sm font-medium text-gray-600">
                                                 <span>Provenance</span>
                                             </div>
-
                                             <div className=" px-2 py-1 w-fit border border-gray-100 rounded-md bg-gray-50" >
                                                 < span className="text-sm font-medium text-gray-600" >{userUnique.provence}</span>
                                             </div>
-
                                         </div>
                                         <div className="flex items-center justify-between w-full gap-1 border-b border-gray-200 pb-3">
                                             <div className="text-sm font-medium text-gray-600">
                                                 <span>Position</span>
                                             </div>
-
                                             <div className=" px-2 py-1 w-fit border border-gray-100 rounded-md bg-gray-50" >
                                                 < span className="text-sm font-medium text-gray-600" >{userUnique.position}</span>
                                             </div>
-
                                         </div>
-
                                     </div>
-
-
                                 </div>
-
 
                                 <div className="mb-4 mt-8 flex justify-between items-center gap-2">
                                     <h3 className="text-md font-medium mb-2">Tontine choisie</h3>
                                     <div className=" px-2 py-1 w-fit border border-orange-100 rounded-md bg-orange-500 flex justify-center items-center" >
                                         < span className="text-sm font-medium text-gray-50" >{selectCategories}Fcfa</span>
                                     </div>
-
                                 </div>
                                 <div className=" space-y-4">
                                     {
                                         optionTab.filter(items => items.category === selectCategories)
                                             .map((items, index) => (
                                                 <div key={index} className="border border-gray-100 rounded-lg p-4 bg-white shadow-gray-100 ">
-
                                                     <div className="mb-2">
-
                                                         <div className="flex justify-between mb-2">
                                                             <span className="text-[14px] font-medium text-gray-600 "> Option:</span>
                                                             <div className=" px-2 py-1 w-fit border border-gray-100 rounded-md bg-gray-800 flex justify-center items-center" >
@@ -364,37 +294,24 @@ export default function UserProfilePage({ params,
                                                             <div className=" mt-4">
                                                                 <div className=" p-2  w-full border border-gray-100 rounded-lg bg-gray-50" >
                                                                     <div className=" flex flex-wrap gap-1 ">
-
                                                                         {items.components.map((item) => (
                                                                             <div key={item.id} className=" shadow-gray-100 px-2 py-1 w-fit border border-gray-200 rounded-md bg-white flex justify-center items-center" >
                                                                                 < span className="text-sm font-medium text-gray-600" >{item.compose}</span>
                                                                             </div>
                                                                         ))}
-
                                                                     </div>
-
                                                                 </div>
                                                             </div>
-
                                                         </div>
                                                     </div>
-
-
                                                 </div>
-
                                             ))}
                                 </div>
-
                             </CardContent>
-
                         </Card>
                     </div>
                 </div>
-
-
             </div>
-
-
 
             {/* modal pour la mise a jour */}
             <Dialog open={modal} onOpenChange={setModal} >
@@ -470,7 +387,6 @@ export default function UserProfilePage({ params,
                                     disabled
                                 />
                             </div>
-
                         </div>
                     </div>
                     <DialogFooter>
@@ -485,8 +401,6 @@ export default function UserProfilePage({ params,
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-
         </div >
     );
 };
-

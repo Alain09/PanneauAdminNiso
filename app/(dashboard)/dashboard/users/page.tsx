@@ -4,10 +4,7 @@ import { Eye, File, FileText, Loader2, Pencil, Trash2, UserCogIcon, Users } from
 import React, { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { Search, MoreVertical, Filter, Plus } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-} from "@/src/components/ui/popover";
+
 import {
   Dialog,
   DialogContent,
@@ -49,7 +46,7 @@ import { DataAction } from '@/src/components/hook_perso';
 
 function UserAll() {
   const route = useRouter();
-  const [dataUsers] = useState(Donnees);
+  
 
   // la destructuration des dataActions
   const { UsersStructuration, CaracterisqueUniques } = DataAction({ enter: Donnees });

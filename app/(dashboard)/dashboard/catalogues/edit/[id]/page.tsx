@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card";
-import { Tabs } from "@radix-ui/react-tabs";
+
 import { ProductCatalogue } from "@/type";
 import Bande from "@/src/components/users/bande";
 import Subcomposant from "@/src/components/composantProduct/subcomposant";
@@ -83,7 +83,7 @@ export default function CatalogueFormateEdit( { params }: { params: { id: string
             <CardHeader className=" w-full">
               <CardTitle className="text-[#FF4000] font-medium mb-1"
               >
-                Edition de catalogue
+                Edition de catalogue {params.id}
               </CardTitle>
               <CardDescription className="text-gray-500 text-sm  ">
                 ces informations seront conservées dans la base de données

@@ -1,9 +1,8 @@
 "use client"
-import { Startscard } from '@/src/components/dash_composant/staticard';
-import { CalendarIcon, Eye, File, FileText, Loader2, Pencil, Trash2, UserCogIcon, Users } from 'lucide-react';
+import {  File, FileText, Loader2} from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { Search, MoreVertical, Filter, Plus } from "lucide-react";
+
+import { Search, MoreVertical, Filter} from "lucide-react";
 
 import {
   Dialog,
