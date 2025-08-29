@@ -42,28 +42,33 @@ function Page() {
     ]
 
   return (
-    <div className=' p-6'>
+    <div className='p-4 md:p-6'>
 
-      <Card className=' shadow-none border border-gray-100 mx-20 my-10' >
-        <div className=' '>
-          <CardHeader className=" flex justify-center items-center flex-col ">
-            <CardTitle className="text-[#FF4000] font-bold text-[24px] mb-1">
+      <Card className='shadow-none border border-gray-100 mx-0 md:mx-10 lg:mx-20 my-6 md:my-10' >
+        <div className=''>
+          <CardHeader className="flex justify-center items-center flex-col p-4 md:p-6">
+            <CardTitle className="text-[#FF4000] font-bold text-xl md:text-2xl lg:text-[24px] mb-1">
               Parametre
             </CardTitle>
-            <CardDescription className="text-gray-500 text-sm  -mt-2 ">
+            <CardDescription className="text-gray-500 text-sm text-center -mt-2">
               Gestion des parametres de l&apos;application
             </CardDescription>
           </CardHeader>
         </div>
-        <CardContent className=' m-5 grid grid-cols-2 gap-5'>
+        <CardContent className='m-3 md:m-5 grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5'>
           {
             Content.map((item) =>(
-              <CardSetting key={item.id} title={item.title} description={item.description} icon={item.icon} linkIcon={item.linkIcon} path={item.path}/>
+              <CardSetting 
+                key={item.id} 
+                title={item.title} 
+                description={item.description} 
+                icon={item.icon} 
+                linkIcon={item.linkIcon} 
+                path={item.path}
+              />
             ))
           }
-
         </CardContent>
-
       </Card>
 
     </div>

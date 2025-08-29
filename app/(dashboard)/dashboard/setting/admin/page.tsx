@@ -46,12 +46,17 @@ export default function Home() {
   const [members, setMembers] = useState<TeamMember[]>(initialMembers);
   const [selectedMember, setSelectedMember] = useState<TeamMember>(members[0]);
   const [memberDelete, setMemberDelete] = useState<TeamMember>(); /// gestion d'etat pour la suppression des membres
+  const [showDetailsModal, setShowDetailsModal] = useState(false); // Pour mobile/tablette
   const route = useRouter();
 
 
   //  reading when we click on member
   const handleMemberClick = (member: TeamMember) => {
     setSelectedMember(member);
+    // Sur mobile/tablette, on ouvre le modal au lieu d'afficher le slide
+    if (window.innerWidth < 768) {
+      setShowDetailsModal(true);
+    }
   };
 
   // handle delete member
@@ -65,6 +70,11 @@ export default function Home() {
     setSelectedMember(members[0]);
   }, [members]);
 
+  // Fonction pour afficher les détails depuis le menu déroulant
+  const handleViewDetails = (member: TeamMember) => {
+    setSelectedMember(member);
+    setShowDetailsModal(true);
+  };
 
   // modalpour la supression
   const [autButon, setAutButon] = useState(true);
@@ -77,9 +87,9 @@ export default function Home() {
 
 
   return (
-    <main className=" p-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white p-6 rounded-lg shadow">
+    <main className="p-4 md:p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="bg-white p-4 md:p-6 rounded-lg shadow">
           <TeamList
             members={members}
             setMembers={setMembers} //use for update members if members change
@@ -91,35 +101,53 @@ export default function Home() {
             setOpenDeleteModale={setOpenDeleteModale}
             onMemberClick={handleMemberClick}
             setMemberDelete={setMemberDelete}
+            onViewDetails={handleViewDetails} // Nouvelle prop pour les détails mobiles
           />
         </div>
 
 
         {selectedMember && (
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white p-4 md:p-6 rounded-lg shadow hidden lg:block">
             <MemberDetails member={selectedMember} />
           </div>
         )}
       </div>
 
+      {/* Modal pour afficher les détails en mode mobile/tablette */}
+      <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
+        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Détails de l'administrateur</DialogTitle>
+          </DialogHeader>
+          {selectedMember && (
+            <MemberDetails member={selectedMember} />
+          )}
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Fermer</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       { /* POUR LA SUPPRESSION  */}
-      <Dialog open={openDeleteModale} onOpenChange={setOpenDeleteModale} >
-        <DialogContent className="sm:max-w-md ">
+      <Dialog open={openDeleteModale} onOpenChange={setOpenDeleteModale}>
+        <DialogContent className="sm:max-w-md mx-4">
           <DialogHeader>
             <DialogTitle>SUPPRESSION</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 ">
+          <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Pour supprimer <span className=' font-semibold text-gray-900'>{nameActive}</span> entrer <span className='text-red-600 font-semibold'>DELETE</span> dans le formulaire ci-dessous
+              Pour supprimer <span className='font-semibold text-gray-900'>{nameActive}</span> entrer <span className='text-red-600 font-semibold'>DELETE</span> dans le formulaire ci-dessous
             </p>
 
             <div className="space-y-4">
               {/* Entrer */}
               <div className="space-y-2">
                 <Input
-                  className=" w-full "
+                  className="w-full"
                   onChange={(e)=>targetEnter(e)}
+                  placeholder="Tapez DELETE pour confirmer"
                 />
               </div>
             </div>

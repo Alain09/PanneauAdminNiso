@@ -10,6 +10,8 @@ interface TeamListProps {
   selectmember: TeamMember;
   onAddClick: () => void;
   onMemberClick: (member: TeamMember) => void;
+  onViewDetails(member: TeamMember): void;
+  
   setNameActive: React.Dispatch<React.SetStateAction<string>>;
   setOpenDeleteModale: React.Dispatch<React.SetStateAction<boolean>>;
    setMemberDelete: React.Dispatch<React.SetStateAction<TeamMember | undefined>>
@@ -19,10 +21,11 @@ export default function TeamList({
   members, 
   onAddClick, 
   onMemberClick ,
+  onViewDetails,
   selectmember ,
   setNameActive,
   setOpenDeleteModale,
-setMemberDelete
+  setMemberDelete
   
 }: TeamListProps) {
 
@@ -52,7 +55,9 @@ setMemberDelete
             member={member}
             selectmember={selectmember}
             setMemberDelete={setMemberDelete}
-            onClick={() => onMemberClick(member)}
+            onClick={() => { onMemberClick(member);  }}
+            onViewDetails={onViewDetails}
+
           />
         ))}
       </div>

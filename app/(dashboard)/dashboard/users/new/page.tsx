@@ -48,108 +48,108 @@ export default function UserProfilNew() {
   const [nameActive, setNameActive] = useState<string | undefined>("");
 
   return (
-    <div className=" max-w-4xl mx-auto p-6 ">
+    <div className="max-w-4xl mx-auto p-4 md:p-6">
       <Bande />
-      <Card className=" p-6 shadow-gray-100 border border-gray-100">
+      <Card className="p-4 md:p-6 shadow-gray-100 border border-gray-100">
         <form action="">
 
           {/* Information personnelle section */}
           <div>
-            <CardHeader className=" w-full">
-              <CardTitle className="text-[#FF4000] font-medium mb-1">
+            <CardHeader className="w-full p-0 mb-4 md:mb-6">
+              <CardTitle className="text-[#FF4000] font-medium text-lg md:text-xl">
                 Information personnelle
               </CardTitle>
-              <CardDescription className="text-gray-500 text-sm  ">
+              <CardDescription className="text-gray-500 text-sm">
                 ces informations seront conservées dans la base de données
               </CardDescription>
             </CardHeader>
 
-            <CardContent className=" mt-6">
-              <div className="bg-white border border-gray-100 rounded-lg p-6 w-full h-fit  ">
+            <CardContent className="p-0">
+              <div className="bg-white border border-gray-100 rounded-lg p-4 md:p-6 w-full">
 
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                   { /* Nom */}
-                  <div className=" flex  items-center gap-x-10  mx-5 pb-5 border-b border-b-gray-100">
-                    <label className="text-md font-normal w-[120px]">Nom</label>
+                  <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10 pb-4 md:pb-5 border-b border-b-gray-100">
+                    <label className="text-sm md:text-md font-normal md:w-[120px]">Nom</label>
                     <Input
                       type="text"
-                      className="  w-full h-[45px]  "
+                      className="w-full h-10 md:h-[45px]"
                     />
                   </div>
                   { /* Prénom */}
-                  <div className=" flex  items-center  gap-x-10  mx-5 pb-5 border-b border-b-gray-100">
-                    <label className="text-md font-normal w-[120px]">Prénom(s)</label>
+                  <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10 pb-4 md:pb-5 border-b border-b-gray-100">
+                    <label className="text-sm md:text-md font-normal md:w-[120px]">Prénom(s)</label>
                     <Input
                       type="text"
-                      className=" w-full h-[45px]  "
+                      className="w-full h-10 md:h-[45px]"
                     />
                   </div>
                   { /* Email */}
-                  <div className=" flex  items-center  gap-x-10  mx-5 pb-5 border-b border-b-gray-100">
-                    <label className="text-md font-normal w-[120px]">Email</label>
+                  <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10 pb-4 md:pb-5 border-b border-b-gray-100">
+                    <label className="text-sm md:text-md font-normal md:w-[120px]">Email</label>
                     <Input
                       type="email"
-                      className=" w-full h-[45px]  "
+                      className="w-full h-10 md:h-[45px]"
                     />
                   </div>
 
                   { /* Contact */}
-                  <div className=" flex  items-center  gap-x-10  mx-5 pb-5 border-b border-b-gray-100">
-                    <label className="text-md font-normal w-[120px]">Contact</label>
+                  <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10 pb-4 md:pb-5 border-b border-b-gray-100">
+                    <label className="text-sm md:text-md font-normal md:w-[120px]">Contact</label>
                     <Input
                       type="text"
-                      className=" w-full h-[45px] "
+                      className="w-full h-10 md:h-[45px]"
                     />
                   </div>
 
                   { /* Provenance */}
-                  <div className=" flex  items-center  gap-x-10  mx-5 pb-5 border-b border-b-gray-100">
-                    <label className="text-md font-normal w-[120px]">Provenance</label>
+                  <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10 pb-4 md:pb-5 border-b border-b-gray-100">
+                    <label className="text-sm md:text-md font-normal md:w-[120px]">Provenance</label>
                     <Input
                       type="text"
-                      className=" w-full h-[45px] "
+                      className="w-full h-10 md:h-[45px]"
                     />
                   </div>
 
                   { /* Role */}
-                  <div className=" flex  items-center  gap-x-10  mx-5 pb-5 border-b border-b-gray-100">
-                    <label className="text-md font-normal w-[120px]">Rôle</label>
+                  <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10 pb-4 md:pb-5 border-b border-b-gray-100">
+                    <label className="text-sm md:text-md font-normal md:w-[120px]">Rôle</label>
                     <Input
                       type="text"
-                      className=" w-full h-[45px] "
+                      className="w-full h-10 md:h-[45px]"
                     />
                   </div>
 
                   { /* Position*/}
-                  <div className=" flex  items-center  gap-x-10  mx-5 pb-5 border-b border-b-gray-100">
-                    <label className="text-md font-normal w-[120px]">Position</label>
+                  <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10 pb-4 md:pb-5 border-b border-b-gray-100">
+                    <label className="text-sm md:text-md font-normal md:w-[120px]">Position</label>
                     <Input
                       type="text"
-                      className=" w-full h-[45px] "
+                      className="w-full h-10 md:h-[45px]"
                     />
                   </div>
 
                   { /* Image */}
-                  <div className=" flex  items-center  gap-x-10  mx-5 pb-5 border-b border-b-gray-100">
-                    <label className="text-md font-normal w-[120px]">Image</label>
+                  <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10 pb-4 md:pb-5 border-b border-b-gray-100">
+                    <label className="text-sm md:text-md font-normal md:w-[120px]">Image</label>
                     <Input
                       type="file"
-                      className="  w-full h-[45px] "
-                      placeholder=" entrer un image"
+                      className="w-full h-10 md:h-[45px]"
+                      placeholder="entrer un image"
                     />
                   </div>
 
                   { /* Description */}
-                  <div className=" flex  items-center  gap-x-10  mx-5  ">
-                    <label className="text-md font-normal w-[120px]">Description</label>
+                  <div className="flex flex-col md:flex-row gap-3 md:gap-10">
+                    <label className="text-sm md:text-md font-normal md:w-[120px] pt-2">Description</label>
                     <Textarea
-                      className=" w-full h-[100px] "
+                      className="w-full h-24 md:h-[100px]"
                     />
                   </div>
 
                 </div>
-                <div className=" flex justify-end mt-10">
-                  <Button className=" w-full">
+                <div className="flex justify-end mt-6 md:mt-10">
+                  <Button className="w-full md:w-auto">
                     Confirmer
                   </Button>
                 </div>
@@ -159,48 +159,59 @@ export default function UserProfilNew() {
         </form>
 
         {/* Choix opérés section */}
-        <div className=" pt-15">
-          <div className="flex justify-between items-center">
-            <CardHeader className=" w-full">
-              <CardTitle className="text-[#FF4000] font-medium mb-1">
+        <div className="pt-8 md:pt-15">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0">
+            <CardHeader className="w-full p-0">
+              <CardTitle className="text-[#FF4000] font-medium text-lg md:text-xl">
                 Choix opérés
               </CardTitle>
-              <CardDescription className="text-gray-500 text-sm  ">
+              <CardDescription className="text-gray-500 text-sm">
                 ces informations seront conservées dans la base de données
               </CardDescription>
             </CardHeader>
-            <Button className="bg-[#FF4000] hover:bg-[#FF4000]/80 mr-6"
+            <Button 
+              className="bg-[#FF4000] hover:bg-[#FF4000]/80 w-full md:w-auto"
               onClick={() => { setModal(true); }}
             >
               Ajouter une catégorie
             </Button>
           </div>
 
-          <CardContent className=" mt-6">
+          <CardContent className="p-0 mt-4 md:mt-6">
             {
               options.length !== 0 ?
-                <div className="bg-white border border-gray-100 rounded-lg p-6 w-full h-fit  ">
-                  <div className="px-6 pt-3 flex justify-between items-center">
-                    <h4 className="text-lg font-medium mb-3">Tontine(s) choisi(es)</h4>
+                <div className="bg-white border border-gray-100 rounded-lg p-4 md:p-6 w-full">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-0 mb-4 md:mb-3">
+                    <h4 className="text-md md:text-lg font-medium">Tontine(s) choisi(es)</h4>
                     <Tabs defaultValue={options[0]?.category}>
-                      <TabsList className=" h-8 items-center justify-center bg-gray-50">
+                      <TabsList className="h-8 items-center justify-center bg-gray-50 overflow-x-auto">
                         {options.map((item, index) => (
                           <TabsTrigger
-                            key={index} value={`${item.category}`} className="text-[16px] text-gray-300 px-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">{item.category}F</TabsTrigger>
+                            key={index} 
+                            value={`${item.category}`} 
+                            className="text-sm md:text-[16px] text-gray-300 px-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white"
+                          >
+                            {item.category}F
+                          </TabsTrigger>
                         ))}
                       </TabsList>
                     </Tabs>
                   </div>
-                  <div className=" space-y-5 p-6 ">
-                    {
-                      options?.map((term, index) => (
-                        <Optionlist opt={term} setOpen={setOpenDeleteModale} setTexteDelete={setNameActive} key={index} />
-                      ))
-                    }
+                  <div className="space-y-4 md:space-y-5 p-4 md:p-6">
+                    {options?.map((term, index) => (
+                      <Optionlist 
+                        opt={term} 
+                        setOpen={setOpenDeleteModale} 
+                        setTexteDelete={setNameActive} 
+                        key={index} 
+                      />
+                    ))}
                   </div>
                 </div>
                 :
-                <div className=" p-2 bg-green-100 w-full flex justify-center items-center text-green-800 text-sm font-medium "> pas de choix opéré </div>
+                <div className="p-3 bg-green-100 w-full flex justify-center items-center text-green-800 text-sm font-medium rounded-md"> 
+                  pas de choix opéré 
+                </div>
             }
           </CardContent>
         </div>
@@ -208,11 +219,11 @@ export default function UserProfilNew() {
 
       {/* modal pour la mise a jour */}
       <Dialog open={modal} onOpenChange={setModal} >
-        <DialogContent className="sm:max-w-md ">
+        <DialogContent className="sm:max-w-md mx-4">
           <DialogHeader>
             <DialogTitle>Ajout de categories</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 ">
+          <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
               servir pour la mise a jour ou la création des options
             </p>
@@ -255,8 +266,8 @@ export default function UserProfilNew() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Quantité</label>
                 <Input
-                  type=" number"
-                  className=" w-full "
+                  type="number"
+                  className="w-full"
                 />
               </div>
             </div>
@@ -276,20 +287,20 @@ export default function UserProfilNew() {
 
       { /* POUR LA SUPPRESSION  */}
       <Dialog open={openDeleteModale} onOpenChange={setOpenDeleteModale} >
-        <DialogContent className="sm:max-w-md ">
+        <DialogContent className="sm:max-w-md mx-4">
           <DialogHeader>
             <DialogTitle>SUPPRESSION</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 ">
+          <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Pour supprimer <span className=' font-semibold text-gray-900'>{nameActive}</span> entrer <span className='text-red-600 font-semibold'>DELETE</span> dans le formulaire ci-dessous
+              Pour supprimer <span className='font-semibold text-gray-900'>{nameActive}</span> entrer <span className='text-red-600 font-semibold'>DELETE</span> dans le formulaire ci-dessous
             </p>
 
             <div className="space-y-4">
               {/* Entrer */}
               <div className="space-y-2">
                 <Input
-                  className=" w-full "
+                  className="w-full"
                   onChange={(e)=>targetEnter(e)}
                 />
               </div>

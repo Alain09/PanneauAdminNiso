@@ -243,50 +243,50 @@ function Page() {
 
   return (
     <div>
-      <main className=' p-6'>
+      <main className='p-4 md:p-6'>
         { /* tableau  */}
         <div className="w-full">
           <Card className='border border-gray-100 shadow-gray-100'>
-            <div className="flex items-center gap-10 mb-4 px-4 pt-4">
-              <div className="flex items-center space-x-2">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-4 p-3 md:p-4">
+              <div className="flex items-center space-x-2 flex-shrink-0">
                 <div className="flex items-center space-x-2">
-                  <span className="px-3 py-1 bg-[#FF4000] text-white rounded-md">Effectif</span>
-                  <span className="px-2 py-1 border rounded-md">{usersData.length.toString().padStart(2, "0")}</span>
+                  <span className="px-2 py-1 text-xs md:text-sm bg-[#FF4000] text-white rounded-md">Effectif</span>
+                  <span className="px-2 py-1 text-xs md:text-sm border rounded-md">{usersData.length.toString().padStart(2, "0")}</span>
                 </div>
               </div>
-              <div className="relative w-full">
+              <div className="relative flex-grow">
                 <Input
                   type='text'
-                  className="pl-8 w-full "
+                  className="pl-8 w-full"
                   value={searchUser}
                   onChange={(e) => { setSearchUser(e.target.value.toLowerCase()) }}
                   placeholder="rechercher un nom"
                 />
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
               </div>
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 md:space-x-3 flex-shrink-0">
                 <Button
                   variant="destructive"
-                  className="flex items-center bg-[#FF4000] hover:bg-[#FF4000]/90"
+                  className="flex items-center bg-[#FF4000] hover:bg-[#FF4000]/90 text-xs md:text-sm h-9"
                   onClick={handleReload}
                 >
-                  <Loader2 className={`mr-2 h-4 w-4 ${load ? "animate-spin duration-300" : ""}`}
+                  <Loader2 className={`mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4 ${load ? "animate-spin duration-300" : ""}`}
                   />
                   Recharger
                 </Button>
                 <Button
                   variant="destructive"
-                  className="flex items-center bg-[#FF4000] hover:bg-[#FF4000]/90"
+                  className="flex items-center bg-[#FF4000] hover:bg-[#FF4000]/90 text-xs md:text-sm h-9"
                   onClick={() => setFilter(true)}
                 >
-                  <Filter className="mr-2 h-4 w-4"
+                  <Filter className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4"
                   />
                   Filtrer
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className=" p-2">
-                      <MoreVertical className="h-4 w-4" />
+                    <Button variant="ghost" className="p-2 h-9 w-9">
+                      <MoreVertical className="h-3 w-3 md:h-4 md:w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
@@ -294,7 +294,7 @@ function Page() {
                     className="w-46 rounded-lg shadow-lg border border-gray-200 p-2"
                   >
                     {/* telecharger le pdf */}
-                    <DropdownMenuItem className="px-3 py-2 text-sm cursor-pointer  hover:rounded-lg hover:shadow-gray-200">
+                    <DropdownMenuItem className="px-3 py-2 text-sm cursor-pointer hover:rounded-lg hover:shadow-gray-200">
                       <div className="flex items-center"
                       >
                         <div className="bg-gray-100 p-1.5 rounded-full mr-3">
@@ -305,7 +305,7 @@ function Page() {
                     </DropdownMenuItem>
 
                     {/* telecharger le fichier excel */}
-                    <DropdownMenuItem className="px-3 py-2 text-sm cursor-pointer  hover:rounded-lg hover:shadow-gray-200">
+                    <DropdownMenuItem className="px-3 py-2 text-sm cursor-pointer hover:rounded-lg hover:shadow-gray-200">
                       <div className="flex items-center"
                       >
                         <div className="bg-gray-100 p-1.5 rounded-full mr-3">
@@ -319,43 +319,43 @@ function Page() {
               </div>
             </div>
 
-            <div className=" overflow-hidden">
+            <div className="overflow-x-auto max-h-[500px] lg:min-h-[800px] overflow-y-auto border-t border-gray-100">
               <Table>
                 <TableHeader className="bg-gray-50">
-                  <TableRow className="">
-                    <TableHead className="w-12"></TableHead>
+                  <TableRow>
+                    <TableHead className="w-12 table-cell"></TableHead>
                     <TableHead>Utilisateurs</TableHead>
-                    <TableHead>Numero de transaction</TableHead>
+                    <TableHead className="table-cell">Numero de transaction</TableHead>
                     <TableHead>Montant payé</TableHead>
-                    <TableHead>Catégorie choisie</TableHead>
-                    <TableHead>A payer/S</TableHead>
-                    <TableHead>Date d&apos;entrée</TableHead>
+                    <TableHead className="table-cell">Catégorie choisie</TableHead>
+                    <TableHead className="table-cell">A payer/S</TableHead>
+                    <TableHead className="table-cell">Date d&apos;entrée</TableHead>
                     <TableHead>Statut</TableHead>
                   </TableRow>
-
                 </TableHeader>
                 <TableBody>
                   {usersData.map((user, index) => (
                     <TableRow
                       key={user.id}
-                      className={`${index % 2 === 0 ? "bg-[#FFAE91]/10" : ""}  `}
+                      className={`${index % 2 === 0 ? "bg-[#FFAE91]/10" : ""}`}
                     >
-                      <TableCell>
+                      <TableCell className="table-cell">
                         <div className="flex items-center justify-center w-8 h-8 bg-[#FFAE91] text-white rounded-full">
                           {user.name.charAt(0)}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div>{user.name}</div>
-                          <div className="text-[#FF4000] text-sm">{user.email}</div>
+                          <div className="font-medium">{user.name}</div>
+                          <div className="text-[#FF4000] text-xs md:text-sm">{user.email}</div>
+                          <div className="text-xs text-gray-500 ">{user.phone}</div>
                         </div>
                       </TableCell>
-                      <TableCell>{user.phone}</TableCell>
+                      <TableCell className="table-cell">{user.phone}</TableCell>
                       <TableCell>{user.currentlyPaiement}</TableCell>
-                      <TableCell>{user.categorie} Fcfa</TableCell>
-                      <TableCell>{user.amountbyWeekOfCategoriy}</TableCell>
-                      <TableCell>{new Date(user.date).toLocaleDateString()}</TableCell>
+                      <TableCell className="table-cell">{user.categorie} Fcfa</TableCell>
+                      <TableCell className="table-cell">{user.amountbyWeekOfCategoriy}</TableCell>
+                      <TableCell className="table-cell">{new Date(user.date).toLocaleDateString()}</TableCell>
                       <TableCell>
                         <Badge
                           variant={user.status === "succès" ? "default" : "outline"}
@@ -368,23 +368,21 @@ function Page() {
                           • {user.status === "succès" ? "succès" : "succès"}
                         </Badge>
                       </TableCell>
-
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </div>
           </Card>
-
         </div>
       </main>
 
-      <Dialog open={filter} onOpenChange={setFilter} >
-        <DialogContent className="sm:max-w-md ">
+      <Dialog open={filter} onOpenChange={setFilter}>
+        <DialogContent className="sm:max-w-md mx-4">
           <DialogHeader>
             <DialogTitle>Filtrage</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 ">
+          <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
               Filtrer selon les critères de sélection
             </p>
@@ -413,7 +411,7 @@ function Page() {
                   type='date'
                   value={formatDate(selectDate)}
                   onChange={(e) => { setSelectDate(new Date(e.target.value)) }}
-                  className=" w-full "
+                  className="w-full"
                   placeholder="entrer une provenance"
                 />
               </div>

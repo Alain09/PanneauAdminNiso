@@ -59,33 +59,33 @@ export default function CatalogueFormateNew() {
   };
 
   return (
-    <div className=" max-w-4xl mx-auto p-6 ">
+    <div className="max-w-4xl mx-auto p-4 md:p-6">
       <Bande />
-      <Card className=" p-6 shadow shadow-gray-50">
+      <Card className="p-4 md:p-6 shadow shadow-gray-50">
         <form action="">
 
           {/* Information personnelle section */}
           <div>
-            <CardHeader className=" w-full">
-              <CardTitle className="text-[#FF4000] font-medium mb-1">
+            <CardHeader className="w-full p-0 mb-4 md:mb-6">
+              <CardTitle className="text-[#FF4000] font-medium text-lg md:text-xl">
                 Edition de catalogue
               </CardTitle>
-              <CardDescription className="text-gray-500 text-sm  ">
+              <CardDescription className="text-gray-500 text-sm">
                 ces informations seront conservées dans la base de données
               </CardDescription>
             </CardHeader>
 
-            <CardContent className=" mt-6">
-              <div className="bg-white border border-gray-100 rounded-lg p-6 w-full h-fit  ">
+            <CardContent className="p-0">
+              <div className="bg-white border border-gray-100 rounded-lg p-4 md:p-6 w-full">
 
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                   { /* Catégorie */}
-                  <div className=" flex  items-center gap-x-10  mx-5 pb-5 border-b border-b-gray-100">
-                    <label className="text-md font-normal w-[200px]">Catégorie</label>
+                  <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10 pb-4 md:pb-5 border-b border-b-gray-100">
+                    <label className="text-sm md:text-md font-normal md:w-[200px]">Catégorie</label>
                     <Input
                       type="text"
-                      className=" shadow shadow-gray-50 w-full h-[45px]  "
-                      placeholder=" 100f"
+                      className="shadow shadow-gray-50 w-full h-10 md:h-[45px]"
+                      placeholder="100f"
                       value={options.categorie}
                       name="categorie"
                       id="categorie"
@@ -93,11 +93,11 @@ export default function CatalogueFormateNew() {
                     />
                   </div>
                   { /* Option */}
-                  <div className=" flex  items-center  gap-x-10  mx-5 pb-5 border-b border-b-gray-100">
-                    <label className="text-md font-normal w-[200px]">Option</label>
+                  <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10 pb-4 md:pb-5 border-b border-b-gray-100">
+                    <label className="text-sm md:text-md font-normal md:w-[200px]">Option</label>
                     <Input
                       type="number"
-                      className="shadow shadow-gray-50  w-full h-[45px]  "
+                      className="shadow shadow-gray-50 w-full h-10 md:h-[45px]"
                       value={options.option}
                       name="option"
                       id="option"
@@ -105,11 +105,11 @@ export default function CatalogueFormateNew() {
                     />
                   </div>
                   { /* Prix hebdomendaire */}
-                  <div className=" flex  items-center  gap-x-10  mx-5 pb-5 border-b border-b-gray-100">
-                    <label className="text-md font-normal w-[200px]">Prix hebdomendaire </label>
+                  <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10 pb-4 md:pb-5 border-b border-b-gray-100">
+                    <label className="text-sm md:text-md font-normal md:w-[200px]">Prix hebdomendaire</label>
                     <Input
                       type="number"
-                      className="shadow shadow-gray-50  w-full h-[45px]  "
+                      className="shadow shadow-gray-50 w-full h-10 md:h-[45px]"
                       value={options.price}
                       name="price"
                       id="price"
@@ -118,11 +118,11 @@ export default function CatalogueFormateNew() {
                   </div>
 
                   { /* Nombre de semaine */}
-                  <div className=" flex  items-center  gap-x-10  mx-5 pb-5 ">
-                    <label className="text-md font-normal w-[200px]">Nbr de semaine</label>
+                  <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10">
+                    <label className="text-sm md:text-md font-normal md:w-[200px]">Nbr de semaine</label>
                     <Input
                       type="number"
-                      className="shadow shadow-gray-50  w-full h-[45px] "
+                      className="shadow shadow-gray-50 w-full h-10 md:h-[45px]"
                       value={options.totalweek}
                       name="total"
                       id="total"
@@ -137,17 +137,18 @@ export default function CatalogueFormateNew() {
           </div>
 
           {/* section des composants */}
-          <div className=" pt-15">
-            <div className="flex justify-between items-center">
-              <CardHeader className="  w-full">
-                <CardTitle className="text-[#FF4000] font-medium mb-1">
+          <div className="pt-8 md:pt-15">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0">
+              <CardHeader className="w-full p-0">
+                <CardTitle className="text-[#FF4000] font-medium text-lg md:text-xl">
                   Composants
                 </CardTitle>
-                <CardDescription className="text-gray-500 text-sm  ">
+                <CardDescription className="text-gray-500 text-sm">
                   ces informations seront conservées dans la base de données
                 </CardDescription>
               </CardHeader>
-              <Button className="bg-[#FF4000] hover:bg-[#FF4000]/90 mr-6"
+              <Button 
+                className="bg-[#FF4000] hover:bg-[#FF4000]/90 w-full md:w-auto"
                 type="button"
                 onClick={addProduct}
               >
@@ -155,11 +156,11 @@ export default function CatalogueFormateNew() {
               </Button>
             </div>
 
-            <CardContent className=" mt-6">
+            <CardContent className="p-0 mt-4 md:mt-6">
               {
                 options?.composant?.length !== 0 ?
-                  <div className="bg-white border border-gray-100 rounded-lg p-6 w-full h-fit  shadow-gray-100 ">
-                    <div className=" space-y-10 p-3 ">
+                  <div className="bg-white border border-gray-100 rounded-lg p-4 md:p-6 w-full shadow-gray-100">
+                    <div className="space-y-6 md:space-y-10">
                       {
                         options?.composant?.map((term, index) => (
                           <Subcomposant
@@ -174,15 +175,22 @@ export default function CatalogueFormateNew() {
                     </div>
                   </div>
                   :
-                  <div className=" p-2 bg-green-100 w-full flex justify-center items-center text-green-800 text-sm font-medium "> pas de composant </div>
+                  <div className="p-3 bg-green-100 w-full flex justify-center items-center text-green-800 text-sm font-medium rounded-md"> 
+                    pas de composant 
+                  </div>
               }
             </CardContent>
           </div>
 
           {/* soumission */}
-          <Button className="bg-[#FF4000] hover:bg-[#FF4000]/90   mx-6 mt-10"
-            type="submit" 
-          > soumettre</Button>
+          <div className="flex justify-center md:justify-start mt-6 md:mt-10 px-0 md:px-6">
+            <Button 
+              className="bg-[#FF4000] hover:bg-[#FF4000]/90 w-full md:w-auto"
+              type="submit" 
+            > 
+              soumettre
+            </Button>
+          </div>
         </form>
       </Card>
     </div>

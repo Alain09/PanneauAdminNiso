@@ -23,8 +23,6 @@ import { Input } from "@/src/components/ui/input";
 import { Badge } from "@/src/components/ui/badge";
 
 // Données initiales pour le tableau
-
-
 const campagnes = [
   {
     id: "camp1",
@@ -165,18 +163,18 @@ export default function Campagn() {
   const [openNewModale, setOpenNewModale] = useState(false);
 
   return (
-    <div className="w-full flex gap-x-10 transition-all duration-300  p-6">
-      <div className="w-full ">
+    <div className="w-full p-4 md:p-6">
+      <div className="w-full">
         <div className="flex justify-between items-center mb-4">
           <Button
-            className="bg-[#FF4000] hover:bg-[#FF4000]/90 text-white"
+            className="bg-[#FF4000] hover:bg-[#FF4000]/90 text-white text-sm md:text-base"
             onClick={() => { setOpenNewModale(true); }}
           >
             Créer une Campagne
           </Button>
         </div>
 
-        <div className="rounded-md border">
+        <div className="rounded-md border overflow-x-auto">
           <Table>
             <TableHeader className="bg-gray-100">
               <TableRow>
@@ -185,7 +183,7 @@ export default function Campagn() {
                 <TableHead className="font-medium">FinSelection</TableHead>
                 <TableHead className="font-medium">DébutTontine</TableHead>
                 <TableHead className="font-medium">FinTontine</TableHead>
-                <TableHead className="font-medium w-16">Statut</TableHead>
+                <TableHead className="font-medium">Statut</TableHead>
                 <TableHead className="font-medium w-16">Action</TableHead>
               </TableRow>
             </TableHeader>
@@ -195,24 +193,24 @@ export default function Campagn() {
                   key={index}
                   className={index % 2 === 0 ? "bg-[#FFAE91]/10 " : ""}
                 >
-                  <TableCell>{row.nom}</TableCell>
-                  <TableCell>{new Date(row.selectionStart).toLocaleDateString()}</TableCell>
-                  <TableCell>{new Date(row.selectionEnd).toLocaleDateString()}</TableCell>
-                  <TableCell>{new Date(row.tontineStart).toLocaleDateString()}</TableCell>
-                  <TableCell >{new Date(row.tontineEnd).toLocaleDateString()}</TableCell>
-                  <TableCell >
+                  <TableCell className="whitespace-nowrap">{row.nom}</TableCell>
+                  <TableCell className="whitespace-nowrap">{new Date(row.selectionStart).toLocaleDateString()}</TableCell>
+                  <TableCell className="whitespace-nowrap">{new Date(row.selectionEnd).toLocaleDateString()}</TableCell>
+                  <TableCell className="whitespace-nowrap">{new Date(row.tontineStart).toLocaleDateString()}</TableCell>
+                  <TableCell className="whitespace-nowrap">{new Date(row.tontineEnd).toLocaleDateString()}</TableCell>
+                  <TableCell>
                     <Badge
                       className={
                         row.status === "TERMINER"
-                          ? "text-xs text-green-600 bg-green-100 py-1 px-2 rounded"
-                          : "text-xs text-blue-600 bg-blue-100 py-1 px-2 rounded"
+                          ? "text-xs text-green-600 bg-green-100 py-1 px-2 rounded whitespace-nowrap"
+                          : "text-xs text-blue-600 bg-blue-100 py-1 px-2 rounded whitespace-nowrap"
                       }
                     >
                       • {row.status}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <DropdownMenu >
+                    <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">
                           <MoreVertical className="h-4 w-4" />
@@ -220,7 +218,7 @@ export default function Campagn() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
-                          className="text-red-600"
+                          className="text-red-600 text-xs md:text-sm"
                           onClick={() => {
                             setOpenDeleteModale(true);
                             setNameActive(` ${row.nom} `);
@@ -239,22 +237,23 @@ export default function Campagn() {
       </div>
 
       { /* POUR LA SUPPRESSION  */}
-      <Dialog open={openDeleteModale} onOpenChange={setOpenDeleteModale} >
-        <DialogContent className="sm:max-w-md ">
+      <Dialog open={openDeleteModale} onOpenChange={setOpenDeleteModale}>
+        <DialogContent className="sm:max-w-md mx-4">
           <DialogHeader>
             <DialogTitle>SUPPRESSION</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 ">
+          <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Pour supprimer la campagne <span className=' font-semibold text-gray-900'>{nameActive} </span> entrer <span className='text-red-600 font-semibold'>DELETE</span> dans le formulaire ci-dessous
+              Pour supprimer la campagne <span className='font-semibold text-gray-900'>{nameActive} </span> entrer <span className='text-red-600 font-semibold'>DELETE</span> dans le formulaire ci-dessous
             </p>
 
             <div className="space-y-4">
               {/* Entrer */}
               <div className="space-y-2">
                 <Input
-                  className=" w-full "
+                  className="w-full"
                   onChange={(e)=>targetEnter(e)}
+                  placeholder="Tapez DELETE pour confirmer"
                 />
               </div>
             </div>
@@ -277,66 +276,68 @@ export default function Campagn() {
       </Dialog>
 
       { /* POUR LA CREATION DE CAMPAGNE  */}
-      <Dialog open={openNewModale} onOpenChange={setOpenNewModale} >
-        <DialogContent className="sm:max-w-md ">
+      <Dialog open={openNewModale} onOpenChange={setOpenNewModale}>
+        <DialogContent className="sm:max-w-md mx-4">
           <form action={() => { alert("succes"); }}>
-            <DialogHeader className=" mb-5">
+            <DialogHeader className="mb-4">
               <DialogTitle>CREATION DE CAMPAGNE</DialogTitle>
-              <DialogDescription>Ce formulaire sert de création d&apos;une nouvelle campagne</DialogDescription>
+              <DialogDescription className="text-sm">
+                Ce formulaire sert de création d&apos;une nouvelle campagne
+              </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4">
               {/* nom */}
-              <div className="space-y-6">
+              <div className="space-y-2">
                 <label className="text-sm font-medium">Nom:</label>
                 <Input
                   type="text"
                   id="nom"
                   name="nom"
-                  className=" w-full "
+                  className="w-full"
                   placeholder="entrer un nom"
                   required
                 />
               </div>
 
               {/* StartDate */}
-              <div className="space-y-6">
+              <div className="space-y-2">
                 <label className="text-sm font-medium">Date de démarage</label>
                 <Input
                   type="date"
                   id="selectionStart"
                   name="selectionStart"
-                  className=" w-full "
+                  className="w-full"
                   required
                 />
               </div>
 
               {/* Opération des choix */}
-              <div className="">
-                <label className="text-sm font-medium ">Total jour pour les choix</label>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Total jour pour les choix</label>
                 <Input
                   type="number"
                   id="dureeSelectionJours"
                   name="dureeSelectionJours"
-                  className=" w-full "
+                  className="w-full"
                   required
                 />
               </div>
 
                {/* Opération des tontine*/}
-              <div className="">
-                <label className="text-sm font-medium ">Total semaine pour tontine </label>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Total semaine pour tontine</label>
                 <Input
                   type="number"
                   id="dureeTontineSemaines"
-                  name=" dureeTontineSemaines"
-                  className=" w-full "
+                  name="dureeTontineSemaines"
+                  className="w-full"
                   required
                 />
               </div>
             </div>
 
-            <DialogFooter className=' mt-5'>
+            <DialogFooter className='mt-4'>
               <DialogClose asChild>
                 <Button variant="outline" className="mr-2">
                   Annuler

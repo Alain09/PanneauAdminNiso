@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from '../ui/button'
@@ -12,10 +12,15 @@ import {
   CreditCard,
   Settings,
   LogOut,
+  X
 } from "lucide-react"
 
 interface SidebarProps {
   setSize: React.Dispatch<React.SetStateAction<boolean>>
+  isMobile: boolean
+  isTablet: boolean
+  mobileMenuOpen: boolean
+  setMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const navItems = [
@@ -26,13 +31,31 @@ const navItems = [
   { path: '/dashboard/setting', icon: Settings, label: 'Parametre' },
 ]
 
-function Slide({ setSize }: SidebarProps) {
+function Slide({ setSize, isMobile, isTablet, mobileMenuOpen, setMobileMenuOpen }: SidebarProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const pathname = usePathname()
   
+  // Auto-collapse sidebar on tablet
+  useEffect(() => {
+    if (isTablet && !isMobile) {
+      setSidebarCollapsed(true)
+      setSize(true)
+    }
+  }, [isTablet, isMobile, setSize])
+
   const toggleSidebar = () => {
-    setSidebarCollapsed(prev => !prev)
-    setSize(prev => !prev)
+    if (isMobile) {
+      setMobileMenuOpen(prev => !prev)
+    } else {
+      setSidebarCollapsed(prev => !prev)
+      setSize(prev => !prev)
+    }
+  }
+
+  const closeMobileMenu = () => {
+    if (isMobile) {
+      setMobileMenuOpen(false)
+    }
   }
 
   // Fonction améliorée pour déterminer si un élément est actif
@@ -43,12 +66,107 @@ function Slide({ setSize }: SidebarProps) {
     return false
   }
 
+  // Mobile: Menu burger avec overlay
+  if (isMobile) {
+    return (
+      <>
+        {/* Mobile Menu Button - Seulement quand le menu est fermé */}
+        {/* Mobile Overlay */}
+        {mobileMenuOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-[999] lg:hidden"
+            onClick={closeMobileMenu}
+          />
+        )}
+
+        {/* Mobile Sidebar */}
+        <div 
+          className={`
+            fixed top-0 left-0 h-full w-64 bg-white z-[1000] 
+            transform transition-transform duration-300 ease-in-out lg:hidden
+            ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+            shadow-xl
+          `}
+        >
+          <div className="h-full flex flex-col">
+            {/* Header */}
+            <div className="p-4 border-b border-gray-100 flex items-center justify-between min-h-[60px]">
+              <h1 className="text-xl font-bold text-gray-800">NISO</h1>
+              <button 
+                onClick={closeMobileMenu}
+                className="p-1.5 rounded-lg hover:bg-orange-100 transition-colors duration-200"
+                aria-label="Close menu"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            
+            {/* Navigation */}
+            <div className="flex-1 py-6 px-2">
+              <nav className="space-y-1">
+                {navItems.map((item) => {
+                  const isActive = isActiveItem(item.path)
+                  const Icon = item.icon
+                  
+                  return (
+                    <Link 
+                      href={item.path} 
+                      key={item.path}
+                      className="block"
+                      onClick={closeMobileMenu}
+                    >
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className={`
+                          w-full h-11 px-3 justify-start
+                          transition-all duration-200 
+                          ${isActive 
+                            ? 'bg-[#FF4000] text-white hover:bg-[#e63600] hover:text-white shadow-sm' 
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
+                          }
+                        `}
+                      >
+                        <Icon className="h-5 w-5 flex-shrink-0" />
+                        <span className="ml-3 text-sm font-medium">
+                          {item.label}
+                        </span>
+                      </Button>
+                    </Link>
+                  )
+                })}
+              </nav>
+            </div>
+
+            {/* Logout Button */}
+            <div className="p-2 border-t border-gray-100">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="w-full h-11 px-3 justify-start text-gray-600 bg-gray-50 hover:bg-gray-100 hover:text-gray-800 transition-all duration-200"
+                onClick={() => {
+                  console.log('Déconnexion...')
+                  closeMobileMenu()
+                }}
+              >
+                <LogOut className="h-5 w-5 flex-shrink-0" />
+                <span className="ml-3 text-sm font-medium">
+                  Déconnexion
+                </span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </>
+    )
+  }
+
+  // Desktop & Tablet: Sidebar normale
   return (
     <div 
       className={`
         ${sidebarCollapsed ? 'w-18' : 'w-56'} 
-        bg-white/90 
-        backdrop-blur-lg 
+        bg-white 
         fixed 
         h-screen 
         z-[1000] 
@@ -57,6 +175,7 @@ function Slide({ setSize }: SidebarProps) {
         transition-all 
         duration-300 
         ease-in-out
+        hidden lg:block
       `}
     >
       {/* Sidebar Content */}
@@ -154,7 +273,6 @@ function Slide({ setSize }: SidebarProps) {
               duration-200
             `}
             onClick={() => {
-              // Ajouter ici la logique de déconnexion
               console.log('Déconnexion...')
             }}
           >
