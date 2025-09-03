@@ -1,0 +1,179 @@
+// Prisma schema corrected for Better Auth and TeamMember relation
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//////////////////////////
+// Auth / User Models
+//////////////////////////
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  sessions      Session[]
+  accounts      Account[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  emailVerified Boolean
+  image         String?
+  role          String
+  phone         String?
+  position String?
+  provence String?
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
+
+//////////////////////////
+// Team / Catalogue Models
+//////////////////////////
+
+model ProductCatalogue {
+  id        String               @id @default(cuid())
+  categorie String
+  option    Int
+  price     Int
+  totalweek Int
+  composant ComposantCatalogue[]
+}
+
+model ComposantCatalogue {
+  id                 String           @id @default(cuid())
+  product            String
+  quantity           Int
+  image              String?
+  productCatalogueId String
+  productCatalogue   ProductCatalogue @relation(fields: [productCatalogueId], references: [id])
+}
+
+//////////////////////////
+// Campagne / Tontine Models
+//////////////////////////
+
+model Campagne {
+  id                   String       @id @default(cuid())
+  nom                  String?
+  status               String?
+  weekActif            String?
+  campagneStatut       String?      @default("En cours")
+  dureeSelectionJours  Int?
+  dureeTontineSemaines Int?
+  selectionStart       DateTime?
+  selectionEnd         DateTime?
+  tontineStart         DateTime?
+  tontineEnd           DateTime?
+  createdAt            DateTime     @default(now())
+}
+
+model TontineOption {
+  id               String            @id @default(cuid())
+  category         String
+  option           String
+  countOption      Int
+  totalToPayByWeek Int?
+  components       OptionComponent[]
+}
+
+model OptionComponent {
+  id              String        @id @default(cuid())
+  compose         String
+  tontineOptionId String
+  tontineOption   TontineOption @relation(fields: [tontineOptionId], references: [id])
+}
+
+//////////////////////////
+// Categories / Statistiques
+//////////////////////////
+
+model Categories {
+  id                            String                         @id @default(cuid())
+  category                      String
+  week                          String?
+  status                        String?                        @default("En cours")
+  totalToPayByWeek              Int
+  DatePaiement                  DateTime?
+  categoriesStatisquesPayements CategoriesStatisquesPayement[] // Added reverse relation
+}
+
+model CategoriesStatisquesPayement {
+  id              String        @id @default(cuid())
+  category        String
+  status          String?       @default("En cours")
+  totalPaid       Int
+  weekValided     Int
+  totalPaidByWeek Int
+  categoriesId    String
+  categories      Categories    @relation(fields: [categoriesId], references: [id])
+  userProfiles    UserProfile[] // Added reverse relation
+}
+
+model UserProfile {
+  id                             String                        @id @default(cuid())
+  firstName                      String
+  lastName                       String
+  email                          String                        @unique
+  contact                        String?
+  role                           String?
+  position                       String?                       @default("AutoGestion")
+  image                          String?
+  provence                       String?
+  profession                     String?
+  description                    String?
+  status                         String?                       @default("En cours")
+  montantTotalGlobal             Int?
+  createdAt                      DateTime                      @default(now())
+  categoriesStatisquesPayementId String? // Added foreign key
+  DescriptionChoixOfEachUser     CategoriesStatisquesPayement? @relation(fields: [categoriesStatisquesPayementId], references: [id])
+}

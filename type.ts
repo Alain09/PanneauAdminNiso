@@ -1,4 +1,4 @@
-import { generateId } from "./src/lib/utils";
+
 
 // pour les statistiques globale de la tontine
 export interface StatsCardProps {
@@ -38,13 +38,14 @@ export type Role = 'Administrateur' | 'Sécrétaire' | 'developpeur' | 'Trésori
 
 export interface TeamMember {
   id: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
-  contact?: string;
-  role: Role;
+  phone?: string;
+  role?: string;
   position?: string;
-  image?: File | string
+  image?: File | string;
+  provence?:string;
+  password?:string
 }
 
 // pour la gestion des campagnes de la tontine

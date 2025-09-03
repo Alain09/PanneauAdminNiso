@@ -1,53 +1,86 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { TeamMember } from "@/type";
 import TeamList from "@/src/components/setting/team/teamList";
-import { generateId } from "@/src/lib/utils";
 import MemberDetails from "@/src/components/setting/team/memberDetail";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/src/components/ui/dialog";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
+import { useSession } from "@/src/lib/auth-client";
+import { Alert, AlertDescription } from "@/src/components/ui/alert";
+import { AlertCircle, SquareCheckBig } from "lucide-react";
 
-// Données initiales pour la démo
-const initialMembers: TeamMember[] = [
-  {
-    id: generateId(),
-    firstName: "John",
-    lastName: "Carter",
-    email: "hello@johncarter.com",
-    role: "Administrateur"
-  },
-  {
-    id: generateId(),
-    firstName: "John",
-    lastName: "Carter",
-    email: "hello@johncarter.com",
-    role: "Sécrétaire"
-  },
-  {
-    id: generateId(),
-    firstName: "John",
-    lastName: "Carter", 
-    email: "hello@johncarter.com",
-    role: "developpeur"
-  },
-  {
-    id: generateId(),
-    firstName: "  Alain",
-    lastName: "Carter",
-    email: "hello@johncarter.com",
-    role: "Trésorière"
-  }
-];
 
 export default function Home() {
-  const [members, setMembers] = useState<TeamMember[]>(initialMembers);
-  const [selectedMember, setSelectedMember] = useState<TeamMember>(members[0]);
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [selectedMember, setSelectedMember] = useState<TeamMember>();
+
   const [memberDelete, setMemberDelete] = useState<TeamMember>(); /// gestion d'etat pour la suppression des membres
   const [showDetailsModal, setShowDetailsModal] = useState(false); // Pour mobile/tablette
   const route = useRouter();
+
+  const { isPending } = useSession()
+
+  const [sendError, setSendError] = useState("");
+  const [loading, setLoading] = useState(false)
+
+  //--------------------------
+  const [sendSubmitError, setSendSubmitError] = useState("");
+  const [sendSubmitSuccess, setSendSubmitSuccess] = useState("");
+  const [loadSubmit, setLoadSubmit] = useState(false)
+  //---------------------
+
+  // api pour recuperation des coordonnées de l'admins
+  useEffect(() => {
+
+    const profileGetAll = async () => {
+      //recuperation de l'key access
+      const key_acces = process.env.NEXT_PUBLIC_API_ROUTE_SECRET;
+
+      // ---------loarding before success endpoint
+      setLoading(true)
+
+      // try for execution endpoint
+      try {
+        const datas = await fetch("/api/settng/adminteam/",
+          {
+            method: "GET",
+            headers: { "authorization": `${key_acces}` }
+          })
+
+        // erreur de recuperation 
+        if (!datas.ok) {
+          setSendError(" Erreur lors du chargement de la team ")
+          setLoading(false)
+        }
+
+        const teamData = await datas.json();
+
+        if (!teamData.success) {
+          setSendError(teamData.message)
+          setLoading(false)
+        } else {
+          setLoading(false);
+          setSendError("");
+          //alert(" donnees bien chargé")
+          setMembers(teamData.data)
+
+        }
+
+      } catch (error) {
+        console.error("Erreur lors de la récupération des  profiles :", error);
+        setSendError(" erreur server");
+      }
+
+    };
+
+    profileGetAll();
+
+  }, [])
+
+
 
 
   //  reading when we click on member
@@ -59,13 +92,41 @@ export default function Home() {
     }
   };
 
-  // handle delete member
-  const handleDelete = () => {
-    const updatedMembers = members.filter(member => member.id !== memberDelete?.id);
-    setMembers(updatedMembers);
+  // handle delete member  endpooint delete
+
+  const handleDelete = async () => {
+    setSendSubmitError("");
+    setSendSubmitSuccess("");
+    setLoadSubmit(true);
+
+    try {
+      const datas = await fetch(`/api/settng/adminteam/${memberDelete?.id}`, {
+        method: "DELETE",
+        headers: {
+          "authorization": process.env.NEXT_PUBLIC_API_ROUTE_SECRET || "",
+          "Content-Type": "application/json", // Ajout de ce header
+        },
+      });
+
+      const result = await datas.json();
+
+      if (result.success) {
+        setSendSubmitSuccess(result.message);
+        setMembers(prev => prev.filter(member => member.id !== memberDelete?.id));
+        setTimeout(() => setOpenDeleteModale(false), 1500); // Fermer après succès
+      } else {
+        setSendSubmitError(result.message);
+      }
+
+    } catch (error) {
+      setSendSubmitError("Erreur de connexion lors de la suppression");
+      console.error(error);
+    } finally {
+      setLoadSubmit(false);
+    }
   };
 
-  // for update setSelectmember
+  // for update setSelectmember when member is delete
   useEffect(() => {
     setSelectedMember(members[0]);
   }, [members]);
@@ -77,13 +138,43 @@ export default function Home() {
   };
 
   // modalpour la supression
+  const ref = useRef<HTMLInputElement>(null)
   const [autButon, setAutButon] = useState(true);
   const [openDeleteModale, setOpenDeleteModale] = useState(false);
   const targetEnter = (e: React.ChangeEvent<HTMLInputElement>) => {
-   const reseach= e.target.value.toUpperCase() === "DELETE" ? setAutButon(false) : setAutButon(true);
-   return reseach;
+    const reseach = e.target.value.toUpperCase() === "DELETE" ? setAutButon(false) : setAutButon(true);
+    return reseach;
   };
   const [nameActive, setNameActive] = useState("");
+
+
+  //------------for loading before page is tring up 
+  if (loading || isPending) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Chargement des tickets...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ------------ la gestion des erreures 
+  {/* Messages d'erreur */ }
+  if (sendError) {
+    return (
+      <main className="p-4">
+        <Alert className="border-red-200 bg-red-50">
+          <AlertCircle className="h-4 w-4 text-red-500" />
+          <AlertDescription className="text-red-700">
+            {sendError}
+          </AlertDescription>
+        </Alert>
+      </main>
+    )
+  }
+
 
 
   return (
@@ -103,6 +194,7 @@ export default function Home() {
             setMemberDelete={setMemberDelete}
             onViewDetails={handleViewDetails} // Nouvelle prop pour les détails mobiles
           />
+    
         </div>
 
 
@@ -111,6 +203,7 @@ export default function Home() {
             <MemberDetails member={selectedMember} />
           </div>
         )}
+
       </div>
 
       {/* Modal pour afficher les détails en mode mobile/tablette */}
@@ -132,21 +225,46 @@ export default function Home() {
 
       { /* POUR LA SUPPRESSION  */}
       <Dialog open={openDeleteModale} onOpenChange={setOpenDeleteModale}>
-        <DialogContent className="sm:max-w-md mx-4">
+        <DialogContent className="sm:max-w-md mx-4 w-fit">
           <DialogHeader>
             <DialogTitle>SUPPRESSION</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
+
+
+
+
+            {sendSubmitError &&
+              <Alert className="border-red-200 bg-red-50">
+                <AlertCircle className="h-4 w-4 text-red-500" />
+                <AlertDescription className="text-red-700">
+                  {sendSubmitError}
+                </AlertDescription>
+              </Alert>
+            }
+            {sendSubmitSuccess &&
+              <Alert className="border-green-200 bg-green-50">
+                <SquareCheckBig className="h-4 w-4 text-green-500" />
+                <AlertDescription className="text-green-700">
+                  {sendSubmitSuccess}
+                </AlertDescription>
+              </Alert>
+            }
+
+
+            <div className="text-sm text-muted-foreground">
               Pour supprimer <span className='font-semibold text-gray-900'>{nameActive}</span> entrer <span className='text-red-600 font-semibold'>DELETE</span> dans le formulaire ci-dessous
-            </p>
+            </div>
+
+
 
             <div className="space-y-4">
               {/* Entrer */}
               <div className="space-y-2">
                 <Input
                   className="w-full"
-                  onChange={(e)=>targetEnter(e)}
+                  ref={ref}
+                  onChange={(e) => targetEnter(e)}
                   placeholder="Tapez DELETE pour confirmer"
                 />
               </div>
@@ -154,19 +272,25 @@ export default function Home() {
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline" className="mr-2">
+              <Button variant="outline" className="mr-2" onClick={() => {
+                setSendSubmitError(""); setSendSubmitError(""); 
+                
+                if (ref.current) {
+                  ref.current.value = "";        // vide l'input
+                }
+              }}>
                 Annuler
               </Button>
             </DialogClose>
             <Button
               disabled={autButon}
               type='submit'
-              onClick={() => { 
+              onClick={() => {
                 handleDelete();
-                setOpenDeleteModale(false);
+
               }}
               className="bg-[#FF4000] hover:bg-[#FF4000]/90">
-              Confirmer
+              {loadSubmit ? " en cour..." : "Confirmer"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,103 +1,169 @@
-// app/login/page.tsx
-'use client'
+"use client"
 
-import {  useState } from 'react'
-import { Button } from "@/src/components/ui/button"
-import { Input } from "@/src/components/ui/input"
-import { Card, CardContent, CardDescription, CardFooter} from "@/src/components/ui/card"
+import { useState } from 'react'
+import { useRouter} from 'next/navigation'
+import { signIn } from '@/src/lib/auth-client'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/components/ui/card'
+import { Button } from '@/src/components/ui/button'
+import { Input } from '@/src/components/ui/input'
+import { Label } from '@/src/components/ui/label'
+import { Alert, AlertDescription } from '@/src/components/ui/alert'
 
-
-import { useRouter } from 'next/navigation'
-
-
-
-
-
+import { AlertCircle, LogIn } from 'lucide-react'
+import { createAuthClient } from 'better-auth/react'
 export default function LoginPage() {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [succes, setSuccess] = useState('')
+  const [open, setOpen] = useState(false)
 
-  const route = useRouter()
-  const [isSuccess, setIsSuccess] = useState(false)
 
-  const [email, setEmail] = useState("")
+  const router = useRouter()
 
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
 
-  //simulations 
-  const onSubmit = async () => {
-    alert(email)
-    setIsSuccess(true)
-    setTimeout(() => {
-      route.push('/dashboard')
-    }, 2000)
+    try {
+      const result = await signIn.email({
+        email: formData.email,
+        password: formData.password,
+      })
+
+      if (result.error) {
+        setError(result.error.message || 'Erreur de connexion')
+        setOpen(false)
+      } else {
+        setOpen(true)
+        setSuccess('Connexion réussie!')
+        setTimeout(() => {
+
+        }, 10000);
+
+        router.push('/dashboard')
+
+
+      }
+    } catch (err) {
+      setError('Une erreur est survenue lors de la connexion')
+
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    })
   }
 
 
-
+  //
+  const authClient = createAuthClient();
   return (
-    <div className=" w-full  min-h-screen flex items-center justify-center bg-gradient-to-b from-black to-gray-300/80 p-4">
-      <div className="absolute inset-0 overflow-hidden z-0">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div className="text-center">
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+            Connexion Admin
+          </h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Connectez-vous à votre compte administrateur
+          </p>
+        </div>
 
-        
-          <span className=" flex justify-center mt-10 text-gray-50 pointer-events-none whitespace-pre-wrap  bg-clip-text text-center text-8xl font-semibold leading-none  ">
-           CONNEXION
-          </span>
-          
-          <div className="pointer-events-none absolute inset-0 h-full bg-[radial-gradient(circle_at_50%_200%,rgba(0,0,0,0.2),rgba(255,255,255,0))]" />
-       
+        {!open ?
+          (error &&
+            <Alert className="border-red-200 bg-red-50">
+              <AlertCircle className="h-4 w-4 text-red-500" />
+              <AlertDescription className="text-red-700">
+                {error}
+              </AlertDescription>
+            </Alert>
+          )
+          : (succes && (
+            <Alert className="border-green-200 bg-green-50">
+              <AlertCircle className="h-4 w-4 text-green-500" />
+              <AlertDescription className="text-green-700">
+                {succes}
+              </AlertDescription>
+            </Alert>
+          ))}
 
-      </div>
 
-      <Card className="  w-[400px] relative z-10  backdrop-blur-sm shadow-xl border border-gray-300">
-         {/* 
-        <CardHeader className="  space-y-1">
-         
-          <div className="flex items-center justify-center mb-4">
-            LOGO
-          </div>
-          <CardTitle className=" dark:text-black text-2xl font-bold">CONNEXION </CardTitle>
-          <CardDescription className=' dark:text-gray-600'>
-            Saisissez votre e-mail pour recevoir un lien de connexion
-          </CardDescription>
-        </CardHeader>
-         */}
-        <CardContent>
-          {isSuccess ? (
-            <div className="bg-green-50 text-green-800 border-green-200 p-5 rounded-lg">
-              <CardDescription>
-                Lien de connexion envoyé ! Vérifiez votre boîte de réception.
-              </CardDescription>
-            </div>
-          ) : (
 
-            <form onSubmit={onSubmit} className="space-y-4">
-              <Input
-                name='email'
-                type='email'
-                value={email}
-                onChange={(e) => { setEmail(e.target.value) }}
-                placeholder='alain090901@gmail.com'
-                required
-              >
-              </Input>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <LogIn className="h-5 w-5" />
+              Connexion
+            </CardTitle>
+            <CardDescription>
+              Entrez vos identifiants d'administrateur
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="admin@example.com"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Mot de passe</Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                />
+              </div>
 
               <Button
                 type="submit"
-
-                className="w-full bg-blue-600 hover:bg-blue-700 cursor-pointer text-gray-50 disabled:bg-gray-800 disabled:text-gray-50 "
+                className="w-full"
+                disabled={loading}
               >
-                Recevoir un lien de connexion
+                {loading ? 'Connexion...' : 'Se connecter'}
               </Button>
             </form>
+            <Button
+              className="w-full mt-10 bg-gray-100 text-black hover:bg-black hover:text-gray-50"
+              onClick={() =>
+                authClient.signIn.social({
+                  provider: "google",
+                  callbackURL: "/dashboard",
+                })
+              }
+            >
+              Connexion via Google
+            </Button>
+          </CardContent>
+        </Card>
 
-          )}
-        </CardContent>
-        <CardFooter className="flex justify-center border-t border-t-gray-200 pt-4">
-
-        </CardFooter>
-        <div className="absolute bottom-2 left-0 right-0 text-center text-xs  text-gray-500">
-          © 2025, Name
+        <div className="text-center text-sm text-gray-600">
+          <p>Seuls les administrateurs peuvent accéder au système</p>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }

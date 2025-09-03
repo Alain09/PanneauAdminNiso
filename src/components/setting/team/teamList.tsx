@@ -7,7 +7,7 @@ import TeamMemberCard from "./teamMembersCard";
 interface TeamListProps {
   members: TeamMember[];
   setMembers: React.Dispatch<React.SetStateAction<TeamMember[]>>;
-  selectmember: TeamMember;
+  selectmember: TeamMember | undefined;
   onAddClick: () => void;
   onMemberClick: (member: TeamMember) => void;
   onViewDetails(member: TeamMember): void;

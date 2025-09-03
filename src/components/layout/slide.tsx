@@ -15,6 +15,8 @@ import {
   X
 } from "lucide-react"
 
+import { signOut } from '@/src/lib/auth-client'
+import { useRouter } from 'next/navigation'
 interface SidebarProps {
   setSize: React.Dispatch<React.SetStateAction<boolean>>
   isMobile: boolean
@@ -34,7 +36,8 @@ const navItems = [
 function Slide({ setSize, isMobile, isTablet, mobileMenuOpen, setMobileMenuOpen }: SidebarProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const pathname = usePathname()
-  
+  const router = useRouter()
+
   // Auto-collapse sidebar on tablet
   useEffect(() => {
     if (isTablet && !isMobile) {
@@ -73,17 +76,17 @@ function Slide({ setSize, isMobile, isTablet, mobileMenuOpen, setMobileMenuOpen 
         {/* Mobile Menu Button - Seulement quand le menu est fermé */}
         {/* Mobile Overlay */}
         {mobileMenuOpen && (
-          <div 
+          <div
             className="fixed inset-0 bg-black/50 z-[999] lg:hidden"
             onClick={closeMobileMenu}
           />
         )}
 
         {/* Mobile Sidebar */}
-        <div 
+        <div
           className={`
             fixed top-0 left-0 h-full w-64 bg-white z-[1000] 
-            transform transition-transform duration-300 ease-in-out lg:hidden
+            transform transition-transform duration-300 ease-in-out lg:hidden overflow-y-auto
             ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
             shadow-xl
           `}
@@ -92,7 +95,7 @@ function Slide({ setSize, isMobile, isTablet, mobileMenuOpen, setMobileMenuOpen 
             {/* Header */}
             <div className="p-4 border-b border-gray-100 flex items-center justify-between min-h-[60px]">
               <h1 className="text-xl font-bold text-gray-800">NISO</h1>
-              <button 
+              <button
                 onClick={closeMobileMenu}
                 className="p-1.5 rounded-lg hover:bg-orange-100 transition-colors duration-200"
                 aria-label="Close menu"
@@ -100,29 +103,29 @@ function Slide({ setSize, isMobile, isTablet, mobileMenuOpen, setMobileMenuOpen 
                 <X size={18} />
               </button>
             </div>
-            
+
             {/* Navigation */}
             <div className="flex-1 py-6 px-2">
               <nav className="space-y-1">
                 {navItems.map((item) => {
                   const isActive = isActiveItem(item.path)
                   const Icon = item.icon
-                  
+
                   return (
-                    <Link 
-                      href={item.path} 
+                    <Link
+                      href={item.path}
                       key={item.path}
                       className="block"
                       onClick={closeMobileMenu}
                     >
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         className={`
                           w-full h-11 px-3 justify-start
                           transition-all duration-200 
-                          ${isActive 
-                            ? 'bg-[#FF4000] text-white hover:bg-[#e63600] hover:text-white shadow-sm' 
+                          ${isActive
+                            ? 'bg-[#FF4000] text-white hover:bg-[#e63600] hover:text-white shadow-sm'
                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
                           }
                         `}
@@ -140,12 +143,12 @@ function Slide({ setSize, isMobile, isTablet, mobileMenuOpen, setMobileMenuOpen 
 
             {/* Logout Button */}
             <div className="p-2 border-t border-gray-100">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 className="w-full h-11 px-3 justify-start text-gray-600 bg-gray-50 hover:bg-gray-100 hover:text-gray-800 transition-all duration-200"
                 onClick={() => {
-                  console.log('Déconnexion...')
+                  signOut({ fetchOptions: { onSuccess: () => { router.push("/") } } })
                   closeMobileMenu()
                 }}
               >
@@ -163,7 +166,7 @@ function Slide({ setSize, isMobile, isTablet, mobileMenuOpen, setMobileMenuOpen 
 
   // Desktop & Tablet: Sidebar normale
   return (
-    <div 
+    <div
       className={`
         ${sidebarCollapsed ? 'w-18' : 'w-56'} 
         bg-white 
@@ -176,10 +179,11 @@ function Slide({ setSize, isMobile, isTablet, mobileMenuOpen, setMobileMenuOpen 
         duration-300 
         ease-in-out
         hidden lg:block
+        overflow-y-auto
       `}
     >
       {/* Sidebar Content */}
-      <div 
+      <div
         className={`
           h-full 
           bg-white 
@@ -206,30 +210,30 @@ function Slide({ setSize, isMobile, isTablet, mobileMenuOpen, setMobileMenuOpen 
               <h1 className="text-xl font-bold text-gray-800">N</h1>
             )}
           </div>
-          <button 
-            onClick={toggleSidebar} 
+          <button
+            onClick={toggleSidebar}
             className="p-1.5 rounded-lg hover:bg-orange-100 transition-colors duration-200 flex-shrink-0"
             aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
           </button>
         </div>
-        
+
         {/* Navigation */}
         <div className="flex-1 py-6 px-2">
           <nav className="space-y-1">
             {navItems.map((item) => {
               const isActive = isActiveItem(item.path)
               const Icon = item.icon
-              
+
               return (
-                <Link 
-                  href={item.path} 
+                <Link
+                  href={item.path}
                   key={item.path}
                   className="block"
                 >
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="sm"
                     className={`
                       w-full 
@@ -237,8 +241,8 @@ function Slide({ setSize, isMobile, isTablet, mobileMenuOpen, setMobileMenuOpen 
                       ${sidebarCollapsed ? 'px-2 justify-center' : 'px-3 justify-start'} 
                       transition-all 
                       duration-200 
-                      ${isActive 
-                        ? 'bg-[#FF4000] text-white hover:bg-[#e63600] hover:text-white shadow-sm' 
+                      ${isActive
+                        ? 'bg-[#FF4000] text-white hover:bg-[#e63600] hover:text-white shadow-sm'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
                       }
                     `}
@@ -258,8 +262,8 @@ function Slide({ setSize, isMobile, isTablet, mobileMenuOpen, setMobileMenuOpen 
 
         {/* Logout Button */}
         <div className="p-2 border-t border-gray-100">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="sm"
             className={`
               w-full 
@@ -273,7 +277,7 @@ function Slide({ setSize, isMobile, isTablet, mobileMenuOpen, setMobileMenuOpen 
               duration-200
             `}
             onClick={() => {
-              console.log('Déconnexion...')
+              signOut({ fetchOptions: { onSuccess: () => { router.push("/") } } })
             }}
           >
             <LogOut className="h-5 w-5 flex-shrink-0" />

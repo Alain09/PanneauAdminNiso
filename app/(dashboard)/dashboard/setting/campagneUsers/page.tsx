@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Table,
   TableBody,
@@ -16,11 +16,14 @@ import {
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
 import { Button } from "@/src/components/ui/button";
-import { MoreVertical } from "lucide-react";
+import { AlertCircle, MoreVertical } from "lucide-react";
 
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/src/components/ui/dialog";
 import { Input } from "@/src/components/ui/input";
 import { Badge } from "@/src/components/ui/badge";
+import { useSession } from "@/src/lib/auth-client";
+import { Campagne } from "@/type";
+import { Alert, AlertDescription } from "@/src/components/ui/alert";
 
 // Données initiales pour le tableau
 const campagnes = [
@@ -147,20 +150,139 @@ const campagnes = [
 ];
 
 export default function Campagn() {
-  const [data] = useState(campagnes);
+ const [campagneData, setCampagneData] = useState<Campagne[]>([]);
+
+  const { isPending } = useSession()
+  const [sendError, setSendError] = useState("");
+  const [loading, setLoading] = useState(false)
+
+  //--------------------------
+  const [sendSubmitError, setSendSubmitError] = useState("");
+  const [sendSubmitSuccess, setSendSubmitSuccess] = useState("");
+  const [loadSubmit, setLoadSubmit] = useState(false)
+  //------------------------
+
+   // api pour recuperation des coordonnées de l'admins
+    useEffect(() => {
+  
+      const getAllCampagne = async () => {
+        //recuperation de l'key access
+        const key_acces = process.env.NEXT_PUBLIC_API_ROUTE_SECRET;
+  
+        // ---------loarding before success endpoint
+        setLoading(true)
+  
+        // try for execution endpoint
+        try {
+          const datas = await fetch("/api/settng/campagne/",
+            {
+              method: "GET",
+              headers: { "authorization": `${key_acces}` }
+            })
+  
+          // erreur de recuperation 
+          if (!datas.ok) {
+            setSendError(" Erreur lors du chargement de la campagne ")
+            setLoading(false)
+          }
+  
+          const campDt = await datas.json();
+  
+          if (!campDt.success) {
+            setSendError(campDt.message)
+            setLoading(false)
+          } else {
+            setLoading(false);
+            setSendError("");
+            //alert(" donnees bien chargé")
+            setCampagneData(campDt.data)
+  
+          }
+  
+        } catch (error) {
+          console.error("Erreur lors de la récupération des  profiles :", error);
+          setSendError(" erreur server");
+        }finally{ setLoading(false)}
+  
+      };
+  
+      getAllCampagne();
+  
+    }, [])
+  
 
   // modalpour la supression
+  const ref = useRef<HTMLInputElement>(null)
   const [aut, setAut] = useState(true);
   const [openDeleteModale, setOpenDeleteModale] = useState(false);
   const targetEnter = (e: React.ChangeEvent<HTMLInputElement>) => {
-   const reseach= e.target.value.toUpperCase() === "DELETE" ? setAut(false) : setAut(true);
-   return reseach;
+    const reseach = e.target.value.toUpperCase() === "DELETE" ? setAut(false) : setAut(true);
+    return reseach;
   };
 
   const [nameActive, setNameActive] = useState("");
 
   // modal pour le formulaire d'ajout de creation de campagne
   const [openNewModale, setOpenNewModale] = useState(false);
+
+   const handleDelete = async () => {
+    setSendSubmitError("");
+    setSendSubmitSuccess("");
+    setLoadSubmit(true);
+
+    try {
+      const datas = await fetch(`/api/settng/adminteam/${memberDelete?.id}`, {
+        method: "DELETE",
+        headers: {
+          "authorization": process.env.NEXT_PUBLIC_API_ROUTE_SECRET || "",
+          "Content-Type": "application/json", // Ajout de ce header
+        },
+      });
+
+      const result = await datas.json();
+
+      if (result.success) {
+        setSendSubmitSuccess(result.message);
+        setMembers(prev => prev.filter(member => member.id !== memberDelete?.id));
+        setTimeout(() => setOpenDeleteModale(false), 1500); // Fermer après succès
+      } else {
+        setSendSubmitError(result.message);
+      }
+
+    } catch (error) {
+      setSendSubmitError("Erreur de connexion lors de la suppression");
+      console.error(error);
+    } finally {
+      setLoadSubmit(false);
+    }
+  };
+
+  //------------for loading before page is tring up 
+  if (loading || isPending) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Chargement des tickets...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ------------ la gestion des erreures 
+  {/* Messages d'erreur */ }
+  if (sendError) {
+    return (
+      <main className="p-4">
+        <Alert className="border-red-200 bg-red-50">
+          <AlertCircle className="h-4 w-4 text-red-500" />
+          <AlertDescription className="text-red-700">
+            {sendError}
+          </AlertDescription>
+        </Alert>
+      </main>
+    )
+  }
 
   return (
     <div className="w-full p-4 md:p-6">
@@ -188,7 +310,7 @@ export default function Campagn() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.map((row, index) => (
+              {campagneData.map((row, index) => (
                 <TableRow
                   key={index}
                   className={index % 2 === 0 ? "bg-[#FFAE91]/10 " : ""}
@@ -251,8 +373,9 @@ export default function Campagn() {
               {/* Entrer */}
               <div className="space-y-2">
                 <Input
+                  ref={ref}
                   className="w-full"
-                  onChange={(e)=>targetEnter(e)}
+                  onChange={(e) => targetEnter(e)}
                   placeholder="Tapez DELETE pour confirmer"
                 />
               </div>
@@ -260,16 +383,21 @@ export default function Campagn() {
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline" className="mr-2">
+              <Button variant="outline" className="mr-2"
+
+              >
                 Annuler
               </Button>
             </DialogClose>
             <Button
               disabled={aut}
               type='submit'
-              onClick={() => { console.log("dddd"); }}
+              onClick={() => {
+                handleDelete();
+
+              }}
               className="bg-[#FF4000] hover:bg-[#FF4000]/90">
-              Confirmer
+              {loadSubmit ? " en cour..." : "Confirmer"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -324,7 +452,7 @@ export default function Campagn() {
                 />
               </div>
 
-               {/* Opération des tontine*/}
+              {/* Opération des tontine*/}
               <div className="space-y-2">
                 <label className="text-sm font-medium">Total semaine pour tontine</label>
                 <Input

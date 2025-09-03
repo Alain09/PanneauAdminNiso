@@ -17,7 +17,7 @@ export interface TeamMemberCardProps {
   member: TeamMember;
   onClick: () => void;
   onViewDetails(member: TeamMember): void;
-  selectmember: TeamMember;
+  selectmember: TeamMember | undefined;
   setNameActive: React.Dispatch<React.SetStateAction<string>>;
   setOpenDeleteModale: React.Dispatch<React.SetStateAction<boolean>>
   setMemberDelete: React.Dispatch<React.SetStateAction<TeamMember | undefined>>
@@ -32,7 +32,7 @@ export default function TeamMemberCard({
   setMemberDelete,
   onViewDetails
 }: TeamMemberCardProps) {
-  const initials = member.firstName.charAt(0).toUpperCase();
+  const initials = member.name.split(" ")[0].charAt(0).toUpperCase();
   const route = useRouter()
 
   return (
@@ -46,7 +46,7 @@ export default function TeamMemberCard({
         </Avatar>
         <div className="min-w-0 flex-1">
           <p className="font-medium text-xs md:text-sm truncate">
-            {member.firstName} {member.lastName}
+            {member.name.split(" ")[0]} {member.name.split(" ")[1]}
           </p>
           <p className="text-xs md:text-sm text-[#FF4000] truncate">{member.email}</p>
         </div>
@@ -75,7 +75,6 @@ export default function TeamMemberCard({
               className="lg:hidden flex items-center gap-2 text-xs md:text-sm"
               onClick={() => onViewDetails(member)}
             >
-              <Eye className="h-3 w-3 md:h-4 md:w-4" />
               Voir détails
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -91,9 +90,10 @@ export default function TeamMemberCard({
               className="text-red-500 text-xs md:text-sm"
               onClick={(e) => {
                 e.stopPropagation();
-                setNameActive(`${member.firstName} ${member.lastName} de l'équipe`)
-                setOpenDeleteModale(true)
+                setNameActive(`${member.name} de l'équipe`)
                 setMemberDelete(member)
+                setOpenDeleteModale(true)
+              
               }}
             >
               Supprimer
