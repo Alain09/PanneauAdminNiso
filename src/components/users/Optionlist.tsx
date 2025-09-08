@@ -7,9 +7,10 @@ interface Structre {
     opt: TontineOption
     setOpen: React.Dispatch<React.SetStateAction<boolean>>
     setTexteDelete: React.Dispatch<React.SetStateAction<string | undefined>>
+    setOptionId :React.Dispatch<React.SetStateAction<string | undefined>>
 }
 
-function Optionlist({ opt, setOpen ,setTexteDelete }: Structre) {
+function Optionlist({ opt, setOpen ,setTexteDelete ,setOptionId  }: Structre) {
     return (
         <div className='flex items-center gap-x-6'>
             <div className="border border-gray-100 rounded-lg  bg-white shadow-gray-100 p-6 w-full h-fit  ">
@@ -54,7 +55,12 @@ function Optionlist({ opt, setOpen ,setTexteDelete }: Structre) {
 
             </div>
             <div className=" bg-[#FF4000]  rounded-full cursor-pointer p-2 "
-                onClick={() => { setOpen(true);  setTexteDelete(`l'option ${opt.option === "1"?  opt.option+"ère" : opt.option+"ème"}  de  ${opt.category}`) }}
+                onClick={() => {
+                     setOpen(true); 
+                     setTexteDelete(`l'option ${opt.option === "1"?  opt.option+"ère" : opt.option+"ème"}  de  ${opt.category}`);
+                    setOptionId(opt.id)
+                    }
+                    }
             >
                 <Trash2 className="w-4 h-4 text-white"
                 />

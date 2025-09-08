@@ -148,6 +148,18 @@ export default function Home() {
   const [nameActive, setNameActive] = useState("");
 
 
+  //---------------------
+  // ******************* 
+    useEffect(()=>{
+      if(!openDeleteModale){
+        setSendSubmitSuccess("")
+      }
+    },[openDeleteModale])
+  
+  
+    //*****************  */
+
+    
   //------------for loading before page is tring up 
   if (loading || isPending) {
     return (
@@ -256,8 +268,6 @@ export default function Home() {
               Pour supprimer <span className='font-semibold text-gray-900'>{nameActive}</span> entrer <span className='text-red-600 font-semibold'>DELETE</span> dans le formulaire ci-dessous
             </div>
 
-
-
             <div className="space-y-4">
               {/* Entrer */}
               <div className="space-y-2">
@@ -283,12 +293,13 @@ export default function Home() {
               </Button>
             </DialogClose>
             <Button
-              disabled={autButon}
+              disabled={autButon || loadSubmit}
               type='submit'
               onClick={() => {
                 handleDelete();
 
               }}
+              
               className="bg-[#FF4000] hover:bg-[#FF4000]/90">
               {loadSubmit ? " en cour..." : "Confirmer"}
             </Button>

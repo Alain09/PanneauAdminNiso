@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
 import { Button } from "@/src/components/ui/button";
-import { AlertCircle, MoreVertical } from "lucide-react";
+import { AlertCircle, MoreVertical, SquareCheckBig } from "lucide-react";
 
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/src/components/ui/dialog";
 import { Input } from "@/src/components/ui/input";
@@ -150,7 +150,8 @@ const campagnes = [
 ];
 
 export default function Campagn() {
- const [campagneData, setCampagneData] = useState<Campagne[]>([]);
+  const [campagneData, setCampagneData] = useState<Campagne[]>([]); // les donnees  receullir
+  const [campPost, setCampPost] = useState<Campagne>()
 
   const { isPending } = useSession()
   const [sendError, setSendError] = useState("");
@@ -162,54 +163,58 @@ export default function Campagn() {
   const [loadSubmit, setLoadSubmit] = useState(false)
   //------------------------
 
-   // api pour recuperation des coordonnées de l'admins
-    useEffect(() => {
-  
-      const getAllCampagne = async () => {
-        //recuperation de l'key access
-        const key_acces = process.env.NEXT_PUBLIC_API_ROUTE_SECRET;
-  
-        // ---------loarding before success endpoint
-        setLoading(true)
-  
-        // try for execution endpoint
-        try {
-          const datas = await fetch("/api/settng/campagne/",
-            {
-              method: "GET",
-              headers: { "authorization": `${key_acces}` }
-            })
-  
-          // erreur de recuperation 
-          if (!datas.ok) {
-            setSendError(" Erreur lors du chargement de la campagne ")
-            setLoading(false)
-          }
-  
-          const campDt = await datas.json();
-  
-          if (!campDt.success) {
-            setSendError(campDt.message)
-            setLoading(false)
-          } else {
-            setLoading(false);
-            setSendError("");
-            //alert(" donnees bien chargé")
-            setCampagneData(campDt.data)
-  
-          }
-  
-        } catch (error) {
-          console.error("Erreur lors de la récupération des  profiles :", error);
-          setSendError(" erreur server");
-        }finally{ setLoading(false)}
-  
-      };
-  
-      getAllCampagne();
-  
-    }, [])
-  
+  //------------------------------
+  const [campDelete, setCampDelete] = useState<Campagne>()
+  const [nameActive, setNameActive] = useState("");
+  //-------------------------------------
+
+  // api pour recuperation des coordonnées de l'admins
+  useEffect(() => {
+
+    const getAllCampagne = async () => {
+      //recuperation de l'key access
+      const key_acces = process.env.NEXT_PUBLIC_API_ROUTE_SECRET;
+
+      // ---------loarding before success endpoint
+      setLoading(true)
+
+      // try for execution endpoint
+      try {
+        const datas = await fetch("/api/settng/campagne/",
+          {
+            method: "GET",
+            headers: { "authorization": `${key_acces}` }
+          })
+
+        // erreur de recuperation 
+        if (!datas.ok) {
+          setSendError(" Erreur lors du chargement de la campagne ")
+          setLoading(false)
+        }
+
+        const campDt = await datas.json();
+
+        if (!campDt.success) {
+          setSendError(campDt.message)
+          setLoading(false)
+        } else {
+          setSendError("");
+          //alert(" donnees bien chargé")
+          setCampagneData(campDt.data)
+
+        }
+
+      } catch (error) {
+        console.error("Erreur lors de la récupération des  profiles :", error);
+        setSendError(" erreur server");
+      } finally { setLoading(false) }
+
+    };
+
+    getAllCampagne();
+
+  }, [])
+
 
   // modalpour la supression
   const ref = useRef<HTMLInputElement>(null)
@@ -220,18 +225,17 @@ export default function Campagn() {
     return reseach;
   };
 
-  const [nameActive, setNameActive] = useState("");
 
   // modal pour le formulaire d'ajout de creation de campagne
   const [openNewModale, setOpenNewModale] = useState(false);
 
-   const handleDelete = async () => {
+  const handleDelete = async () => {
     setSendSubmitError("");
     setSendSubmitSuccess("");
     setLoadSubmit(true);
 
     try {
-      const datas = await fetch(`/api/settng/adminteam/${memberDelete?.id}`, {
+      const datas = await fetch(`/api/settng/campagne/${campDelete?.id}`, {
         method: "DELETE",
         headers: {
           "authorization": process.env.NEXT_PUBLIC_API_ROUTE_SECRET || "",
@@ -243,8 +247,8 @@ export default function Campagn() {
 
       if (result.success) {
         setSendSubmitSuccess(result.message);
-        setMembers(prev => prev.filter(member => member.id !== memberDelete?.id));
-        setTimeout(() => setOpenDeleteModale(false), 1500); // Fermer après succès
+        setCampagneData(prev => prev.filter(member => member.id !== campDelete?.id));
+        setTimeout(() => setOpenDeleteModale(false), 1000); // Fermer après succès
       } else {
         setSendSubmitError(result.message);
       }
@@ -257,13 +261,83 @@ export default function Campagn() {
     }
   };
 
+  // poour la creaton des campagnes 'lapi route de cretion 
+
+  //------------------les etats----------------//
+  const [sendCreatError, setSendCreatError] = useState("");
+  const [sendCreatSuccess, setSendCreatSuccess] = useState("");
+  const [loadCreat, setLoadCreat] = useState(false)
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setCampPost((prev) => ({ ...prev, [name]: value }));
+
+  };
+
+  const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); // empêcher le rechargement
+
+    setSendCreatError("");
+    setSendCreatSuccess("");
+    setLoadCreat(true);
+
+    try {
+      const datas = await fetch(`/api/settng/campagne/`, {
+        method: "POST",
+        headers: {
+          "authorization": process.env.NEXT_PUBLIC_API_ROUTE_SECRET || "",
+          "Content-Type": "application/json", // Ajout de ce header
+        },
+        body: JSON.stringify(campPost)
+      });
+
+      const result = await datas.json();
+
+      if (result.success) {
+        setSendCreatSuccess(result.message);
+        setLoadCreat(false)
+        setCampagneData((prev) => [...prev, result.data]);
+        setTimeout(() => setOpenNewModale(false), 1000); // Fermer après succès
+
+      } else {
+        setSendCreatError(result.message);
+      }
+
+    } catch (error) {
+      setSendCreatError("Erreur de connexion lors de la suppression");
+      console.error(error);
+    } finally {
+      setLoadCreat(false);
+    }
+  };
+
+// ******************* 
+  useEffect(()=>{
+    if(!openDeleteModale){
+      setSendSubmitSuccess("")
+    }
+  },[openDeleteModale])
+
+  //*****************  */
+
+  //------------------------------ POUR LA FERMETURE DES MESSAGE DE SUCCES OU ERREUR
+  // ******************* 
+    useEffect(()=>{
+      if(!openNewModale){
+        setSendCreatSuccess("")
+      }
+    },[openNewModale])
+  
+  
+    //*****************  */
+
   //------------for loading before page is tring up 
   if (loading || isPending) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Chargement des tickets...</p>
+          <p className="mt-2 text-gray-600">Chargement...</p>
         </div>
       </div>
     );
@@ -301,35 +375,51 @@ export default function Campagn() {
             <TableHeader className="bg-gray-100">
               <TableRow>
                 <TableHead className="font-medium">Nom</TableHead>
-                <TableHead className="font-medium">DébutSelection</TableHead>
-                <TableHead className="font-medium">FinSelection</TableHead>
+                <TableHead className="font-medium">DébutSélection</TableHead>
+                <TableHead className="font-medium">FinSélection</TableHead>
                 <TableHead className="font-medium">DébutTontine</TableHead>
                 <TableHead className="font-medium">FinTontine</TableHead>
-                <TableHead className="font-medium">Statut</TableHead>
+                <TableHead className="font-medium">CampagneStatut</TableHead>
+                <TableHead className="font-medium">SemaineActive</TableHead>
                 <TableHead className="font-medium w-16">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {campagneData.map((row, index) => (
                 <TableRow
-                  key={index}
+                  key={row.id || index}
                   className={index % 2 === 0 ? "bg-[#FFAE91]/10 " : ""}
                 >
                   <TableCell className="whitespace-nowrap">{row.nom}</TableCell>
-                  <TableCell className="whitespace-nowrap">{new Date(row.selectionStart).toLocaleDateString()}</TableCell>
-                  <TableCell className="whitespace-nowrap">{new Date(row.selectionEnd).toLocaleDateString()}</TableCell>
-                  <TableCell className="whitespace-nowrap">{new Date(row.tontineStart).toLocaleDateString()}</TableCell>
-                  <TableCell className="whitespace-nowrap">{new Date(row.tontineEnd).toLocaleDateString()}</TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {row.selectionStart ? new Date(row.selectionStart).toLocaleDateString() : "N/A"}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {row.selectionEnd ? new Date(row.selectionEnd).toLocaleDateString() : "N/A"}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {row.tontineStart ? new Date(row.tontineStart).toLocaleDateString() : "N/A"}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {row.tontineEnd ? new Date(row.tontineEnd).toLocaleDateString() : "N/A"}
+                  </TableCell>
                   <TableCell>
                     <Badge
                       className={
-                        row.status === "TERMINER"
+                        row.campagneStatut === "Terminer"
                           ? "text-xs text-green-600 bg-green-100 py-1 px-2 rounded whitespace-nowrap"
-                          : "text-xs text-blue-600 bg-blue-100 py-1 px-2 rounded whitespace-nowrap"
+                          : row.status === "En cours"
+                            ? "text-xs text-blue-600 bg-blue-100 py-1 px-2 rounded whitespace-nowrap"
+                            : row.status === "En selection"
+                              ? "text-xs text-orange-600 bg-orange-100 py-1 px-2 rounded whitespace-nowrap"
+                              : "text-xs text-gray-600 bg-gray-100 py-1 px-2 rounded whitespace-nowrap"
                       }
                     >
-                      • {row.status}
+                      • {row.campagneStatut}
                     </Badge>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {row.weekActif}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -344,6 +434,7 @@ export default function Campagn() {
                           onClick={() => {
                             setOpenDeleteModale(true);
                             setNameActive(` ${row.nom} `);
+                            setCampDelete(row);
                           }}
                         >
                           Supprimer
@@ -360,21 +451,39 @@ export default function Campagn() {
 
       { /* POUR LA SUPPRESSION  */}
       <Dialog open={openDeleteModale} onOpenChange={setOpenDeleteModale}>
-        <DialogContent className="sm:max-w-md mx-4">
+        <DialogContent className="sm:max-w-md mx-4 w-fit">
           <DialogHeader>
             <DialogTitle>SUPPRESSION</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Pour supprimer la campagne <span className='font-semibold text-gray-900'>{nameActive} </span> entrer <span className='text-red-600 font-semibold'>DELETE</span> dans le formulaire ci-dessous
-            </p>
 
+            {sendSubmitError &&
+              <Alert className="border-red-200 bg-red-50">
+                <AlertCircle className="h-4 w-4 text-red-500" />
+                <AlertDescription className="text-red-700">
+                  {sendSubmitError}
+                </AlertDescription>
+              </Alert>
+            }
+            {sendSubmitSuccess &&
+              <Alert className="border-green-200 bg-green-50">
+                <SquareCheckBig className="h-4 w-4 text-green-500" />
+                <AlertDescription className="text-green-700">
+                  {sendSubmitSuccess}
+                </AlertDescription>
+              </Alert>
+            }
+
+
+            <div className="text-sm text-muted-foreground">
+              Pour supprimer <span className='font-semibold text-gray-900'>{nameActive}</span> entrer <span className='text-red-600 font-semibold'>DELETE</span> dans le formulaire ci-dessous
+            </div>
             <div className="space-y-4">
               {/* Entrer */}
               <div className="space-y-2">
                 <Input
-                  ref={ref}
                   className="w-full"
+                  ref={ref}
                   onChange={(e) => targetEnter(e)}
                   placeholder="Tapez DELETE pour confirmer"
                 />
@@ -384,10 +493,16 @@ export default function Campagn() {
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline" className="mr-2"
-
-              >
+                onClick={() => {
+                  setSendSubmitError("");
+                  setSendSubmitSuccess("");
+                  if (ref.current) {
+                    ref.current.value = "";
+                  }
+                }}>
                 Annuler
               </Button>
+
             </DialogClose>
             <Button
               disabled={aut}
@@ -406,12 +521,28 @@ export default function Campagn() {
       { /* POUR LA CREATION DE CAMPAGNE  */}
       <Dialog open={openNewModale} onOpenChange={setOpenNewModale}>
         <DialogContent className="sm:max-w-md mx-4">
-          <form action={() => { alert("succes"); }}>
+          <form onSubmit={handleCreate}>
             <DialogHeader className="mb-4">
               <DialogTitle>CREATION DE CAMPAGNE</DialogTitle>
               <DialogDescription className="text-sm">
                 Ce formulaire sert de création d&apos;une nouvelle campagne
               </DialogDescription>
+              {sendCreatError &&
+                <Alert className="border-red-200 bg-red-50">
+                  <AlertCircle className="h-4 w-4 text-red-500" />
+                  <AlertDescription className="text-red-700">
+                    {sendCreatError}
+                  </AlertDescription>
+                </Alert>
+              }
+              {sendCreatSuccess &&
+                <Alert className="border-green-200 bg-green-50">
+                  <SquareCheckBig className="h-4 w-4 text-green-500" />
+                  <AlertDescription className="text-green-700">
+                    {sendCreatSuccess}
+                  </AlertDescription>
+                </Alert>
+              }
             </DialogHeader>
 
             <div className="space-y-4">
@@ -423,6 +554,7 @@ export default function Campagn() {
                   id="nom"
                   name="nom"
                   className="w-full"
+                  onChange={handleChange}
                   placeholder="entrer un nom"
                   required
                 />
@@ -435,6 +567,7 @@ export default function Campagn() {
                   type="date"
                   id="selectionStart"
                   name="selectionStart"
+                  onChange={handleChange}
                   className="w-full"
                   required
                 />
@@ -447,6 +580,7 @@ export default function Campagn() {
                   type="number"
                   id="dureeSelectionJours"
                   name="dureeSelectionJours"
+                  onChange={handleChange}
                   className="w-full"
                   required
                 />
@@ -459,6 +593,7 @@ export default function Campagn() {
                   type="number"
                   id="dureeTontineSemaines"
                   name="dureeTontineSemaines"
+                  onChange={handleChange}
                   className="w-full"
                   required
                 />
@@ -467,12 +602,14 @@ export default function Campagn() {
 
             <DialogFooter className='mt-4'>
               <DialogClose asChild>
-                <Button variant="outline" className="mr-2">
+                <Button variant="outline" className="mr-2"
+                  onClick={() => { setSendCreatError(""), setSendCreatSuccess("") }}
+                >
                   Annuler
                 </Button>
               </DialogClose>
-              <Button type='submit' className="bg-[#FF4000]">
-                Confirmer
+              <Button type='submit' className="bg-[#FF4000]" disabled={loadCreat}>
+                {loadCreat ? "en cour ..." : "Submit"}
               </Button>
             </DialogFooter>
           </form>

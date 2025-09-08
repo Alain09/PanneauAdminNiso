@@ -28,8 +28,6 @@ export interface ComposantCatalogue {
   product: string,
   quantity: number,
   image?: File | string
-
-
 }
 
 
@@ -86,8 +84,7 @@ export interface Categories {
   week?: string;
   status?: string | "Payé" | "En retard" | "En cours";
   totalToPayByWeekOfThisCategory: number;
-
-  DatePaiement?: Date;
+  datePaiement?: Date;
 }
 
 /* here we calculate amount  associate by each category */
@@ -107,7 +104,7 @@ export interface UserProfile {
   id: string;
   firstName: string;
   lastName: string;
-  email: string;
+  email?: string;
   contact?: string;
   role?: string;
   position?: string | "AutoGestion" | "Gestion";
@@ -117,15 +114,15 @@ export interface UserProfile {
   description?: string;
   status?: string | "En cours" | "Terminé";
   montantTotalGlobal?: number;
-  DescriptionChoixOfEachUser?: CategoriesStatisquesPayement[];
-  createdAt: Date;
+  categoriesStatistiques?: CategoriesStatisquesPayement[];
+  createdAt?: Date;
 }
 
 export interface DataBaseUsersTabs {
   firstName?: string;
   lastName?: string;
   contact?: string | undefined;
-  email?: string;
+  position?: string;
   provence?: string;
   id?: string;
   category?: string;
@@ -207,7 +204,7 @@ export const Donnees: UserProfile[] = [
     description: "Membre fondateur de la tontine",
     status: "Terminé",
     montantTotalGlobal: 350000,
-    DescriptionChoixOfEachUser: [
+    categoriesStatistiques: [
       {
         id: "c5d6e7f8-9a0b-1c2d-3e4f-5a6b7c8d9e0f",
         category: "500",
@@ -266,7 +263,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 3500,
            
-            DatePaiement: new Date(Date.now() - 86400000 * 28)
+            datePaiement: new Date(Date.now() - 86400000 * 28)
           },
           {
             id: "e6f7a8b9-c0d1-2e3f-4a5b-6c7d8e9f0a1b",
@@ -275,7 +272,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 2500,
           
-            DatePaiement: new Date(Date.now() - 86400000 * 21)
+            datePaiement: new Date(Date.now() - 86400000 * 21)
           },
           {
             id: "f8a9b0c1-d2e3-4f5a-6b7c-8d9e0f1a2b3c",
@@ -284,7 +281,7 @@ export const Donnees: UserProfile[] = [
             status: "En retard",
             totalToPayByWeekOfThisCategory: 5000,
           
-            DatePaiement: new Date(Date.now() - 86400000 * 14)
+            datePaiement: new Date(Date.now() - 86400000 * 14)
           },
           {
             id: "a0b1c2d3-e4f5-6a7b-8c9d-0e1f2a3b4c5d",
@@ -293,7 +290,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 4500,
            
-            DatePaiement: new Date(Date.now() - 86400000 * 7)
+            datePaiement: new Date(Date.now() - 86400000 * 7)
           },
           {
             id: "b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e",
@@ -302,7 +299,7 @@ export const Donnees: UserProfile[] = [
             status: "En cours",
             totalToPayByWeekOfThisCategory: 7000,
          
-            DatePaiement: new Date(Date.now())
+            datePaiement: new Date(Date.now())
           }
         ]
       },
@@ -352,7 +349,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 2500,
            
-            DatePaiement: new Date(Date.now() - 86400000 * 28)
+            datePaiement: new Date(Date.now() - 86400000 * 28)
           },
           {
             id: "e6f7a8b9-c0d1-2e3f-4a5b-6c7d8e9f0a1b",
@@ -361,7 +358,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5500,
            
-            DatePaiement: new Date(Date.now() - 86400000 * 21)
+            datePaiement: new Date(Date.now() - 86400000 * 21)
           },
           {
             id: "f8a9b0c1-d2e3-4f5a-6b7c-8d9e0f1a2b3c",
@@ -370,7 +367,7 @@ export const Donnees: UserProfile[] = [
             status: "En retard",
             totalToPayByWeekOfThisCategory: 4500,
            
-            DatePaiement: new Date(Date.now() - 86400000 * 14)
+            datePaiement: new Date(Date.now() - 86400000 * 14)
           },
           {
             id: "a0b1c2d3-e4f5-6a7b-8c9d-0e1f2a3b4c5d",
@@ -379,7 +376,7 @@ export const Donnees: UserProfile[] = [
             status: "En cours",
             totalToPayByWeekOfThisCategory: 5000,
            
-            DatePaiement: new Date(Date.now() - 86400000 * 7)
+            datePaiement: new Date(Date.now() - 86400000 * 7)
           },
           {
             id: "b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e",
@@ -388,7 +385,7 @@ export const Donnees: UserProfile[] = [
             status: "En attente",
             totalToPayByWeekOfThisCategory: 5000,
           
-            DatePaiement: new Date(Date.now())
+            datePaiement: new Date(Date.now())
           }
         ]
       }
@@ -408,7 +405,7 @@ export const Donnees: UserProfile[] = [
     description: "Profil de Nadine Amoussou actif dans la tontine.",
     status: "Terminé",
     montantTotalGlobal: 350000,
-    DescriptionChoixOfEachUser: [
+    categoriesStatistiques: [
       {
         id: "c5d6e7f8-9a0b-1c2d-3e4f-5a6b7c8d9e0f",
         category: "500",
@@ -468,7 +465,7 @@ export const Donnees: UserProfile[] = [
             week: "sem 1",
             status: "Payé",
             totalToPayByWeekOfThisCategory: 12000,
-            DatePaiement: new Date(Date.now() - 86400000 * 28)
+            datePaiement: new Date(Date.now() - 86400000 * 28)
           },
           {
             id: "e6f7a8b9-c0d1-2e3f-4a5b-6c7d8e9f0a1b",
@@ -477,7 +474,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
           
-            DatePaiement: new Date(Date.now() - 86400000 * 21)
+            datePaiement: new Date(Date.now() - 86400000 * 21)
           },
           {
             id: "f8a9b0c1-d2e3-4f5a-6b7c-8d9e0f1a2b3c",
@@ -486,7 +483,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
           
-            DatePaiement: new Date(Date.now() - 86400000 * 14)
+            datePaiement: new Date(Date.now() - 86400000 * 14)
           },
           {
             id: "a0b1c2d3-e4f5-6a7b-8c9d-0e1f2a3b4c5d",
@@ -495,7 +492,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
          
-            DatePaiement: new Date(Date.now() - 86400000 * 7)
+            datePaiement: new Date(Date.now() - 86400000 * 7)
           },
           {
             id: "b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e",
@@ -504,7 +501,7 @@ export const Donnees: UserProfile[] = [
             status: "En cours",
             totalToPayByWeekOfThisCategory: 5000,
           
-            DatePaiement: new Date(Date.now())
+            datePaiement: new Date(Date.now())
           }
         ]
       }
@@ -524,7 +521,7 @@ export const Donnees: UserProfile[] = [
     description: "Profil de Jean Soglo actif dans la tontine.",
     status: "En cours",
     montantTotalGlobal: 350000,
-    DescriptionChoixOfEachUser: [
+    categoriesStatistiques: [
       {
         id: "c5d6e7f8-9a0b-1c2d-3e4f-5a6b7c8d9e0f",
         category: "200",
@@ -585,7 +582,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
           
-            DatePaiement: new Date(Date.now() - 86400000 * 28)
+            datePaiement: new Date(Date.now() - 86400000 * 28)
           },
           {
             id: "e6f7a8b9-c0d1-2e3f-4a5b-6c7d8e9f0a1b",
@@ -594,7 +591,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
           
-            DatePaiement: new Date(Date.now() - 86400000 * 21)
+            datePaiement: new Date(Date.now() - 86400000 * 21)
           },
           {
             id: "f8a9b0c1-d2e3-4f5a-6b7c-8d9e0f1a2b3c",
@@ -603,7 +600,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
          
-            DatePaiement: new Date(Date.now() - 86400000 * 14)
+            datePaiement: new Date(Date.now() - 86400000 * 14)
           },
           {
             id: "a0b1c2d3-e4f5-6a7b-8c9d-0e1f2a3b4c5d",
@@ -612,7 +609,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
          
-            DatePaiement: new Date(Date.now() - 86400000 * 7)
+            datePaiement: new Date(Date.now() - 86400000 * 7)
           },
           {
             id: "b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e",
@@ -621,7 +618,7 @@ export const Donnees: UserProfile[] = [
             status: "En retard",
             totalToPayByWeekOfThisCategory: 5000,
           
-            DatePaiement: new Date(Date.now())
+            datePaiement: new Date(Date.now())
           }
         ]
       }
@@ -641,7 +638,7 @@ export const Donnees: UserProfile[] = [
     description: "Profil de Koffi Mensah actif dans la tontine.",
     status: "En cours",
     montantTotalGlobal: 350000,
-    DescriptionChoixOfEachUser: [
+    categoriesStatistiques: [
       {
         id: "c5d6e7f8-9a0b-1c2d-3e4f-5a6b7c8d9e0f",
         category: "500",
@@ -702,7 +699,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
           
-            DatePaiement: new Date(Date.now() - 86400000 * 28)
+            datePaiement: new Date(Date.now() - 86400000 * 28)
           },
           {
             id: "e6f7a8b9-c0d1-2e3f-4a5b-6c7d8e9f0a1b",
@@ -711,7 +708,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
           
-            DatePaiement: new Date(Date.now() - 86400000 * 21)
+            datePaiement: new Date(Date.now() - 86400000 * 21)
           },
           {
             id: "f8a9b0c1-d2e3-4f5a-6b7c-8d9e0f1a2b3c",
@@ -720,7 +717,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
           
-            DatePaiement: new Date(Date.now() - 86400000 * 14)
+            datePaiement: new Date(Date.now() - 86400000 * 14)
           },
           {
             id: "a0b1c2d3-e4f5-6a7b-8c9d-0e1f2a3b4c5d",
@@ -729,7 +726,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
            
-            DatePaiement: new Date(Date.now() - 86400000 * 7)
+            datePaiement: new Date(Date.now() - 86400000 * 7)
           },
           {
             id: "b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e",
@@ -738,7 +735,7 @@ export const Donnees: UserProfile[] = [
             status: "En retard",
             totalToPayByWeekOfThisCategory: 5000,
            
-            DatePaiement: new Date(Date.now())
+            datePaiement: new Date(Date.now())
           }
         ]
       }
@@ -758,7 +755,7 @@ export const Donnees: UserProfile[] = [
     description: "Profil de Luc Adjovi actif dans la tontine.",
     status: "Terminé",
     montantTotalGlobal: 350000,
-    DescriptionChoixOfEachUser: [
+    categoriesStatistiques: [
       {
         id: "c5d6e7f8-9a0b-1c2d-3e4f-5a6b7c8d9e0f",
         category: "100",
@@ -806,7 +803,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
             
-            DatePaiement: new Date(Date.now() - 86400000 * 28)
+            datePaiement: new Date(Date.now() - 86400000 * 28)
           },
           {
             id: "e6f7a8b9-c0d1-2e3f-4a5b-6c7d8e9f0a1b",
@@ -815,7 +812,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
            
-            DatePaiement: new Date(Date.now() - 86400000 * 21)
+            datePaiement: new Date(Date.now() - 86400000 * 21)
           },
           {
             id: "f8a9b0c1-d2e3-4f5a-6b7c-8d9e0f1a2b3c",
@@ -824,7 +821,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
            
-            DatePaiement: new Date(Date.now() - 86400000 * 14)
+            datePaiement: new Date(Date.now() - 86400000 * 14)
           },
           {
             id: "a0b1c2d3-e4f5-6a7b-8c9d-0e1f2a3b4c5d",
@@ -833,7 +830,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
            
-            DatePaiement: new Date(Date.now() - 86400000 * 7)
+            datePaiement: new Date(Date.now() - 86400000 * 7)
           },
           {
             id: "b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e",
@@ -842,7 +839,7 @@ export const Donnees: UserProfile[] = [
             status: "En retard",
             totalToPayByWeekOfThisCategory: 5000,
            
-            DatePaiement: new Date(Date.now())
+            datePaiement: new Date(Date.now())
           }
         ]
       },
@@ -893,7 +890,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
            
-            DatePaiement: new Date(Date.now() - 86400000 * 28)
+            datePaiement: new Date(Date.now() - 86400000 * 28)
           },
           {
             id: "e6f7a8b9-c0d1-2e3f-4a5b-6c7d8e9f0a1b",
@@ -902,7 +899,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
            
-            DatePaiement: new Date(Date.now() - 86400000 * 21)
+            datePaiement: new Date(Date.now() - 86400000 * 21)
           },
           {
             id: "f8a9b0c1-d2e3-4f5a-6b7c-8d9e0f1a2b3c",
@@ -911,7 +908,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
            
-            DatePaiement: new Date(Date.now() - 86400000 * 14)
+            datePaiement: new Date(Date.now() - 86400000 * 14)
           },
           {
             id: "a0b1c2d3-e4f5-6a7b-8c9d-0e1f2a3b4c5d",
@@ -920,7 +917,7 @@ export const Donnees: UserProfile[] = [
             status: "Payé",
             totalToPayByWeekOfThisCategory: 5000,
            
-            DatePaiement: new Date(Date.now() - 86400000 * 7)
+            datePaiement: new Date(Date.now() - 86400000 * 7)
           },
           {
             id: "b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e",
@@ -929,7 +926,7 @@ export const Donnees: UserProfile[] = [
             status: "En cours",
             totalToPayByWeekOfThisCategory: 5000,
            
-            DatePaiement: new Date(Date.now())
+            datePaiement: new Date(Date.now())
           }
         ]
       }

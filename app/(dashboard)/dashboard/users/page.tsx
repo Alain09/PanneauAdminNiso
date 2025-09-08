@@ -1,7 +1,7 @@
 "use client"
 import { Startscard } from '@/src/components/dash_composant/staticard';
-import { Eye, File, FileText, Loader2, Pencil, Trash2, UserCogIcon, Users } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { AlertCircle, Eye, File, FileText, Loader2, Pencil, SquareCheckBig, Trash2, UserCogIcon, Users } from 'lucide-react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { Search, MoreVertical, Filter, Plus } from "lucide-react";
 
@@ -41,31 +41,105 @@ import { Badge } from "@/src/components/ui/badge";
 import { Card } from '@/src/components/ui/card';
 
 import { useRouter } from 'next/navigation';
-import { Donnees } from '@/type';
+import { DataBaseUsersTabs, UserProfile } from '@/type';
 import { DataAction } from '@/src/components/hook_perso';
+import { useSession } from '@/src/lib/auth-client';
+import { Alert, AlertDescription } from '@/src/components/ui/alert';
 
 function UserAll() {
+  const [allUsers, setAllUsers] = useState<UserProfile[]>([])
   const route = useRouter();
+  const { isPending } = useSession()
+
+  const [sendError, setSendError] = useState("");
+  const [loading, setLoading] = useState(false)
+
+  // États pour le filtrage et la recherche
+  const [searchUser, setSearchUser] = useState("");
+  const [selectedCategorie, setSelectedCategorie] = useState<string>("");
+  const [selectedStatutCategorie, setSelectedStatutCategorie] = useState<string>("");
+
+  //-----------------
+  // api pour recuperation des coordonnées des utilisateurs
+  useEffect(() => {
+    const profileGetAllUsers = async () => {
+      //recuperation de l'key access
+      const key_acces = process.env.NEXT_PUBLIC_API_ROUTE_SECRET;
+
+      // ---------loading before success endpoint
+      setLoading(true)
+
+      // try for execution endpoint
+      try {
+        const datas = await fetch("/api/users/", {
+          method: "GET",
+          headers: { "authorization": `${key_acces}` }
+        })
+
+        // erreur de recuperation 
+        if (!datas.ok) {
+          setSendError(" Erreur lors du chargement des utilisateurs ")
+          setLoading(false)
+          return;
+        }
+
+        const teamData = await datas.json();
+
+        if (!teamData.success) {
+          setSendError(teamData.message)
+          setLoading(false)
+        } else {
+          setLoading(false);
+          setSendError("");
+          setAllUsers(teamData.data)
+        }
+
+      } catch (error) {
+        console.error("Erreur lors de la récupération des  profiles :", error);
+        setSendError(" erreur server");
+        setLoading(false);
+      }
+    };
+
+    profileGetAllUsers();
+  }, [])
 
 
-  // la destructuration des dataActions
-  const { UsersStructuration, CaracterisqueUniques } = DataAction({ enter: Donnees });
+  ///----------- ici je sors toutes les caracteristique pour annimer cette page 
 
-  // destructuration de Caracterisqtique 
-  const { uniqueCategories, uniqueStatuts, valuesEncours, valuesTermine } = CaracterisqueUniques();
+  const { UsersStructuration } = DataAction({ enter: allUsers })
 
-  // chargement de donnees
-  const [dataTabsUsers, setDataTabsUsers] = useState(UsersStructuration()); // les donnees du tableau
-  const [dataTabsUsersrRload] = useState(UsersStructuration()); // les donnees du tableau recharger
+  //--#### ici on va destructurer response et statistics 
+  const { response, statistics } = UsersStructuration()
 
-  const total = valuesEncours + valuesTermine;
-  const SectorSat = [
-    { name: 'Statut en cours', value: Math.round((valuesEncours / total) * 100), color: '#009CFE' },
-    { name: 'Statut Terminé', value: Math.round((valuesTermine / total) * 100), color: '#24D26D' }
-  ];
 
-  // modal pour la supression
-  // fiiltrage  
+
+  // Données filtrées et recherchées
+  const filteredUsersData = useMemo(() => {
+    let filtered = response;
+
+    // Appliquer les filtres de catégorie et statut
+    if (selectedCategorie) {
+      filtered = filtered.filter(user => user.category === selectedCategorie);
+    }
+
+    if (selectedStatutCategorie) {
+      filtered = filtered.filter(user => user.status === selectedStatutCategorie);
+    }
+
+    // Appliquer la recherche
+    if (searchUser.trim() !== '') {
+      filtered = filtered.filter(user =>
+        user.firstName?.toLowerCase().includes(searchUser.toLowerCase()) ||
+        user.lastName?.toLowerCase().includes(searchUser.toLowerCase())
+      );
+    }
+
+    return filtered;
+  }, [response, selectedCategorie, selectedStatutCategorie, searchUser]);
+
+
+  // ----------------modal pour la suppression
   const [filter, setFilter] = useState(false);
   const [aut, setAut] = useState(true);
   const [openDeleteModale, setOpenDeleteModale] = useState(false);
@@ -74,29 +148,73 @@ function UserAll() {
     return reseach;
   };
 
+  //--------------------------
+  const ref = useRef<HTMLInputElement>(null)
+  const [sendSubmitError, setSendSubmitError] = useState("");
+  const [sendSubmitSuccess, setSendSubmitSuccess] = useState("");
+  const [loadSubmit, setLoadSubmit] = useState(false)
+  const [memberDelete, setMemberDelete] = useState<DataBaseUsersTabs>(); /// gestion d'etat pour la suppression d'une categorie
+
+  //---------------------
+
+
+  const handleDelete = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSendSubmitError("");
+    setSendSubmitSuccess("");
+    setLoadSubmit(true);
+
+    try {
+      const datas = await fetch(`/api/users/${memberDelete?.id}`, {
+        method: "DELETE",
+        headers: {
+          "authorization": process.env.NEXT_PUBLIC_API_ROUTE_SECRET || "",
+          "Content-Type": "application/json", // Ajout de ce header
+        },
+      });
+
+      const result = await datas.json();
+
+      if (result.success) {
+        setSendSubmitSuccess(result.message);
+        setAllUsers(prev => prev?.filter(content => content.id !== memberDelete?.id));
+        route.refresh();
+        setTimeout(() => setOpenDeleteModale(false), 1500); // Fermer après succès
+
+      } else {
+        setSendSubmitError(result.message);
+      }
+
+    } catch (error) {
+      setSendSubmitError("Erreur de connexion lors de la suppression");
+      console.error(error);
+    } finally {
+      setLoadSubmit(false);
+    }
+  };
+
+  // ******************* 
+  useEffect(()=>{
+    if(!openDeleteModale){
+      setSendSubmitSuccess("")
+    }
+  },[openDeleteModale])
+
+  //-----------------
+
   // texte afficher dans la modale de suppression
   const [nameActive, setNameActive] = useState<string | undefined>("");
 
-  /// pour les valeurs du modal servant pour le filtrage
-  const [selectedCategorie, setSelectedCategorie] = useState<string>("");
-  const [selectedStatutCategorie, setSelectedStatutCategorie] = useState<string>("");
-
   // fonction de filtrage
   const handleFilter = () => {
-    const filteredData = dataTabsUsers.filter((user) => {
-      const matchesCategory = selectedCategorie ? user?.category === selectedCategorie : true;
-      const matchesStatus = selectedStatutCategorie ? user?.status === selectedStatutCategorie : true;
-      return matchesCategory && matchesStatus;
-    });
-    setDataTabsUsers(filteredData);
+    // Les filtres sont appliqués automatiquement via useMemo
     setFilter(false);
   };
 
   // fonction de rechargement
   const [load, setLoad] = useState(false);
-  const handleReload = () => {
+  const handleReload = async () => {
     setLoad(true);
-    setDataTabsUsers(dataTabsUsersrRload);
     setSelectedCategorie("");
     setSelectedStatutCategorie("");
     setSearchUser("");
@@ -105,20 +223,31 @@ function UserAll() {
     }, 1000);
   };
 
-  /// recherche d'un utilisateur
-  const [searchUser, setSearchUser] = useState("");
+  //------------for loading before page is trying up 
+  if (loading || isPending) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Chargement des utilisateurs...</p>
+        </div>
+      </div>
+    );
+  }
 
-  // Filter references when search query changes
-  useEffect(() => {
-    if (searchUser.trim() === '') {
-      setDataTabsUsers(dataTabsUsersrRload);
-    } else {
-      const filteredData = dataTabsUsersrRload.filter((user) =>
-        user?.firstName?.toLowerCase().includes(searchUser) ||
-        user?.lastName?.toLowerCase().includes(searchUser));
-      setDataTabsUsers(filteredData);
-    }
-  }, [searchUser, dataTabsUsersrRload]);
+  // ------------ la gestion des erreurs 
+  if (sendError) {
+    return (
+      <main className="p-4">
+        <Alert className="border-red-200 bg-red-50">
+          <AlertCircle className="h-4 w-4 text-red-500" />
+          <AlertDescription className="text-red-700">
+            {sendError}
+          </AlertDescription>
+        </Alert>
+      </main>
+    )
+  }
 
   return (
     <div>
@@ -131,14 +260,14 @@ function UserAll() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-4">
               <Startscard
                 title="Utilisateurs"
-                description="utilisateurs enregistrés "
-                value={200}
+                description="utilisateurs enregistrés"
+                value={(statistics?.totalUsers ?? 0).toString().padStart(2, "0")}
                 icon={<Users className="w-4 h-4 text-[#FF4000]" />}
               />
               <Startscard
                 title="Cas particuliers"
                 description="utilisateurs analphabètes"
-                value="20"
+                value={statistics?.autoGestionTotal.toString().padStart(2, "0")}
                 icon={<UserCogIcon className="w-4 h-4 text-[#FF4000]" />}
               />
             </div>
@@ -153,7 +282,7 @@ function UserAll() {
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={SectorSat}
+                      data={statistics.SectorSat}
                       cx="50%"
                       cy="50%"
                       innerRadius={40}
@@ -161,7 +290,7 @@ function UserAll() {
                       paddingAngle={0}
                       dataKey="value"
                     >
-                      {SectorSat.map((entry, index) => (
+                      {statistics.SectorSat.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
@@ -171,21 +300,25 @@ function UserAll() {
 
               {/* Légende et pourcentages */}
               <div className="ml-0 md:ml-6 mt-4 md:mt-0 flex justify-between gap-6 ">
-                <div className="mb-2">
-                  <span className="text-xl md:text-2xl font-bold">{SectorSat[0].value}%</span>
-                  <div className="flex items-center mt-1">
-                    <div className="w-3 h-3 rounded-full bg-[#009CFE] mr-2"></div>
-                    <span className="text-sm md:text-base">{SectorSat[0].name}</span>
+                {statistics.SectorSat[0] && (
+                  <div className="mb-2">
+                    <span className="text-xl md:text-2xl font-bold">{statistics.SectorSat[0]?.value}%</span>
+                    <div className="flex items-center mt-1">
+                      <div className="w-3 h-3 rounded-full bg-[#009CFE] mr-2"></div>
+                      <span className="text-sm md:text-base">{statistics.SectorSat[0]?.name}</span>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <div>
-                  <span className="text-xl md:text-2xl font-bold">{SectorSat[1].value}%</span>
-                  <div className="flex items-center mt-1">
-                    <div className="w-3 h-3 rounded-full bg-[#24D26D] mr-2"></div>
-                    <span className="text-sm md:text-base">{SectorSat[1].name}</span>
+                {statistics.SectorSat[1] && (
+                  <div>
+                    <span className="text-xl md:text-2xl font-bold">{statistics.SectorSat[1]?.value}%</span>
+                    <div className="flex items-center mt-1">
+                      <div className="w-3 h-3 rounded-full bg-[#24D26D] mr-2"></div>
+                      <span className="text-sm md:text-base">{statistics.SectorSat[1]?.name}</span>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </Card>
@@ -198,16 +331,14 @@ function UserAll() {
               <div className="flex items-center space-x-2 flex-shrink-0">
                 <div className="flex items-center space-x-2">
                   <span className="px-2 py-1 text-xs md:text-sm bg-[#FF4000] text-white rounded-md">Effectif</span>
-                  <span className="px-2 py-1 text-xs md:text-sm border rounded-md">{dataTabsUsers.length.toString().padStart(2, "0")}</span>
+                  <span className="px-2 py-1 text-xs md:text-sm border rounded-md">{filteredUsersData.length.toString().padStart(2, "0")}</span>
                 </div>
               </div>
 
               <div className="relative flex-grow">
                 <Input
                   type='text'
-                  onChange={(e) => {
-                    setSearchUser(e.target.value.toLowerCase());
-                  }}
+                  onChange={(e) => setSearchUser(e.target.value)}
                   value={searchUser}
                   className="pl-8 w-full"
                   placeholder="rechercher un nom"
@@ -294,30 +425,29 @@ function UserAll() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {dataTabsUsers.map((user, index) => (
+                  {filteredUsersData.map((user, index) => (
                     <TableRow
-                      key={index}
+                      key={`${user.id}-${index}`}
                       className={`${index % 2 === 0 ? "bg-[#FFAE91]/10 " : ""}`}
                     >
                       <TableCell>
                         <div className="flex items-center justify-center w-8 h-8 bg-[#FFAE91] text-white rounded-full">
-                          {user?.firstName?.charAt(0)}
+                          {user?.firstName?.charAt(0) || '?'}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div>
                           <div className="font-medium">{user?.firstName} {user?.lastName}</div>
-                          <div className="text-[#FF4000] text-xs md:text-sm">{user?.email}</div>
                         </div>
                       </TableCell>
-                      <TableCell>{user?.contact}</TableCell>
-                      <TableCell>{user?.provence}</TableCell>
+                      <TableCell>{user?.contact || 'Non défini'}</TableCell>
+                      <TableCell>{user?.provence || 'Non défini'}</TableCell>
                       <TableCell>
-                        {user?.category} Fcfa
+                        {user?.category}
                       </TableCell>
                       <TableCell className="max-w-[150px]">
                         <div className="truncate" title={user?.listOptions?.join('; ')}>
-                          [{user?.listOptions?.join('; ')}]
+                          [{user?.listOptions?.join('; ') || 'Aucune'}]
                         </div>
                       </TableCell>
                       <TableCell>{user?.dateEntree}</TableCell>
@@ -329,7 +459,7 @@ function UserAll() {
                               : "text-xs text-blue-600 bg-blue-100 py-1 px-2 rounded"
                           }
                         >
-                          • {user?.status === "Terminé" ? "Terminé" : "En cours"}
+                          • {user?.status}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -373,6 +503,7 @@ function UserAll() {
                                 onClick={() => {
                                   setOpenDeleteModale(true);
                                   setNameActive(`la catégorie ${user?.category}Fcfa de  ${user?.firstName} ${user?.lastName}`);
+                                  setMemberDelete(user)
                                 }}
                               >
                                 <div className="bg-gray-100 p-1.5 rounded-full mr-3">
@@ -406,7 +537,7 @@ function UserAll() {
               </p>
 
               <div className="space-y-4">
-                {/* Sélecteur de tontine */}
+                {/* Sélecteur de catégorie */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Catégorie</label>
                   <Select onValueChange={setSelectedCategorie} value={selectedCategorie}>
@@ -414,9 +545,9 @@ function UserAll() {
                       <SelectValue placeholder="Sélectionner une catégorie" />
                     </SelectTrigger>
                     <SelectContent>
-                      {uniqueCategories.map((tontine, index) => (
-                        <SelectItem key={index} value={tontine as string}>
-                          {tontine}
+                      {statistics.uniqueCategories.map((category, index) => (
+                        <SelectItem key={index} value={category as string}>
+                          {category}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -431,7 +562,7 @@ function UserAll() {
                       <SelectValue placeholder="Sélectionner un statut" />
                     </SelectTrigger>
                     <SelectContent>
-                      {uniqueStatuts.map((statut, index) => (
+                      {statistics.uniqueStatuts.map((statut, index) => (
                         <SelectItem key={index} value={statut as string}>
                           {statut}
                         </SelectItem>
@@ -462,6 +593,22 @@ function UserAll() {
             <DialogTitle>SUPPRESSION</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 ">
+            {sendSubmitError &&
+              <Alert className="border-red-200 bg-red-50">
+                <AlertCircle className="h-4 w-4 text-red-500" />
+                <AlertDescription className="text-red-700">
+                  {sendSubmitError}
+                </AlertDescription>
+              </Alert>
+            }
+            {sendSubmitSuccess &&
+              <Alert className="border-green-200 bg-green-50">
+                <SquareCheckBig className="h-4 w-4 text-green-500" />
+                <AlertDescription className="text-green-700">
+                  {sendSubmitSuccess}
+                </AlertDescription>
+              </Alert>
+            }
             <p className="text-sm text-muted-foreground">
               Pour supprimer <span className=' font-semibold text-gray-900'>{nameActive}</span> entrer <span className='text-red-600 font-semibold'>DELETE</span> dans le formulaire ci-dessous
             </p>
@@ -470,6 +617,7 @@ function UserAll() {
               {/* Entrer */}
               <div className="space-y-2">
                 <Input
+                 ref={ref}
                   className=" w-full "
                   onChange={(e) => targetEnter(e)}
                 />
@@ -478,16 +626,25 @@ function UserAll() {
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline" className="mr-2">
+              <Button variant="outline" className="mr-2"
+               onClick={() => {
+                setSendSubmitError(""); setSendSubmitError(""); 
+                
+                if (ref.current) {
+                  ref.current.value="";        // vide l'input
+                }
+              }}
+              disabled={loadSubmit}
+              >
                 Annuler
               </Button>
             </DialogClose>
             <Button
-              disabled={aut}
-              type='submit'
-              onClick={() => { console.log("dddd"); }}
+              disabled={aut || loadSubmit}
+              type="submit"
+              onClick={(e)=>handleDelete(e)}
               className="bg-orange-500 hover:bg-orange-600">
-              Confirmer
+              {loadSubmit ? "en cour..." : "Confirmer"}
             </Button>
           </DialogFooter>
         </DialogContent>

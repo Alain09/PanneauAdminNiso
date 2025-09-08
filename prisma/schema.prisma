@@ -87,6 +87,7 @@ model ProductCatalogue {
   price     Int
   totalweek Int
   composant ComposantCatalogue[]
+  @@unique([categorie, option])
 }
 
 model ComposantCatalogue {
@@ -117,63 +118,98 @@ model Campagne {
   createdAt            DateTime     @default(now())
 }
 
-model TontineOption {
-  id               String            @id @default(cuid())
-  category         String
-  option           String
-  countOption      Int
-  totalToPayByWeek Int?
-  components       OptionComponent[]
-}
 
-model OptionComponent {
-  id              String        @id @default(cuid())
-  compose         String
-  tontineOptionId String
-  tontineOption   TontineOption @relation(fields: [tontineOptionId], references: [id])
-}
+////////////////////////////userprofile/////////////////
 
-//////////////////////////
-// Categories / Statistiques
-//////////////////////////
+model UserProfile {
+  id                         String   @id @default(cuid())
+  firstName                  String
+  lastName                   String  
+  contact                    String?
+  role                       String?
+  position                   String?
+  image                      String?
+  provence                   String?
+  profession                 String?
+  description                String?
+  status                     String?  @default("En cours") // "En cours" | "Terminé"
+  montantTotalGlobal         Int?     @default(0)
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
 
-model Categories {
-  id                            String                         @id @default(cuid())
-  category                      String
-  week                          String?
-  status                        String?                        @default("En cours")
-  totalToPayByWeek              Int
-  DatePaiement                  DateTime?
-  categoriesStatisquesPayements CategoriesStatisquesPayement[] // Added reverse relation
+   @@unique([firstName, lastName])
+
+  // Relations
+  categoriesStatistiques     CategoriesStatisquesPayement[]
+
+  @@map("user_profiles")
 }
 
 model CategoriesStatisquesPayement {
-  id              String        @id @default(cuid())
-  category        String
-  status          String?       @default("En cours")
-  totalPaid       Int
-  weekValided     Int
-  totalPaidByWeek Int
-  categoriesId    String
-  categories      Categories    @relation(fields: [categoriesId], references: [id])
-  userProfiles    UserProfile[] // Added reverse relation
+  id                         String   @id @default(cuid())
+  category                   String   // "100", "200", "500"
+  listOptions                String[] // ["1","2","3"] - array de strings
+  status                     String?  @default("En cours") // "En cours" | "Terminé"
+  totalPaid                  Int      @default(0)
+  weekValided                Int      @default(0)
+  totalPaidByWeek            Int      @default(0)
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+
+  // Relations
+  userId                     String
+  user                       UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  optionsDescription         TontineOption[]
+  detailPaiementOfThisCategorie Categories[]
+
+  @@map("categories_statistiques_payement")
 }
 
-model UserProfile {
-  id                             String                        @id @default(cuid())
-  firstName                      String
-  lastName                       String
-  email                          String                        @unique
-  contact                        String?
-  role                           String?
-  position                       String?                       @default("AutoGestion")
-  image                          String?
-  provence                       String?
-  profession                     String?
-  description                    String?
-  status                         String?                       @default("En cours")
-  montantTotalGlobal             Int?
-  createdAt                      DateTime                      @default(now())
-  categoriesStatisquesPayementId String? // Added foreign key
-  DescriptionChoixOfEachUser     CategoriesStatisquesPayement? @relation(fields: [categoriesStatisquesPayementId], references: [id])
+model TontineOption {
+  id                                 String   @id @default(cuid())
+  category                           String
+  option                             String
+  countOption                        Int      @default(1)
+  totalToPayByWeekOfThisOption       Int?     @default(0)
+  createdAt                          DateTime @default(now())
+  updatedAt                          DateTime @updatedAt
+
+  // Relations
+  categoriesStatistiquesPayementId   String
+  categoriesStatistiquesPayement     CategoriesStatisquesPayement @relation(fields: [categoriesStatistiquesPayementId], references: [id], onDelete: Cascade)
+  
+  components                         OptionComponent[]
+
+  @@map("tontine_options")
+}
+
+model OptionComponent {
+  id            String   @id @default(cuid())
+  compose       String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  tontineOptionId String
+  tontineOption   TontineOption @relation(fields: [tontineOptionId], references: [id], onDelete: Cascade)
+
+  @@map("option_components")
+}
+
+model Categories {
+  id                                   String    @id @default(cuid())
+  category                             String
+  week                                 String?   // "sem 1", "sem 2", etc.
+  status                               String?   @default("En attente") // "Payé" | "En retard" | "En cours" | "En attente"
+  totalToPayByWeekOfThisCategory       Int       @default(0)
+  datePaiement                         DateTime?
+  createdAt                            DateTime  @default(now())
+  updatedAt                            DateTime  @updatedAt
+
+  // Relations
+  categoriesStatistiquesPayementId     String
+  categoriesStatistiquesPayement       CategoriesStatisquesPayement @relation(fields: [categoriesStatistiquesPayementId], references: [id], onDelete: Cascade)
+
+  @@map("categories")
 }

@@ -3,7 +3,6 @@ import AddMemberForm from '@/src/components/setting/team/addMemberForm'
 import { Alert, AlertDescription } from '@/src/components/ui/alert'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/components/ui/card'
 import Bande from '@/src/components/users/bande'
-import { generateId } from '@/src/lib/utils'
 import { TeamMember } from '@/type'
 import { AlertCircle, SquareCheckBig } from 'lucide-react'
 import React, { useState } from 'react'
@@ -21,7 +20,6 @@ function NewMemberTeam() {
     //------------------
 
     // api route for creating a new user
-    //appel api pour mis a jout des donnees of teamMember
     const handleSubmit = async () => {
         setSendSubmitError("");
         setSendSubmitSuccess("")
@@ -40,14 +38,14 @@ function NewMemberTeam() {
         formadataTeamMember.append("password", formData?.password || "");
         try {
 
-            const datas = await fetch(`/api/settng/adminteam/`, {
+            const datas = await fetch(`/api/settng/adminteam`, {
                 method: "POST",
                 headers: { "authorization": `${key_acces}` },
                 body: formadataTeamMember,
             });
 
             if (!datas.ok) {
-                setSendSubmitError("Erreur lors de la soumission de la team ")
+                setSendSubmitError("Erreur lors de la soumission ")
 
             }
             const teamData = await datas.json();
@@ -58,9 +56,9 @@ function NewMemberTeam() {
                 setSendSubmitError("");
                 setSendSubmitSuccess(teamData.message)
                 setTimeout(() => {
+                    route.push("/dashboard/setting/admin")
+                }, 1500)
 
-                }, 5000)
-                route.push("/dashboard/setting/admin")
 
 
             }

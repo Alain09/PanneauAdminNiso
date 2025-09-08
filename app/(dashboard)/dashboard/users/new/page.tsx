@@ -1,57 +1,152 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/src/components/ui/button";
+import React, { useState } from "react";
 import { Input } from "@/src/components/ui/input";
 import { Textarea } from "@/src/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card";
-import { TabsList, TabsTrigger } from "@/src/components/ui/tabs";
-import { Tabs } from "@radix-ui/react-tabs";
-import { TontineOption } from "@/type";
-import Optionlist from "@/src/components/users/Optionlist";
+import { UserProfile } from "@/type";
+
 import Bande from "@/src/components/users/bande";
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/src/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/src/components/ui/select";
+import { useRouter } from "next/navigation";
+import { Alert, AlertDescription } from "@/src/components/ui/alert";
+import { AlertCircle, SquareCheckBig } from "lucide-react";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/src/components/ui/select";
 
 export default function UserProfilNew() {
-  const [modal, setModal] = useState(false);
-  const [options] = useState<TontineOption[]>([]);
+  const [profil, setProfil] = useState<UserProfile>({
+    id: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    contact: "",
+    role: "",
+    position: "",
+    image: "",
+    provence: "",
+    profession: "",
+    description: "",
+    status: "En cours",
+  })
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [sendSubmitError, setSendSubmitError] = useState("");
+  const [sendSubmitSuccess, setSendSubmitSuccess] = useState("");
 
-  const [selectedCategorie, setSelectedCategorie] = useState<string>("");
-  const [selectedOption, setSelectedOption] = useState<string>("");
+ 
+  //------------pour la mise a jour des name value 
+  interface HandleChangeEvent extends React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> { }
 
-  const tontines = [
-    { id: "1", name: "100" },
-    { id: "2", name: "200" },
-    { id: "3", name: "300" },
-    { id: "4", name: "400" },
-    { id: "5", name: "500" },
-  ];
+  interface HandleChangeTarget extends EventTarget {
+    name: string;
+    value: string;
+    type: string;
+    files?: FileList;
+  }
 
-  const statuts = [
-    { id: "1", name: "1" },
-    { id: "2", name: "2" },
-    { id: "3", name: "3" },
-    { id: "4", name: "4" },
-    { id: "5", name: "5" },
-    { id: "6", name: "6" },
-  ];
+  const handleChange = (e: HandleChangeEvent) => {
+    const { name, value, type, files } = e.target as HandleChangeTarget;
 
-  // modalpour la supression
-  const [aut, setAut] = useState(true);
-  const [openDeleteModale, setOpenDeleteModale] = useState(false);
-  const targetEnter = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const reseach= e.target.value.toUpperCase() === "DELETE" ? setAut(false) : setAut(true);
-    return reseach;
+    if (type === 'file') {
+      setProfil(prev => ({
+        ...prev,
+        [name]: files && files[0] ? files[0] : null
+      }));
+    } else if (type === 'number') {
+      setProfil(prev => ({
+        ...prev,
+        [name]: parseFloat(value) || 0
+      }));
+    } else {
+      setProfil(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
-  const [nameActive, setNameActive] = useState<string | undefined>("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSendSubmitError("");
+    setSendSubmitSuccess("");
+    setLoading(true);
+
+    // Récupération de la clé d'accès
+    const key_acces = process.env.NEXT_PUBLIC_API_ROUTE_SECRET;
+
+    // Création du FormData
+    const formDataUser = new FormData();
+    formDataUser.append("firstName", profil?.firstName || "");
+    formDataUser.append("lastName", profil?.lastName || "");
+    formDataUser.append("profession", profil?.profession || "");
+    formDataUser.append("contact", profil?.contact || "");
+    formDataUser.append("role", profil?.role || "");
+    formDataUser.append("position", profil?.position || "");
+    formDataUser.append("image", profil?.image || "");
+    formDataUser.append("provence", profil?.provence || "");
+    formDataUser.append("description", profil?.description || "");
+
+
+    try {
+      const response = await fetch(`/api/users`, {
+        method: "POST",
+        headers: { "authorization": `${key_acces}` },
+        body: formDataUser,
+      });
+
+      if (!response.ok) {
+        setSendSubmitError("Erreur lors de la soumission");
+        return;
+      }
+
+      const userData = await response.json();
+      if (!userData.success) {
+        setSendSubmitError(userData.message);
+      } else {
+        setLoading(false);
+        setSendSubmitError("");
+        setSendSubmitSuccess(userData.message);
+        setTimeout(() => {
+          router.push("/dashboard/users");
+        }, 1500);
+      }
+    } catch (error) {
+      setSendSubmitError(`Une erreur s'est produite: ${error}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6">
       <Bande />
+      <div className=' flex justify-center items-center mx-0 md:mx-10 lg:mx-20 xl:mx-48 '>
+        {sendSubmitError &&
+          <Alert className="border-red-200 bg-red-50">
+            <AlertCircle className="h-4 w-4 text-red-500" />
+            <AlertDescription className="text-red-700">
+              {sendSubmitError}
+            </AlertDescription>
+          </Alert>
+        }
+        {sendSubmitSuccess &&
+          <Alert className="border-green-200 bg-green-50">
+            <SquareCheckBig className="h-4 w-4 text-green-500" />
+            <AlertDescription className="text-green-700">
+              {sendSubmitSuccess} hdhdrhhr
+            </AlertDescription>
+          </Alert>
+        }
+      </div>
       <Card className="p-4 md:p-6 shadow-gray-100 border border-gray-100">
-        <form action="">
+        <form onSubmit={handleSubmit}>
 
           {/* Information personnelle section */}
           <div>
@@ -73,6 +168,9 @@ export default function UserProfilNew() {
                     <label className="text-sm md:text-md font-normal md:w-[120px]">Nom</label>
                     <Input
                       type="text"
+                      name="firstName"
+                      value={profil.firstName}
+                      onChange={handleChange}
                       className="w-full h-10 md:h-[45px]"
                     />
                   </div>
@@ -81,14 +179,21 @@ export default function UserProfilNew() {
                     <label className="text-sm md:text-md font-normal md:w-[120px]">Prénom(s)</label>
                     <Input
                       type="text"
+                      name="lastName"
+                      value={profil.lastName}
+                      onChange={handleChange}
                       className="w-full h-10 md:h-[45px]"
                     />
                   </div>
                   { /* Email */}
                   <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10 pb-4 md:pb-5 border-b border-b-gray-100">
-                    <label className="text-sm md:text-md font-normal md:w-[120px]">Email</label>
+                    <label className="text-sm md:text-md font-normal md:w-[120px]">Profession</label>
                     <Input
-                      type="email"
+                      type="text"
+
+                      name="profession"
+                      value={profil.profession}
+                      onChange={handleChange}
                       className="w-full h-10 md:h-[45px]"
                     />
                   </div>
@@ -97,7 +202,10 @@ export default function UserProfilNew() {
                   <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10 pb-4 md:pb-5 border-b border-b-gray-100">
                     <label className="text-sm md:text-md font-normal md:w-[120px]">Contact</label>
                     <Input
-                      type="text"
+                      type="tel"
+                      name="contact"
+                      value={profil.contact}
+                      onChange={handleChange}
                       className="w-full h-10 md:h-[45px]"
                     />
                   </div>
@@ -107,6 +215,9 @@ export default function UserProfilNew() {
                     <label className="text-sm md:text-md font-normal md:w-[120px]">Provenance</label>
                     <Input
                       type="text"
+                      name="provence"
+                      value={profil.provence}
+                      onChange={handleChange}
                       className="w-full h-10 md:h-[45px]"
                     />
                   </div>
@@ -116,17 +227,33 @@ export default function UserProfilNew() {
                     <label className="text-sm md:text-md font-normal md:w-[120px]">Rôle</label>
                     <Input
                       type="text"
+                      name="role"
+                      value={profil.role}
+                      onChange={handleChange}
                       className="w-full h-10 md:h-[45px]"
                     />
                   </div>
 
-                  { /* Position*/}
+
+                  { /* Position */}
                   <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10 pb-4 md:pb-5 border-b border-b-gray-100">
                     <label className="text-sm md:text-md font-normal md:w-[120px]">Position</label>
-                    <Input
-                      type="text"
-                      className="w-full h-10 md:h-[45px]"
-                    />
+                    <Select
+                      value={profil.position}
+                      onValueChange={(value: string) =>
+                        handleChange({
+                          target: { name: "position", value, type: "text" }
+                        } as any)
+                      }
+                    >
+                      <SelectTrigger className="w-full h-10 md:h-[45px]">
+                        <SelectValue placeholder="Sélectionner une position" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="autoGestion">Auto-gestion</SelectItem>
+                        <SelectItem value="gestion">Gestion</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   { /* Image */}
@@ -134,6 +261,9 @@ export default function UserProfilNew() {
                     <label className="text-sm md:text-md font-normal md:w-[120px]">Image</label>
                     <Input
                       type="file"
+                      name="image"
+                      onChange={handleChange}
+                      accept="image/*"
                       className="w-full h-10 md:h-[45px]"
                       placeholder="entrer un image"
                     />
@@ -143,185 +273,36 @@ export default function UserProfilNew() {
                   <div className="flex flex-col md:flex-row gap-3 md:gap-10">
                     <label className="text-sm md:text-md font-normal md:w-[120px] pt-2">Description</label>
                     <Textarea
+                      name="description"
+                      value={profil.description}
+                      onChange={handleChange}
                       className="w-full h-24 md:h-[100px]"
                     />
                   </div>
 
                 </div>
                 <div className="flex justify-end mt-6 md:mt-10">
-                  <Button className="w-full md:w-auto">
-                    Confirmer
-                  </Button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="px-6 py-2 bg-[#FF4000] text-white rounded-md hover:bg-[#FF4000]/90 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors "
+                  >
+                    {loading ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Création...
+                      </div>
+                    ) : (
+                      "Créer le profil"
+                    )}
+                  </button>
                 </div>
               </div>
             </CardContent>
           </div>
         </form>
-
-        {/* Choix opérés section */}
-        <div className="pt-8 md:pt-15">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0">
-            <CardHeader className="w-full p-0">
-              <CardTitle className="text-[#FF4000] font-medium text-lg md:text-xl">
-                Choix opérés
-              </CardTitle>
-              <CardDescription className="text-gray-500 text-sm">
-                ces informations seront conservées dans la base de données
-              </CardDescription>
-            </CardHeader>
-            <Button 
-              className="bg-[#FF4000] hover:bg-[#FF4000]/80 w-full md:w-auto"
-              onClick={() => { setModal(true); }}
-            >
-              Ajouter une catégorie
-            </Button>
-          </div>
-
-          <CardContent className="p-0 mt-4 md:mt-6">
-            {
-              options.length !== 0 ?
-                <div className="bg-white border border-gray-100 rounded-lg p-4 md:p-6 w-full">
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-0 mb-4 md:mb-3">
-                    <h4 className="text-md md:text-lg font-medium">Tontine(s) choisi(es)</h4>
-                    <Tabs defaultValue={options[0]?.category}>
-                      <TabsList className="h-8 items-center justify-center bg-gray-50 overflow-x-auto">
-                        {options.map((item, index) => (
-                          <TabsTrigger
-                            key={index} 
-                            value={`${item.category}`} 
-                            className="text-sm md:text-[16px] text-gray-300 px-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white"
-                          >
-                            {item.category}F
-                          </TabsTrigger>
-                        ))}
-                      </TabsList>
-                    </Tabs>
-                  </div>
-                  <div className="space-y-4 md:space-y-5 p-4 md:p-6">
-                    {options?.map((term, index) => (
-                      <Optionlist 
-                        opt={term} 
-                        setOpen={setOpenDeleteModale} 
-                        setTexteDelete={setNameActive} 
-                        key={index} 
-                      />
-                    ))}
-                  </div>
-                </div>
-                :
-                <div className="p-3 bg-green-100 w-full flex justify-center items-center text-green-800 text-sm font-medium rounded-md"> 
-                  pas de choix opéré 
-                </div>
-            }
-          </CardContent>
-        </div>
       </Card>
 
-      {/* modal pour la mise a jour */}
-      <Dialog open={modal} onOpenChange={setModal} >
-        <DialogContent className="sm:max-w-md mx-4">
-          <DialogHeader>
-            <DialogTitle>Ajout de categories</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              servir pour la mise a jour ou la création des options
-            </p>
-
-            <div className="space-y-4">
-              {/* Sélecteur de tontine */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Catégories</label>
-                <Select onValueChange={setSelectedCategorie} value={selectedCategorie}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Sélectionner une option " />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {tontines.map((tont) => (
-                      <SelectItem key={tont.id} value={tont.id}>
-                        {tont.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Sélecteur d'option*/}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Option</label>
-                <Select onValueChange={setSelectedOption} value={selectedOption}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Sélectionner une option " />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statuts.map((statut) => (
-                      <SelectItem key={statut.id} value={statut.id}>
-                        {statut.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              {/* Nombre */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Quantité</label>
-                <Input
-                  type="number"
-                  className="w-full"
-                />
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline" className="mr-2">
-                Annuler
-              </Button>
-            </DialogClose>
-            <Button className="bg-[#FF4000] hover:bg-[#FF4000]/80">
-              Confirmer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      { /* POUR LA SUPPRESSION  */}
-      <Dialog open={openDeleteModale} onOpenChange={setOpenDeleteModale} >
-        <DialogContent className="sm:max-w-md mx-4">
-          <DialogHeader>
-            <DialogTitle>SUPPRESSION</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Pour supprimer <span className='font-semibold text-gray-900'>{nameActive}</span> entrer <span className='text-red-600 font-semibold'>DELETE</span> dans le formulaire ci-dessous
-            </p>
-
-            <div className="space-y-4">
-              {/* Entrer */}
-              <div className="space-y-2">
-                <Input
-                  className="w-full"
-                  onChange={(e)=>targetEnter(e)}
-                />
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline" className="mr-2">
-                Annuler
-              </Button>
-            </DialogClose>
-            <Button
-              disabled={aut}
-              type='submit'
-              onClick={() => { console.log("dddd"); }}
-              className="bg-[#FF4000] hover:bg-[#FF4000]/80">
-              Confirmer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
