@@ -1,5 +1,5 @@
 import { PaymentHistoryWeekActif, DataBaseUsersTabs, OptionsCounts, PaymentDataVariation, ProductCatalogue, StatisticCategories, TontineOption, UserProfile, UsersLatePayment } from "@/type";
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { generateId } from "../lib/utils";
 
 interface Structure {
@@ -436,7 +436,10 @@ export function calculerIntervalleSemaine(semaineNum: string, dateDebutTontine: 
 import { useState, useEffect } from 'react';
 
 export function useCountdown({ startTime, endTime }: { startTime: Date | null; endTime: Date | null }) {
-    const calcRemaining = () => Math.max(0, (endTime?.getTime() ?? Date.now()) - Date.now());
+    const calcRemaining = useCallback(() => {
+    return Math.max(0, (endTime?.getTime() ?? Date.now()) - Date.now());
+}, [endTime]); // dépend uniquement de endTime
+
     const [remaining, setRemaining] = useState(calcRemaining());
 
     useEffect(() => {

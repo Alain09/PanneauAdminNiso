@@ -610,7 +610,7 @@ export default function Catalogue() {
                 {/* Footer optionnel */}
                 <div className="p-4  text-center">
                   <p className="text-sm text-gray-600">
-                    Cliquez à l\'extérieur ou sur x pour fermer
+                    Cliquez à l&apos;extérieur ou sur x pour fermer
                   </p>
                 </div>
               </div>

@@ -113,6 +113,7 @@ export async function PATCH(
       try {
         nouveaux_composants = JSON.parse(composantsData);
       } catch (parseError) {
+        console.log(parseError)
         return NextResponse.json(
           { message: "Format des composants invalide", success: false },
           { status: 400 }

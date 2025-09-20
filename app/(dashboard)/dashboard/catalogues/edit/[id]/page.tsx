@@ -90,7 +90,7 @@ export default function CatalogueFormateEdit({ params }: { params: Promise<{ id:
 
     getAllCatalogue();
 
-  }, [])
+  }, [id])
 
   // api route for creating a mise a jout de categorie 
   const handleSubmit = async (e: React.FormEvent) => {
