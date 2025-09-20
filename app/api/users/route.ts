@@ -220,7 +220,7 @@ export async function GET(request: NextRequest) {
 
 
 // GET - Récupérer tous les utilisateurs
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     const userProfiles = await prisma.userProfile.findMany({
       orderBy: {
