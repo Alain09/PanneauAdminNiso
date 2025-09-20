@@ -252,7 +252,7 @@ export function DataAction({ enter }: StructureAction) {
                     dateEntree: new Date(user.createdAt ?? new Date()).toLocaleDateString(),
                 }));
             }) as DataBaseUsersTabs[]
-        }, []);
+        }, [enter]);
 
 
 
@@ -293,7 +293,7 @@ export function DataAction({ enter }: StructureAction) {
                 valuesTermine,
                 autoGestionTotal
             };
-        }, [response]);
+        }, [response,enter]);
 
 
         return { response, statistics }; // dans le cas ou il y aura aucun utilisateur defini

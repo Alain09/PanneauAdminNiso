@@ -16,6 +16,7 @@ export const auth = betterAuth({
             provence: { type: 'string', required: false },
         },
     },
+    
     secret: process.env.BETTER_AUTH_SECRET,
     emailAndPassword: {
         enabled: true,
@@ -39,6 +40,7 @@ export const auth = betterAuth({
             allowDifferentEmails: false,
         },
     },
+    
     hooks: {
         // Hook BEFORE pour vérifier la connexion email/password
         before: createAuthMiddleware(async (ctx) => {
