@@ -36,34 +36,25 @@ export default function AddMemberForm({ onSubmit, formData, setFormData, loading
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // handle pour la mise ajout des images 
- // 🔥 CORRECTION de la fonction handleLogoChange pour éviter les chaînes vides
-const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  
-  if (file) {
-    // Vérifier que c'est bien un fichier image
-    if (!file.type.startsWith('image/')) {
-      alert('Veuillez sélectionner un fichier image valide');
-      return;
-    }
-    
-    // Vérifier la taille du fichier (ex: max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('L\'image est trop volumineuse. Taille maximale: 5MB');
-      return;
-    }
-    
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const imageUrl = e.target?.result as string;
-      if (imageUrl && imageUrl !== "") {
-        setFormData((prev) => ({ ...prev, image: imageUrl }));
+  // 🔥 CORRECTION de la fonction handleLogoChange pour éviter les chaînes vides
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (file) {
+      // Validation du fichier
+      if (!file.type.startsWith("image/")) {
+        alert("Veuillez sélectionner un fichier image valide");
+        return;
       }
-    };
-    reader.readAsDataURL(file);
-    
-  } 
-};
+      if (file.size > 5 * 1024 * 1024) {
+        alert("L'image est trop volumineuse. Taille max: 5MB");
+        return;
+      }
+
+      // 👉 Stocke directement le fichier dans formData
+      setFormData((prev) => ({ ...prev, image: file }));
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -121,13 +112,35 @@ const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         </div>
 
         <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10 pb-4 border-b border-b-gray-100">
-          <Label htmlFor="image" className="text-sm md:text-base w-full md:w-1/3">Image:</Label>
+          <Label htmlFor="image" className="text-sm md:text-base w-full md:w-1/3">
+            Image:
+          </Label>
           <div
             className="border-2 border-dashed border-gray-500 rounded-md flex cursor-pointer min-h-[250px] md:min-h-[280px] w-[250px] md:min-w-[280px] flex-col justify-center items-center gap-3 md:gap-10 pb-4"
             onClick={() => fileInputRef.current?.click()}
           >
-            {/* 🔥 CORRECTION: Vérification plus stricte de l'image */}
-            {!formData?.image || formData.image === "" || (typeof formData.image === 'string' && formData.image.trim() === "") ? (
+            {formData?.image ? (
+              formData.image instanceof File ? (
+                // ✅ Cas ajout : fichier local
+                <Image
+                  src={URL.createObjectURL(formData.image)}
+                  alt={formData?.name || "aperçu"}
+                  width={300}
+                  height={300}
+                  className="rounded-md object-cover"
+                />
+              ) : (
+                // ✅ Cas édition : string depuis la BDD
+                <Image
+                  src={formData.image as string}
+                  alt={formData?.name || "aperçu"}
+                  width={300}
+                  height={300}
+                  className="rounded-md object-cover"
+                />
+              )
+            ) : (
+              // ✅ Cas aucun fichier/image
               <>
                 <div className="bg-gray-300 dark:bg-gray-900 rounded-full p-10 flex items-center justify-center">
                   <ImageIcon size={32} className="text-gray-500 dark:text-gray-400" />
@@ -136,20 +149,9 @@ const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                   Charger l'image de l'article
                 </span>
               </>
-            ) : (
-              <Image
-                title="Changer d'image"
-                src={formData.image as string}
-                alt={formData?.name || "aperçu"}
-                width={300}
-                height={300}
-                className="rounded-md object-cover"
-                onError={() => {
-                  // 🔥 Gestion d'erreur si l'image ne se charge pas
-                  setFormData((prev) => ({ ...prev, image: "" }));
-                }}
-              />
             )}
+
+            {/* input caché */}
             <Input
               ref={fileInputRef}
               type="file"
@@ -161,6 +163,7 @@ const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             />
           </div>
         </div>
+
 
 
 

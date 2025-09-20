@@ -2,19 +2,14 @@
 // api/users/[id]/tontine/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@/generated/prisma";
-import { 
-  calculateWeeklyPayment
-  ,getActiveCampaign,
-  getComponentsFromCatalogue,
-  generateWeeklyPayments } from "@/src/lib/tontineCalculations"
 
-interface TontineRequestBody {
-  category: string;
-  option: string;
-  countOption: number;
-  useActiveCampaign?: boolean; // Si true, utilise la durée de la campagne active
-  customWeeks?: number; // Durée personnalisée si pas de campagne active
-}
+import {
+  calculateWeeklyPayment
+  , getActiveCampaign,
+  getComponentsFromCatalogue,
+  generateWeeklyPayments
+} from "@/src/lib/tontineCalculations"
+
 
 
 //---------------------
@@ -52,8 +47,8 @@ export async function POST(
     const body = await request.json();
     const category = body.category;
     const option = body.option;
-    const countOption = body.quantity ;
-    const useActiveCampaign = true, customWeeks = 16 
+    const countOption = body.quantity;
+    const useActiveCampaign = true, customWeeks = 16
 
     // Validation des données
     if (!category || !option || !countOption) {
@@ -85,7 +80,7 @@ export async function POST(
 
     // Déterminer la durée de la campagne
     let totalWeeks = customWeeks;
-    
+
     if (useActiveCampaign) {
       const activeCampaign = await getActiveCampaign();
       if (activeCampaign && activeCampaign.dureeTontineSemaines) {
@@ -106,7 +101,7 @@ export async function POST(
 
     if (existingCategory) {
       // Mettre à jour la catégorie existante
-      
+
       // Récupérer les options existantes
       const existingOptions = await prisma.tontineOption.findMany({
         where: {
@@ -145,7 +140,7 @@ export async function POST(
 
       // Mettre à jour les listOptions de la catégorie
       const updatedListOptions = [...(existingCategory.listOptions || []), option];
-      
+
       // Calculer le nouveau totalPaidByWeek
       const allOptions = [...existingOptions, newOption];
       const newTotalPaidByWeek = allOptions.reduce((sum, opt) => sum + (opt?.totalToPayByWeekOfThisOption ?? 0), 0);
@@ -159,6 +154,7 @@ export async function POST(
       });
 
       // Mettre à jour les paiements hebdomadaires existants
+      {/*  */ }
       const existingPayments = await prisma.categories.findMany({
         where: {
           categoriesStatistiquesPayementId: existingCategory.id
@@ -259,6 +255,8 @@ export async function POST(
       }
     });
 
+
+   
     return NextResponse.json(
       {
         message: "Configuration tontine ajoutée avec succès",
@@ -276,7 +274,7 @@ export async function POST(
 
   } catch (error) {
     console.error("❌ Erreur lors de l'ajout de la configuration tontine:", error);
-    
+
     return NextResponse.json(
       {
         message: "Erreur serveur lors de l'ajout de la configuration",

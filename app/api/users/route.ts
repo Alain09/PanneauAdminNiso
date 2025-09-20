@@ -1,7 +1,8 @@
 // app/api/users/route.ts - Routes pour tous les utilisateurs (POST, GET)
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@/generated/prisma";
-import { uploadFileToBlob } from "@/src/lib/vercelBlodAction";
+import { uploadFileToSupabase, validateFileSize, validateFileType } from "@/src/lib/subaStorage";
+
 
 const prisma = new PrismaClient();
 
@@ -29,32 +30,54 @@ export async function POST(request: NextRequest) {
             );
         }
 
-
-
-        // Upload image si présente
+        // Upload image si présente avec validation
         let imageUrl: string | null = null;
+        let imagePath: string | null = null;
+
         if (file && file.size > 0) {
+            // Validation du fichier
+            if (!validateFileType(file)) {
+                return NextResponse.json(
+                    { message: "Type de fichier non autorisé. Utilisez JPG, PNG, WebP ou GIF.", success: false },
+                    { status: 400 }
+                );
+            }
+
+            if (!validateFileSize(file, 5)) { // 5MB max
+                return NextResponse.json(
+                    { message: "Fichier trop volumineux. Taille maximale: 5MB.", success: false },
+                    { status: 400 }
+                );
+            }
+
             try {
-                const uploadedFile = await uploadFileToBlob(file, `UserProfile_${firstName}_${lastName}`);
+                const uploadedFile = await uploadFileToSupabase(
+                    file, 
+                    `UserProfile_${firstName}_${lastName}_${Date.now()}` // Ajout timestamp pour éviter conflits
+                );
                 imageUrl = uploadedFile.url;
+                imagePath = uploadedFile.path;
             } catch (uploadError) {
                 console.error("Erreur lors de l'upload de l'image:", uploadError);
-                // Continuer sans image plutôt que de faire échouer tout le processus
+                return NextResponse.json(
+                    { message: "Erreur lors de l'upload de l'image", success: false },
+                    { status: 500 }
+                );
             }
         }
 
         // Création de l'utilisateur dans la base de données
         const newUserProfile = await prisma.userProfile.create({
             data: {
-                firstName,
-                lastName,
-                profession: profession || null,
-                contact: contact || null,
-                role: role || "user",
-                position: position || "AutoGestion",
+                firstName: firstName.trim(),
+                lastName: lastName.trim(),
+                profession: profession ? profession.trim() : null,
+                contact: contact ? contact.trim() : null,
+                role: role ? role.trim() : "user",
+                position: position ? position.trim() : "AutoGestion",
                 image: imageUrl,
-                provence: provence || null,
-                description: description || null,
+                provence: provence ? provence.trim() : null,
+                description: description ? description.trim() : null,
                 status: "En cours",
                 montantTotalGlobal: 0,
             },
@@ -72,28 +95,40 @@ export async function POST(request: NextRequest) {
             }
         });
 
+        
+      
+
+     
         return NextResponse.json(
             {
                 message: "Profil utilisateur créé avec succès",
                 success: true,
-                data: newUserProfile
+                data: newUserProfile,
+                
             },
             { status: 201 }
         );
 
     } catch (error) {
-       console.error("Erreur lors de la création:", error);
-        if (typeof error === "object" && error !== null && "code" in error && (error as any).code === "P2002") {
-            console.log("la personne que vous  tentez de créer existe déjà")
-            return NextResponse.json(
-                { message: "la personne que vous  tentez de créer existe déjà", success: false },
-                { status: 400 }
-            );
+        console.error("Erreur lors de la création:", error);
+        
+        // Gestion des erreurs spécifiques Prisma
+        if (typeof error === "object" && error !== null && "code" in error) {
+            const prismaError = error as { code: string };
+            
+            if (prismaError.code === "P2002") {
+                console.log("La personne que vous tentez de créer existe déjà");
+                return NextResponse.json(
+                    { message: "La personne que vous tentez de créer existe déjà", success: false },
+                    { status: 400 }
+                );
+            }
         }
+        
         return NextResponse.json(
             {
-                message: "Erreur serveur",
-                error: error,
+                message: "Erreur serveur lors de la création",
+                error: process.env.NODE_ENV === 'development' ? error instanceof Error ? error.message : "Erreur inconnue" : undefined,
                 success: false
             },
             { status: 500 }
@@ -205,13 +240,33 @@ export async function GET(request: NextRequest) {
       }
     });
 
+    
+     const dateCamp = await prisma.campagne.findFirst({
+        select:{
+          tontineStart:true,
+          tontineEnd : true,
+          weekActif:true,
+          selectionStart :true,
+          selectionEnd:true,
+          campagneStatut:true
+        }
+       })
+
+         console.log(` debut `, dateCamp?.tontineStart)
+
     console.log(userProfiles[0]?.firstName)
     return NextResponse.json(
       { 
         message: "Profils récupérés avec succès", 
         success: true,
         data: userProfiles,
-        count: userProfiles.length
+        count: userProfiles.length,
+        debut : dateCamp?.tontineStart,
+        fin : dateCamp?.tontineEnd,
+        weekActif : dateCamp?.weekActif,
+        debutSelect : dateCamp?.selectionStart,
+        finSelect : dateCamp?.selectionEnd,
+        campagneStatut : dateCamp?.campagneStatut
       },
       { status: 200 }
     );

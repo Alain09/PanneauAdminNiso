@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { Menu } from "lucide-react"
+import { useSession } from '@/src/lib/auth-client'
 
 interface Size {
     size: boolean
@@ -10,7 +11,9 @@ interface Size {
     setMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
+
 function Header({ size, isMobile, isTablet, setMobileMenuOpen }: Size) {
+    const {data}=useSession()
     return (
         <header 
             className={`
@@ -43,7 +46,7 @@ function Header({ size, isMobile, isTablet, setMobileMenuOpen }: Size) {
                     bg-white shadow shadow-gray-50 border border-gray-100 rounded-lg
                 `}>
                     <span className="text-sm lg:text-base font-medium text-gray-800 truncate">
-                        Dashboard
+                        Admin Panel
                     </span>
                 </div>
 
@@ -54,7 +57,7 @@ function Header({ size, isMobile, isTablet, setMobileMenuOpen }: Size) {
                     border-gray-100 rounded-lg flex justify-center 
                     items-center flex-shrink-0
                 `}>
-                    <span className="font-medium  text-sm">Alain T. HOUNGA</span>
+                    <span className="font-medium  text-sm">{data?.user.name}</span>
                 </div>
 
                 {/* User Avatar */}
@@ -64,7 +67,7 @@ function Header({ size, isMobile, isTablet, setMobileMenuOpen }: Size) {
                     border-gray-100 rounded-lg flex justify-center 
                     items-center flex-shrink-0
                 `}>
-                    <span className="font-medium text-white text-sm">A</span>
+                    <span className="font-medium text-white text-sm">{data?.user.name.charAt(0).toUpperCase()}</span>
                 </div>
             </div>
         </header>

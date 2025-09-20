@@ -1,17 +1,22 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  images: {
+images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**.public.blob.vercel-storage.com',
+        hostname: '*.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/**',
       },
+      // Si vous avez un projet spécifique, vous pouvez être plus précis :
+      {
+        protocol: 'https',
+        hostname: 'https://shojvdlnrmgomzoljibj.supabase.co', // Remplacez par votre vraie URL
+        port: '',
+        pathname: '/storage/v1/object/public/Niso_image/**',
+      }
     ],
-    // Autorise les images corrompues en développement (optionnel)
-    dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 };
 

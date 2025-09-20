@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@/generated/prisma";
-import { safeDeleteFromBlob, uploadFileToBlob } from "@/src/lib/vercelBlodAction";
+import { deleteFileFromSupabase, uploadFileToSupabase, validateFileSize, validateFileType } from "@/src/lib/subaStorage";  
 
 const prisma = new PrismaClient();
 
@@ -9,9 +9,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = (await params).id;
-
   try {
+    const id = (await params).id;
+
     const catalogue = await prisma.productCatalogue.findUnique({
       where: { id },
       include: {
@@ -43,7 +43,7 @@ export async function GET(
     return NextResponse.json(
       {
         message: "Erreur serveur",
-        error: error,
+        error: error instanceof Error ? error.message : "Erreur inconnue",
         success: false
       },
       { status: 500 }
@@ -53,14 +53,13 @@ export async function GET(
   }
 }
 
-// PATCH - Mise à jour d'un catalogue (VERSION CORRIGÉE)
+// PATCH - Mise à jour d'un catalogue (VERSION AMÉLIORÉE)
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = (await params).id;
-
   try {
+    const id = (await params).id;
     const res = await request.formData();
 
     // DESTRUCTURATION
@@ -105,30 +104,40 @@ export async function PATCH(
         );
       }
 
-      // 🎯 GESTION INTELLIGENTE DES IMAGES (File + String)
+      // Gestion des images avec validation
       const composantsWithImages = await Promise.all(
         nouveaux_composants.map(async (comp: any, index: number) => {
           let imageUrl: string | null = null;
 
-          // 📁 CAS 1: Nouvelle image uploadée (File)
-          const imageFile = res.get(`composant_image_${index}`);
-          if (imageFile instanceof File && imageFile.size > 0) {
-            console.log(`🔄 Upload nouvelle image pour composant ${index}:`, imageFile.name);
+          // CAS 1: Nouvelle image uploadée (File)
+          const imageFile = res.get(`composant_image_${index}`) as File;
+          if (imageFile && imageFile.size > 0) {
+            // Validation du fichier
+            if (!validateFileType(imageFile)) {
+              throw new Error(`Type de fichier non autorisé pour le composant ${comp.product}. Utilisez JPG, PNG, WebP ou GIF.`);
+            }
 
-            const uploadedFile = await uploadFileToBlob(
-              imageFile,
-              `Composant_${comp.product}_${Date.now()}`
-            );
-            imageUrl = uploadedFile.url;
+            if (!validateFileSize(imageFile, 5)) { // 5MB max
+              throw new Error(`Fichier trop volumineux pour le composant ${comp.product}. Taille maximale: 5MB.`);
+            }
+
+            try {
+              const uploadedFile = await uploadFileToSupabase(
+                imageFile,
+                `Composant_${comp.product}_${Date.now()}`
+              );
+              imageUrl = uploadedFile.url;
+            } catch (uploadError) {
+              console.error("Erreur upload composant:", uploadError);
+              throw new Error(`Erreur lors de l'upload de l'image du composant ${comp.product}`);
+            }
           }
-          // 🔗 CAS 2: Image existante conservée (string dans comp.image)
+          // CAS 2: Image existante conservée (string dans comp.image)
           else if (comp.image && typeof comp.image === 'string' && comp.image.trim() !== '') {
-            console.log(`🔗 Conservation image existante pour composant ${index}:`, comp.image);
             imageUrl = comp.image;
           }
-          // 🗑️ CAS 3: Pas d'image ou image supprimée
+          // CAS 3: Pas d'image ou image supprimée
           else {
-            console.log(`🗑️ Pas d'image pour composant ${index}`);
             imageUrl = null;
           }
 
@@ -140,17 +149,19 @@ export async function PATCH(
         })
       );
 
-      // ⚠️ SUPPRESSION INTELLIGENTE DES ANCIENNES IMAGES
-      // Récupérer les URLs des nouvelles images pour éviter de supprimer celles conservées
+      // Suppression des anciennes images qui ne sont plus utilisées
       const nouvellesImageUrls = composantsWithImages
         .map(comp => comp.image)
-        .filter(url => url !== null);
+        .filter(url => url !== null) as string[];
 
-      // Supprimer seulement les anciennes images qui ne sont plus utilisées
       for (const ancienComposant of catalogueExistant.composant) {
         if (ancienComposant.image && !nouvellesImageUrls.includes(ancienComposant.image)) {
-          console.log(`🗑️ Suppression ancienne image:`, ancienComposant.image);
-          await safeDeleteFromBlob(ancienComposant.image);
+          try {
+            await deleteFileFromSupabase(ancienComposant.image);
+          } catch (deleteError) {
+            console.error("Erreur suppression ancienne image:", deleteError);
+            // On continue malgré l'erreur de suppression
+          }
         }
       }
 
@@ -185,10 +196,23 @@ export async function PATCH(
 
   } catch (error) {
     console.error("Erreur lors de la mise à jour:", error);
+    
+    // Gestion des erreurs spécifiques
+    if (error instanceof Error) {
+      if (error.message.includes("Type de fichier non autorisé") || 
+          error.message.includes("Fichier trop volumineux") ||
+          error.message.includes("Erreur lors de l'upload")) {
+        return NextResponse.json(
+          { message: error.message, success: false },
+          { status: 400 }
+        );
+      }
+    }
+    
     return NextResponse.json(
       {
         message: "Erreur serveur",
-        error: error,
+        error: error instanceof Error ? error.message : "Erreur inconnue",
         success: false
       },
       { status: 500 }
@@ -198,14 +222,14 @@ export async function PATCH(
   }
 }
 
-// DELETE - Suppression d'un catalogue
+// DELETE - Suppression d'un catalogue (VERSION AMÉLIORÉE)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = (await params).id;
-
   try {
+    const id = (await params).id;
+
     // Vérifier que le catalogue existe et récupérer les composants
     const catalogueToDelete = await prisma.productCatalogue.findUnique({
       where: { id },
@@ -221,10 +245,15 @@ export async function DELETE(
       );
     }
 
-    // Supprimer les images des composants SEULEMENT si elles sont sur Vercel Blob
+    // Supprimer les images des composants
     for (const composant of catalogueToDelete.composant) {
       if (composant.image) {
-        await safeDeleteFromBlob(composant.image);
+        try {
+          await deleteFileFromSupabase(composant.image);
+        } catch (deleteError) {
+          console.error("Erreur suppression image:", deleteError);
+          // On continue malgré l'erreur de suppression
+        }
       }
     }
 
@@ -250,8 +279,8 @@ export async function DELETE(
     console.error("Erreur lors de la suppression:", error);
     return NextResponse.json(
       {
-        message: `Erreur serveur pour l'ID ${id}`,
-        error: error,
+        message: "Erreur serveur",
+        error: error instanceof Error ? error.message : "Erreur inconnue",
         success: false
       },
       { status: 500 }
@@ -260,6 +289,3 @@ export async function DELETE(
     await prisma.$disconnect();
   }
 }
-
-
-

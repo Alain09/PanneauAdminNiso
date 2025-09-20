@@ -38,10 +38,10 @@ export function generateWeeklyPayments(
   for (let week = 1; week <= totalWeeks; week++) {
     payments.push({
       category,
-      week: `sem ${week}`,
+      week: week,
       status: "En attente",
       totalToPayByWeekOfThisCategory: weeklyAmount,
-      datePaiement: null,
+      datePaiement: new Date("2025-09-01"),
       categoriesStatistiquesPayementId
     });
   }
@@ -86,9 +86,6 @@ export async function getActiveCampaign() {
   
   try {
     const activeCampaign = await prisma.campagne.findFirst({
-      where: {
-        campagneStatut: "En cours"
-      },
       orderBy: {
         createdAt: 'desc'
       }

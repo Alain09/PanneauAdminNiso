@@ -19,7 +19,21 @@ import {
 } from "@/src/components/ui/select";
 
 export default function UserProfilNew() {
-  const [profil, setProfil] = useState<UserProfile>({
+  const [profil, setProfil] = useState<{
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    contact: string;
+    role: string;
+    position: string;
+    image: string;   // URL venant de la DB
+    file: File | null; // Nouveau champ pour les uploads
+    provence: string;
+    profession: string;
+    description: string;
+    status: string;
+  }>({
     id: "",
     firstName: "",
     lastName: "",
@@ -27,18 +41,20 @@ export default function UserProfilNew() {
     contact: "",
     role: "",
     position: "",
-    image: "",
+    image: "",      // URL par défaut
+    file: null,     // Pas de fichier par défaut
     provence: "",
     profession: "",
     description: "",
     status: "En cours",
-  })
+  });
+
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [sendSubmitError, setSendSubmitError] = useState("");
   const [sendSubmitSuccess, setSendSubmitSuccess] = useState("");
 
- 
+
   //------------pour la mise a jour des name value 
   interface HandleChangeEvent extends React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> { }
 
@@ -55,7 +71,7 @@ export default function UserProfilNew() {
     if (type === 'file') {
       setProfil(prev => ({
         ...prev,
-        [name]: files && files[0] ? files[0] : null
+        file: files && files[0] ? files[0] : null
       }));
     } else if (type === 'number') {
       setProfil(prev => ({
@@ -79,19 +95,23 @@ export default function UserProfilNew() {
 
     // Récupération de la clé d'accès
     const key_acces = process.env.NEXT_PUBLIC_API_ROUTE_SECRET;
-
-    // Création du FormData
     const formDataUser = new FormData();
-    formDataUser.append("firstName", profil?.firstName || "");
-    formDataUser.append("lastName", profil?.lastName || "");
-    formDataUser.append("profession", profil?.profession || "");
-    formDataUser.append("contact", profil?.contact || "");
-    formDataUser.append("role", profil?.role || "");
-    formDataUser.append("position", profil?.position || "");
-    formDataUser.append("image", profil?.image || "");
-    formDataUser.append("provence", profil?.provence || "");
-    formDataUser.append("description", profil?.description || "");
+    formDataUser.append("firstName", profil.firstName);
+    formDataUser.append("lastName", profil.lastName);
+    formDataUser.append("profession", profil.profession);
+    formDataUser.append("contact", profil.contact);
+    formDataUser.append("role", profil.role);
+    formDataUser.append("position", profil.position);
+    formDataUser.append("provence", profil.provence);
+    formDataUser.append("description", profil.description);
 
+    // ⚡ Si un fichier est uploadé, on envoie le File
+    if (profil.file) {
+      formDataUser.append("image", profil.file);
+    } else {
+      // sinon on envoie l’URL déjà stockée
+      formDataUser.append("image", profil.image);
+    }
 
     try {
       const response = await fetch(`/api/users`, {

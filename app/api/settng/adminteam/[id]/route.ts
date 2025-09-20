@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@/generated/prisma";
-
-import { safeDeleteFromBlob, uploadFileToBlob } from "@/src/lib/vercelBlodAction";
+import { deleteImageFromSupabase, uploadFileToSupabase } from "@/src/lib/subaStorage";
 
 const prisma = new PrismaClient();
-
-
 
 // GET - Récupération d'un utilisateur
 export async function GET(request: NextRequest,{ params }: { params: Promise<{ id: string }> }) {
@@ -54,25 +51,29 @@ export async function PATCH(
         const name = res.get("name") as string;
         const email = res.get("email") as string;
         const phone = res.get("phone") as string;
-        const province = res.get("province") as string;
+        const provence = res.get("provence") as string;
         const position = res.get("position") as string;
         const role = res.get("role") as string;
         const image = res.get("image");
 
-        if (image instanceof File) {
+        if (image instanceof File && image.size > 0) {
             // Récupérer l'ancienne image
             const currentUser = await prisma.user.findUnique({
                 where: { id },
                 select: { image: true }
             });
 
-            // Supprimer l'ancienne image SEULEMENT si elle est sur Vercel Blob
+            // Supprimer l'ancienne image si elle existe
             if (currentUser?.image) {
-                await safeDeleteFromBlob(currentUser.image);
+                const deleteSuccess = await deleteImageFromSupabase(currentUser.image);
+                if (!deleteSuccess) {
+                    console.warn('Échec de suppression de l\'ancienne image:', currentUser.image);
+                    // Ne pas bloquer la mise à jour pour autant
+                }
             }
 
-            // Upload de la nouvelle image vers Vercel Blob
-            const uploadedFile = await uploadFileToBlob(
+            // Upload de la nouvelle image vers Supabase Storage
+            const uploadedFile = await uploadFileToSupabase(
                 image,
                 `Team_${name}`
             );
@@ -83,7 +84,7 @@ export async function PATCH(
                     name: name,
                     image: uploadedFile.url,
                     email: email,
-                    provence: province,
+                    provence: provence,
                     position: position,
                     role: role,
                     phone: phone
@@ -97,7 +98,7 @@ export async function PATCH(
                 data: {
                     name: name,
                     email: email,
-                    provence: province,
+                    provence: provence,
                     position: position,
                     role: role,
                     phone: phone
@@ -107,7 +108,7 @@ export async function PATCH(
 
         return NextResponse.json(
             { message: 'Succès', success: true },
-            { status: 200 } // 200 pour une mise à jour, pas 201
+            { status: 200 }
         );
 
     } catch (error) {
@@ -122,7 +123,8 @@ export async function PATCH(
 }
 
 // DELETE - Suppression d'un utilisateur
-export async function DELETE(   request: NextRequest,  
+export async function DELETE(   
+    request: NextRequest,  
     { params }: { params: Promise<{ id:string }> }
 ) {
     const id = (await params).id;
@@ -137,7 +139,7 @@ export async function DELETE(   request: NextRequest,
                 name: true,
                 image: true,
                 role: true,
-                // 🔥 Inclure les relations pour vérification
+                // Inclure les relations pour vérification
                 sessions: { select: { id: true } },
                 accounts: { select: { id: true } }
             }
@@ -150,20 +152,24 @@ export async function DELETE(   request: NextRequest,
             );
         }
 
-         // 🔥 Protection contre la suppression d'admin principal
+         // Protection contre la suppression d'admin principal
         if (userToDelete.role === 'admin') {
             return NextResponse.json(
                 { message: "Impossible de supprimer cet administrateur", success: false },
                 { status: 403 }
             );
         }
-        // Supprimer l'image SEULEMENT si elle est sur Vercel Blob
+
+        // Supprimer l'image si elle existe
         if (userToDelete?.image) {
-            await safeDeleteFromBlob(userToDelete.image);
+            const deleteSuccess = await deleteImageFromSupabase(userToDelete.image);
+            if (!deleteSuccess) {
+                console.warn('Échec de suppression de l\'image utilisateur:', userToDelete.image);
+                // Ne pas bloquer la suppression de l'utilisateur pour autant
+            }
         }
 
         // Suppression dans la base de données
-        // Note: Better Auth gère automatiquement les relations cascades
         await prisma.user.delete({
             where: { id }
         });

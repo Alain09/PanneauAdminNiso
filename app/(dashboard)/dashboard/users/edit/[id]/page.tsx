@@ -7,7 +7,7 @@ import { Textarea } from "@/src/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { TabsList, TabsTrigger } from "@/src/components/ui/tabs";
 import { Tabs } from "@radix-ui/react-tabs";
-import { TontineOption, Donnees, UserProfile } from "@/type";
+import { UserProfile } from "@/type";
 import Optionlist from "@/src/components/users/Optionlist";
 import Bande from "@/src/components/users/bande";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/src/components/ui/dialog";
@@ -17,7 +17,7 @@ import { useSession } from "@/src/lib/auth-client";
 import { Alert, AlertDescription } from "@/src/components/ui/alert";
 import { AlertCircle, SquareCheckBig } from "lucide-react";
 
-export default function UserProfilNew({ params }: { params: Promise<{ id: string }> }) {
+export default function UserProfilEdit({ params }: { params: Promise<{ id: string }> }) {
 
 
   // Résolvez la promesse des params et router de next js
@@ -35,7 +35,6 @@ export default function UserProfilNew({ params }: { params: Promise<{ id: string
     position: "",
     image: "",
     profession: "",
-
   });
 
   const { isPending } = useSession()
@@ -107,6 +106,7 @@ export default function UserProfilNew({ params }: { params: Promise<{ id: string
       setSelectCategories(categories[0]);
     }
   }, [categories]);
+
   // fonction pour la recuperatin des des otpionsDescriptions a une seule ocurence d'option par categories
   // recuperationsd de tous ls OptionDescriptions
   // Récupération de toutes les options
@@ -137,9 +137,6 @@ export default function UserProfilNew({ params }: { params: Promise<{ id: string
   */}
 
   const [modal, setModal] = useState(false);
-
-  const [selectedCategorie, setSelectedCategorie] = useState<string>("");
-  const [selectedOption, setSelectedOption] = useState<string>("");
 
   const [sendSubmitError, setSendSubmitError] = useState("");
   const [sendSubmitSuccess, setSendSubmitSuccess] = useState("")
@@ -180,10 +177,10 @@ export default function UserProfilNew({ params }: { params: Promise<{ id: string
   const handleChange = (e: HandleChangeEvent) => {
     const { name, value, type, files } = e.target as HandleChangeTarget;
 
-    if (type === 'file') {
+    if (type === "file") {
       setUserUnique(prev => ({
         ...prev,
-        [name]: files && files[0] ? files[0] : null
+        [name]: files && files[0] ? files[0] : prev.image // garde l’ancienne image si rien n’est choisi
       }));
     } else if (type === 'number') {
       setUserUnique(prev => ({
@@ -218,8 +215,15 @@ export default function UserProfilNew({ params }: { params: Promise<{ id: string
     formadataUserUnique.append("provence", String(userUnique?.provence ?? ""))
     formadataUserUnique.append("role", String(userUnique?.role ?? ""))
     formadataUserUnique.append("position", String(userUnique?.position ?? ""))
-    formadataUserUnique.append("image", String(userUnique?.image))
+
     formadataUserUnique.append("description", String(userUnique?.description ?? ""))
+    if (userUnique.image instanceof File) {
+      // upload nouveau fichier
+      formadataUserUnique.append("image", userUnique.image);
+    } else if (typeof userUnique.image === "string" && userUnique.image.trim() === "") {
+      // suppression
+      formadataUserUnique.append("image", "");
+    }
 
     try {
 
@@ -388,7 +392,7 @@ export default function UserProfilNew({ params }: { params: Promise<{ id: string
       setLoadSubmit(false);
     }
   };
-  
+
   // pour refres lalerte d'erreur qui s'affcihe eb cas d'erreur qu s'affiche pour la suppression 
   useEffect(() => {
     setSendDeleteError("")
@@ -397,7 +401,68 @@ export default function UserProfilNew({ params }: { params: Promise<{ id: string
 
 
 
+  //----------------- mise d'une option appartenant à une catégorie spécifique
+  const [updateModal, setUpdateModal] = useState(false)
+  const [countOption, setCountOption] = useState(0)
+  const [updateLoad, setUpdateLoad] = useState(false)
+  const [sendUpdateError, setSendUpdateError] = useState("");
+  const [sendUpdateSuccess, setSendUpdateSuccess] = useState("")
+  const [updateTexte, setUpdateTexte] = useState<string | undefined>("");
 
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSendUpdateError("");
+    setSendUpdateSuccess("");
+    setUpdateLoad(true);
+
+
+    try {
+      const datas = await fetch(`/api/users/${id}/tontines/${optionId}`, {
+        method: "PATCH",
+        headers: {
+          "authorization": process.env.NEXT_PUBLIC_API_ROUTE_SECRET || "",
+          "Content-Type": "application/json", // Ajout de ce header
+        },
+        body: JSON.stringify({ countOption })
+      });
+
+      const result = await datas.json();
+
+      if (result.success) {
+        setSendUpdateSuccess(result.message);
+
+        setTimeout(() => {
+          setSendUpdateSuccess("");
+          setUpdateModal(false)
+        }, 1500); // Fermer après succès
+        route.refresh();
+
+      } else {
+        setSendUpdateError(result.message);
+      }
+
+    } catch (error) {
+      setSendUpdateError("Erreur de connexion lors de la suppression");
+      console.error(error);
+    } finally {
+      setUpdateLoad(false);
+    }
+  };
+
+  // pour refres lalerte d'erreur qui s'affcihe eb cas d'erreur qu s'affiche pour le update 
+  useEffect(() => {
+    setSendUpdateError("")
+
+  }, [updateModal])
+
+
+  //----------- route api pour mettre a jout status du paiement pour chaque categorie
+
+
+
+
+  //**********fin  */
 
   //------------for loading before page is trying up 
   if (loading || isPending) {
@@ -648,7 +713,7 @@ export default function UserProfilNew({ params }: { params: Promise<{ id: string
                       OptionsDescriptions?.map((term) => {
                         if (term.category === selectCategories) {
                           return (
-                            <Optionlist setOptionId={setOptionId} opt={term} setOpen={setOpenDeleteModale} setTexteDelete={setNameActive} key={term.category + term.option} />
+                            <Optionlist setOptionId={setOptionId} opt={term} setOpen={setOpenDeleteModale} setTexteDelete={setNameActive} key={term.category + term.option} setUpdateModal={setUpdateModal} setUpdateTexte={setUpdateTexte} />
                           );
                         }
                         return null;
@@ -665,7 +730,7 @@ export default function UserProfilNew({ params }: { params: Promise<{ id: string
         </div>
       </Card>
 
-      {/* modal pour la mise a jour */}
+      {/* modal pour la creation des options */}
       <Dialog open={modal} onOpenChange={setModal} >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -763,6 +828,65 @@ export default function UserProfilNew({ params }: { params: Promise<{ id: string
             </DialogClose>
             <Button className="bg-[#FF4000] hover:bg-[#FF4000]/80" disabled={tontine} type="submit" onClick={handleSubmitTontineOption}>
               {tontine ? " en cours ..." : "Confirmer"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* modal pour la mise a jout d'une option */}
+      <Dialog open={updateModal} onOpenChange={setUpdateModal} >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Mis a jout de la valeur d'occurence</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              servir pour le nombre d'occurnce de <span className='font-semibold text-gray-900'>{updateTexte}</span>
+            </p>
+
+            {sendUpdateError &&
+              <Alert className="border-red-200 bg-red-50">
+                <AlertCircle className="h-4 w-4 text-red-500" />
+                <AlertDescription className="text-red-700">
+                  {sendUpdateError}
+                </AlertDescription>
+              </Alert>
+            }
+            {sendUpdateSuccess &&
+              <Alert className="border-green-200 bg-green-50">
+                <SquareCheckBig className="h-4 w-4 text-green-500" />
+                <AlertDescription className="text-green-700">
+                  {sendUpdateSuccess}
+                </AlertDescription>
+              </Alert>
+            }
+
+
+            <div className="space-y-4">
+              {/* Nombre */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Quantité</label>
+                <Input
+                  type="number"
+                  className="w-full"
+                  value={countOption}
+                  onChange={(e) => { setCountOption(parseFloat(e.target.value)) }}
+                  name="countOption"
+                />
+              </div>
+            </div>
+
+
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline" className="mr-2" disabled={updateLoad}>
+                Annuler
+              </Button>
+            </DialogClose>
+            <Button className="bg-[#FF4000] hover:bg-[#FF4000]/80" disabled={updateLoad} type="submit"
+              onClick={handleUpdate}>
+              {updateLoad ? " en cours ..." : "Confirmer"}
             </Button>
           </DialogFooter>
         </DialogContent>

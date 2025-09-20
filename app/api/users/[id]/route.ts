@@ -1,6 +1,8 @@
+//users/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@/generated/prisma";
-import { safeDeleteFromBlob, uploadFileToBlob } from "@/src/lib/vercelBlodAction";
+import { deleteFileFromSupabase, uploadFileToSupabase, validateFileSize, validateFileType } from "@/src/lib/subaStorage";
+
 
 const prisma = new PrismaClient();
 
@@ -45,12 +47,19 @@ export async function GET(request: NextRequest,
         { status: 404 }
       );
     }
+     // Récupérer la campagne active pour connaître le nombre total de semaines
+    const activeCampaign = await prisma.campagne.findFirst({
+      orderBy: { createdAt: 'desc' }
+    });
+    const totalWeeks = activeCampaign?.dureeTontineSemaines || 40;
+
 
     return NextResponse.json(
       { 
         message: "Profil récupéré avec succès", 
         success: true,
-        data: userProfile
+        data: userProfile,
+        totalWeeks:totalWeeks
       },
       { status: 200 }
     );
@@ -70,14 +79,13 @@ export async function GET(request: NextRequest,
   }
 }
 
-
 // DELETE - Supprimer un utilisateur spécifique
 export async function DELETE(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const id = (await params).id;
     try {
+        const id = (await params).id;
 
         if (!id) {
             return NextResponse.json(
@@ -110,9 +118,14 @@ export async function DELETE(
             );
         }
 
-        // on verifie d'abord si l'image existe puis supprimer dans vercel 
+        // Supprimer l'image si elle existe
         if (existingUser.image) {
-            await safeDeleteFromBlob(existingUser.image);
+            try {
+                await deleteFileFromSupabase(existingUser.image);
+            } catch (deleteError) {
+                console.error("Erreur lors de la suppression de l'image:", deleteError);
+                // On continue malgré l'erreur de suppression d'image
+            }
         }
 
         // Suppression de l'utilisateur (Prisma gère la suppression en cascade automatiquement)
@@ -153,7 +166,7 @@ export async function DELETE(
             {
                 message: "Erreur serveur lors de la suppression",
                 success: false,
-                error: process.env.NODE_ENV === 'development' ? error : undefined
+                error: process.env.NODE_ENV === 'development' ? error instanceof Error ? error.message : "Erreur inconnue" : undefined
             },
             { status: 500 }
         );
@@ -162,8 +175,7 @@ export async function DELETE(
     }
 }
 
-// mise des infor perso
-// PUT - Mettre à jour un utilisateur spécifique
+// PATCH - Mise à jour des informations personnelles
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -202,38 +214,60 @@ export async function PATCH(
     const provence = res.get("provence") as string;
     const description = res.get("description") as string;
     
-    // 🎯 GESTION INTELLIGENTE DE L'IMAGE
-    const imageData = res.get("image"); // Peut être File ou string
-    
+    // GESTION DE L'IMAGE
+    const imageData = res.get("image");
     let imageUrl = existingUser.image; // Conserver l'image existante par défaut
-    
+    let oldImageToDelete: string | null = null;
+
     if (imageData) {
-      // 📁 CAS 1: C'est un nouveau fichier (File object)
+      // CAS 1: C'est un nouveau fichier (File object)
       if (imageData instanceof File && imageData.size > 0) {
+        // Validation du fichier
+        if (!validateFileType(imageData)) {
+          return NextResponse.json(
+            { message: "Type de fichier non autorisé. Utilisez JPG, PNG, WebP ou GIF.", success: false },
+            { status: 400 }
+          );
+        }
+
+        if (!validateFileSize(imageData, 5)) { // 5MB max
+          return NextResponse.json(
+            { message: "Fichier trop volumineux. Taille maximale: 5MB.", success: false },
+            { status: 400 }
+          );
+        }
+
         try {
-          console.log("🔄 Upload d'un nouveau fichier:", imageData.name);
-          const uploadedFile = await uploadFileToBlob(
+          // Sauvegarder l'ancienne image pour suppression ultérieure
+          if (existingUser.image) {
+            oldImageToDelete = existingUser.image;
+          }
+
+          const uploadedFile = await uploadFileToSupabase(
             imageData, 
-            `UserProfile_${firstName || existingUser.firstName}_${lastName || existingUser.lastName}`
+            `UserProfile_${firstName || existingUser.firstName}_${lastName || existingUser.lastName}_${Date.now()}`
           );
           imageUrl = uploadedFile.url;
         } catch (uploadError) {
-          console.error("❌ Erreur lors de l'upload de l'image:", uploadError);
-          // Continuer avec l'image existante
+          console.error("Erreur lors de l'upload de l'image:", uploadError);
+          return NextResponse.json(
+            { message: "Erreur lors de l'upload de l'image", success: false },
+            { status: 500 }
+          );
         }
       }
-      // 🔗 CAS 2: C'est une URL string (image existante ou nouvelle URL)
+      // CAS 2: C'est une URL string (image existante ou nouvelle URL)
       else if (typeof imageData === 'string' && imageData.trim() !== '') {
-        console.log("🔗 Utilisation d'une URL string:", imageData);
         imageUrl = imageData;
       }
-      // 🗑️ CAS 3: String vide ou null = supprimer l'image
+      // CAS 3: String vide ou null = supprimer l'image
       else if (typeof imageData === 'string' && imageData.trim() === '') {
-        console.log("🗑️ Suppression de l'image");
+        if (existingUser.image) {
+          oldImageToDelete = existingUser.image;
+        }
         imageUrl = null;
       }
     }
-    // Si imageData n'existe pas du tout, on garde l'image existante
 
     // Préparation des données à mettre à jour
     const updateData: any = {};
@@ -247,11 +281,8 @@ export async function PATCH(
     if (provence !== undefined) updateData.provence = provence || null;
     if (description !== undefined) updateData.description = description || null;
     
-    // ✅ MISE À JOUR DE L'IMAGE SEULEMENT SI ELLE A CHANGÉ
-    if (imageUrl !== existingUser.image) {
-      updateData.image = imageUrl;
-      console.log("🖼️ Image mise à jour:", existingUser.image, "→", imageUrl);
-    }
+    // MISE À JOUR DE L'IMAGE
+    updateData.image = imageUrl;
 
     // Mise à jour de l'utilisateur
     const updatedUserProfile = await prisma.userProfile.update({
@@ -271,6 +302,18 @@ export async function PATCH(
       }
     });
 
+    // Supprimer l'ancienne image après la mise à jour réussie
+    if (oldImageToDelete) {
+      try {
+        await deleteFileFromSupabase(oldImageToDelete);
+      } catch (deleteError) {
+        console.error("Erreur lors de la suppression de l'ancienne image:", deleteError);
+        // On continue malgré l'erreur de suppression
+      }
+    }
+
+
+    
     return NextResponse.json(
       { 
         message: "Profil mis à jour avec succès", 
@@ -281,13 +324,24 @@ export async function PATCH(
     );
 
   } catch (error) {
-    console.error("❌ Erreur lors de la mise à jour du profil:", error);
+    console.error("Erreur lors de la mise à jour du profil:", error);
+    
+    // Gestion des erreurs de validation Prisma
+    if (typeof error === "object" && error !== null && "code" in error) {
+      const prismaError = error as { code: string };
+      if (prismaError.code === "P2002") {
+        return NextResponse.json(
+          { message: "Un utilisateur avec ces informations existe déjà", success: false },
+          { status: 400 }
+        );
+      }
+    }
     
     return NextResponse.json(
       { 
         message: "Erreur serveur lors de la mise à jour", 
         success: false,
-        error: process.env.NODE_ENV === 'development' ? error : undefined
+        error: process.env.NODE_ENV === 'development' ? error instanceof Error ? error.message : "Erreur inconnue" : undefined
       },
       { status: 500 }
     );

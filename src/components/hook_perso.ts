@@ -52,49 +52,52 @@ export function DataAction({ enter }: StructureAction) {
 
     //fonction courbe d'evolution des paiements  par semaine 
     // reception des données de paiement ( sem, montanttotal)
-    const VariationPaid = () => {
-        const datas: PaymentDataVariation[] = []
+    const VariationPaid = (weekActif?: number|null) => {
+        if (!enter || enter.length === 0) {
+            return {
+                datas: [],
+                TotalWeekActive: 0,
+                TotalGobal: 0,
+            };
+        }
 
-        // CORRECTION: Utiliser categoriesStatistiques au lieu de DescriptionChoixOfEachUser
-        const choiceliste: PaymentDataVariation[] = enter?.flatMap(prev =>
-            prev.categoriesStatistiques?.flatMap(nexts =>
+        // Extraire tous les paiements "Payé"
+        const choiceliste: PaymentDataVariation[] = enter.flatMap((prev) =>
+            prev.categoriesStatistiques?.flatMap((nexts) =>
                 (nexts.detailPaiementOfThisCategorie ?? [])
-                    .filter(choi => choi.status === "Payé")
-                    .map(choi => ({
-                        weeks: choi.week,
-                        value: choi.totalToPayByWeekOfThisCategory
-                    } as PaymentDataVariation))
-            )
-        ) as PaymentDataVariation[]
+                    .filter((choi) => choi.status === "Payé")
+                    .map(
+                        (choi) =>
+                        ({
+                            weeks: choi.week,
+                            value: choi.totalToPayByWeekOfThisCategory,
+                        } as PaymentDataVariation)
+                    )
+            ) ?? []
+        );
 
-        //------------- recuperation des semaines dans lordre
-        const weekss = [... new Set(choiceliste.flatMap(prev => prev.weeks))].sort((a, b) => {
-            const numA = parseInt(a.replace("sem ", ""), 10);
-            const numB = parseInt(b.replace("sem ", ""), 10);
-            return numA - numB;
-        })
+        // Récupérer les semaines triées
+        const weekss = [...new Set(choiceliste.map((p) => p.weeks))].sort(
+            (a, b) => a - b
+        );
 
-        // boucles ----- pour chaque semaine on fait la somme des montants
-        weekss.forEach((sem) => {
-            const filteWeek = choiceliste.filter(pro => pro.weeks === sem)
-            const taches = {
-                weeks: sem,
-                value: filteWeek.flatMap(pro => pro.value as number).reduce((acc, val) => acc + val, 0)
-            }
+        // Agréger les montants par semaine
+        const datas: PaymentDataVariation[] = weekss.map((sem) => {
+            const total = choiceliste
+                .filter((p) => p.weeks === sem)
+                .reduce((acc, val) => acc + (val.value ?? 0), 0);
 
-            datas.push(taches) // pour la courbe de variation des montant recu chaque semaine
-        })
-
-        // recuperation des donnees total pour la semaine  et global
-        const TotalWeekActive = datas.at(-1)?.value as number;
-        const TotalGobal = datas.flatMap(prev => prev.value).reduce((acc, val) => acc + val, 0)
+            return { weeks: sem, value: total };
+        });
 
         return {
             datas,
-            TotalWeekActive,
-            TotalGobal
-        }
-    }
+            TotalWeekActive: weekActif
+                ? datas.find((d) => d.weeks === weekActif)?.value ?? 0
+                : datas.at(-1)?.value ?? 0,
+            TotalGobal: datas.reduce((acc, val) => acc + val.value, 0),
+        };
+    };
 
     // recuperation des options et categories
     //analyse de contenues des options et catégories pour le diagramme en barre
@@ -145,7 +148,10 @@ export function DataAction({ enter }: StructureAction) {
     }
 
     // functions du retour des utilisateurs en retard
-    const UsersLate = () => {
+    interface weekActifCamp {
+        weekActived: number | null
+    }
+    const UsersLate = ({ weekActived }: weekActifCamp) => {
         // CORRECTION: Utiliser categoriesStatistiques
         const choiceliste: UsersLatePayment[] = enter?.flatMap(prev =>
             prev.categoriesStatistiques?.flatMap(nexts =>
@@ -158,8 +164,8 @@ export function DataAction({ enter }: StructureAction) {
                         status: choi.status as string,
                         amountPaidByWeek: choi.totalToPayByWeekOfThisCategory as number,
                         category: choi.category as string,
-                        weekActif: "sem 10" as string,
-                        lastWeekPaid: choi.week as string
+                        weekActif: weekActived,
+                        lastWeekPaid: choi.week as number
                     } as UsersLatePayment))
             )
         ) as UsersLatePayment[]
@@ -169,7 +175,7 @@ export function DataAction({ enter }: StructureAction) {
 
     // fonction de retour des utilisateurs avec statut de paiement en retart ou payé
     interface weekActif {
-        weekActived: string
+        weekActived: number
     }
 
     const UserPaiementHistory = ({ weekActived }: weekActif) => {
@@ -188,7 +194,7 @@ export function DataAction({ enter }: StructureAction) {
                     amountPaidByWeek: choi.totalToPayByWeekOfThisCategory as number,
                     options: nexts.listOptions as string[],
                     category: nexts.category as string,
-                    weekActif: choi.week as string,
+                    weekActif: choi.week as number,
                 } as PaymentHistoryWeekActif))
             )
         ) as PaymentHistoryWeekActif[]
@@ -223,7 +229,7 @@ export function DataAction({ enter }: StructureAction) {
                         category: "Non définie",
                         listOptions: [],
                         status: user?.status,
-                        position:user?.position,
+                        position: user?.position,
                         firstName: user?.firstName,
                         lastName: user?.lastName,
                         contact: user?.contact,
@@ -238,7 +244,7 @@ export function DataAction({ enter }: StructureAction) {
                     category: `${item?.category} Fcfa`,
                     listOptions: item.optionsDescription?.map(opt => opt.option) || [],
                     status: user?.status,
-                    position:user?.position,
+                    position: user?.position,
                     firstName: user?.firstName,
                     lastName: user?.lastName,
                     contact: user?.contact,
@@ -275,7 +281,7 @@ export function DataAction({ enter }: StructureAction) {
             //
 
             //--------------DETRMINATION Du total des users a  position "  AutoGestion " 
-            const autoGestionTotal = response.filter((user)=>user?.position?.toUpperCase() === "GESTION").length
+            const autoGestionTotal = response.filter((user) => user?.position?.toUpperCase() === "GESTION").length
 
             //----------LES RETURNS
             return {
@@ -284,18 +290,18 @@ export function DataAction({ enter }: StructureAction) {
                 uniqueCategories,
                 uniqueStatuts,
                 valuesEncours,
-                valuesTermine ,
+                valuesTermine,
                 autoGestionTotal
             };
         }, [response, enter]);
 
 
-        return { response, statistics}; // dans le cas ou il y aura aucun utilisateur defini
+        return { response, statistics }; // dans le cas ou il y aura aucun utilisateur defini
     }
 
     // les categories disponibles 
     const CaracterisqueUniques = () => {
-        // CORRECTION: Utiliser categoriesStatistiques
+        // CORRECTION: Utiliser categoriesStatistiques pour les weeks eb retard
         const choiceliste: PaymentDataVariation[] = enter?.flatMap(prev =>
             prev.categoriesStatistiques?.flatMap(nexts =>
                 nexts.detailPaiementOfThisCategorie?.filter(choi => choi.status === "En retard")
@@ -307,11 +313,7 @@ export function DataAction({ enter }: StructureAction) {
         ) as PaymentDataVariation[]
 
         //------------- recuperation des semaines dans lordre
-        const weekss = [... new Set(choiceliste?.flatMap(prev => prev?.weeks) || [])].sort((a, b) => {
-            const numA = parseInt(a.replace("sem ", ""), 10);
-            const numB = parseInt(b.replace("sem ", ""), 10);
-            return numA - numB;
-        })
+        const weekss = [... new Set(choiceliste?.flatMap(prev => prev?.weeks) || [])].sort((a, b) => { return a - b })
 
         // for categories pour recuperer les categories uniques
         const categoriesAll = enter?.flatMap((user) =>
@@ -330,13 +332,9 @@ export function DataAction({ enter }: StructureAction) {
             user.categoriesStatistiques?.flatMap((item) =>
                 item.detailPaiementOfThisCategorie?.map((it) => it.week)
             )
-        ) as string[];
+        ) as number[];
 
-        const uniqueWeeks = [...new Set(weeksAll?.filter(Boolean) || [])].sort((a, b) => {
-            const numA = parseInt(a.replace("sem ", ""), 10);
-            const numB = parseInt(b.replace("sem ", ""), 10);
-            return numA - numB;
-        });
+        const uniqueWeeks = [...new Set(weeksAll?.filter(Boolean) || [])].sort((a, b) => { return a - b });
 
         // graphique en cours et termine
         const valuesEncours = statusAll.filter((status) => status === "En cours").length;
@@ -390,7 +388,7 @@ export const formatDate = (date: Date) => {
 
 /* */
 
-export function calculerIntervalleSemaine(semaineNum: string, dateDebutTontine: Date): string {
+export function calculerIntervalleSemaine(semaineNum: string, dateDebutTontine: Date) {
     // Extraire le numéro de semaine
     const match = semaineNum.match(/sem\s*(\d+)/i);
     if (!match) throw new Error("Format de semaine invalide. Utilisez 'sem X' où X est un nombre");
@@ -426,54 +424,91 @@ export function calculerIntervalleSemaine(semaineNum: string, dateDebutTontine: 
     const dateDebutFormatee = formatter.format(dateDebut);
     const dateFinFormatee = formatter.format(dateFin);
 
-    return `${dateDebutFormatee} au ${dateFinFormatee}`;
+    return {
+
+        texte: `${dateDebutFormatee} au ${dateFinFormatee}`,
+        debut: dateDebut,
+        fin: dateFin
+    };
 }
 
+// le time 
+import { useState, useEffect } from 'react';
+
+export function useCountdown({ startTime, endTime }: { startTime: Date | null; endTime: Date | null }) {
+    const calcRemaining = () => Math.max(0, (endTime?.getTime() ?? Date.now()) - Date.now());
+    const [remaining, setRemaining] = useState(calcRemaining());
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            setRemaining(calcRemaining());
+        }, 1000);
+        return () => clearInterval(intervalId);
+    }, [startTime, endTime]);
+
+    // convertir millisecondes en jrs/hrs/min/sec
+    const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+
+    return { remaining, days, hours, minutes, seconds };
+}
 
 
 
 // Exemple d'utilisation :// const dateDebutTontine = new Date('2025-01-01');
 // const    resultat = calculerIntervalleSemaine('sem 2', dateDebutTontine);
-export function calculerDatesSemaine(semaineNum: string, dateDebutTontine: Date): { dateDebut: Date; dateFin: Date } {
-    // Extraire le numéro de semaine
-    const match = semaineNum.match(/sem\s*(\d+)/i);
-    if (!match) throw new Error("Format de semaine invalide. Utilisez 'sem X' où X est un nombre");
+// Fonction pour calculer les dates de semaine
+export function calculerDatesSemaine(
+    semaineNum: string | number | undefined | null,
+    dateDebutTontine: Date
+): { dateDebut: Date; dateFin: Date; intervalleFormaté: string } {
+    if (semaineNum === undefined || semaineNum === null) {
+        throw new Error("Le numéro de semaine est manquant");
+    }
 
-    const numeroSemaine = parseInt(match[1], 10);
-    if (numeroSemaine <= 0) throw new Error("Le numéro de semaine doit être positif");
+    let numeroSemaine: number;
 
-    // Cloner la date de début pour éviter de modifier l'originale
+    if (typeof semaineNum === "number") {
+        numeroSemaine = semaineNum;
+    } else {
+        const trimmed = semaineNum.trim();
+        const match = trimmed.match(/^sem\s*(\d+)$/i);
+
+        if (!match) {
+            throw new Error("Format de semaine invalide. Utilisez 'sem X' où X est un nombre");
+        }
+
+        numeroSemaine = parseInt(match[1], 10);
+    }
+
+    if (numeroSemaine <= 0) {
+        throw new Error("Le numéro de semaine doit être positif");
+    }
+
+    // Clonage de la date de départ
     const dateDebut = new Date(dateDebutTontine);
-
-    // Calculer le début de la semaine demandée
-    // Chaque semaine dure 7 jours (semaine 1 = jours 0-6, semaine 2 = jours 7-13, etc.)
     const joursAjoutes = (numeroSemaine - 1) * 7;
     dateDebut.setDate(dateDebut.getDate() + joursAjoutes);
 
-    // Trouver le lundi de cette semaine (début de semaine)
-    const jourSemaine = dateDebut.getDay(); // 0 (dimanche) à 6 (samedi)
+    const dateFin = new Date(dateDebut);
+    dateFin.setDate(dateDebut.getDate() + 6);
 
-    // Ajuster pour que lundi soit le premier jour de la semaine
-    let decalageLundi = 0;
-    if (jourSemaine === 0) { // dimanche
-        decalageLundi = -6; // reculer de 6 jours pour arriver au lundi précédent
-    } else {
-        decalageLundi = 1 - jourSemaine; // ajuster pour avoir lundi
-    }
+    dateDebut.setHours(0, 0, 0, 0);
+    dateFin.setHours(23, 59, 59, 999);
 
-    const dateDebutSemaine = new Date(dateDebut);
-    dateDebutSemaine.setDate(dateDebut.getDate() + decalageLundi);
-
-    // Calculer la fin de la semaine (dimanche)
-    const dateFinSemaine = new Date(dateDebutSemaine);
-    dateFinSemaine.setDate(dateDebutSemaine.getDate() + 6);
-
-    // Réinitialiser les heures pour avoir des dates précises
-    dateDebutSemaine.setHours(0, 0, 0, 0);
-    dateFinSemaine.setHours(23, 59, 59, 999);
+    const formatter = new Intl.DateTimeFormat("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+    });
 
     return {
-        dateDebut: dateDebutSemaine,
-        dateFin: dateFinSemaine
+        dateDebut,
+        dateFin,
+        intervalleFormaté: `${formatter.format(dateDebut)} au ${formatter.format(dateFin)}`
     };
 }
+
+

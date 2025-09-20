@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@/generated/prisma";
-import { uploadFileToBlob } from "@/src/lib/vercelBlodAction";
+
 
 const prisma = new PrismaClient();
 
@@ -46,7 +46,8 @@ export async function POST(request: NextRequest) {
     tontineEndDate.setDate(tontineEndDate.getDate() + (Number(res.dureeTontineSemaines) * 7));
 
     // Statut initial par défaut (sera géré par l'automatisation Supabase)
-    const campagneStatut = "En cours";
+    const campagneStatut = "";
+    const status = true;
  
 
     //------------------
@@ -71,9 +72,16 @@ export async function POST(request: NextRequest) {
         selectionEnd: selectionEndDate,
         tontineStart: tontineStartDate,
         tontineEnd: tontineEndDate,
+        status,
+        
         createdAt: new Date()
       }
     });
+
+
+   
+    // Réponse
+    // --------------------
 
     return NextResponse.json(
       { 

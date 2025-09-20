@@ -1,20 +1,21 @@
 import React from 'react';
-import { useTimer } from 'react-timer-hook';
 import { SlidingNumber } from '../ui/sliding-number';
+import { useCountdown } from '../hook_perso';
 
 interface CounTimesProps {
-    expiryTimestamp: Date;
+    debut : Date | null
+    fin: Date | null;
 }
 
-function CounTimes({ expiryTimestamp }: CounTimesProps) {
+function CounTimes({ debut,fin }: CounTimesProps) {
     const {
 
         seconds,
         minutes,
         hours,
-        days,
+        days
 
-    } = useTimer({ expiryTimestamp, autoStart: true, onExpire: () => console.warn('onExpire called') });
+    } = useCountdown({startTime:debut,endTime:fin});
 
     return (
 

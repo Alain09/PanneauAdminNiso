@@ -112,31 +112,46 @@ function UserAll() {
   //--#### ici on va destructurer response et statistics 
   const { response, statistics } = UsersStructuration()
 
-
-
   // Données filtrées et recherchées
-  const filteredUsersData = useMemo(() => {
-    let filtered = response;
+ // ✅ State pour stocker les données filtrées
+const [filteredUsersData, setFilteredUsersData] = useState(response ?? []);
 
-    // Appliquer les filtres de catégorie et statut
-    if (selectedCategorie) {
-      filtered = filtered.filter(user => user.category === selectedCategorie);
-    }
+// ✅ Fonction de filtrage (déclenchée uniquement au clic sur "Confirmer")
+const handleFilter = () => {
+  const filtered = response.filter((user) => {
+    const matchesCategory = selectedCategorie
+      ? user.category === selectedCategorie
+      : true;
 
-    if (selectedStatutCategorie) {
-      filtered = filtered.filter(user => user.status === selectedStatutCategorie);
-    }
+    const matchesStatus = selectedStatutCategorie
+      ? user.status === selectedStatutCategorie
+      : true;
 
-    // Appliquer la recherche
-    if (searchUser.trim() !== '') {
-      filtered = filtered.filter(user =>
+    const matchesSearch = searchUser.trim() !== ""
+      ? user.firstName?.toLowerCase().includes(searchUser.toLowerCase()) ||
+        user.lastName?.toLowerCase().includes(searchUser.toLowerCase())
+      : true;
+
+    return matchesCategory && matchesStatus && matchesSearch;
+  });
+
+  setFilteredUsersData(filtered);
+  setFilter(false); // ferme la modal
+};
+
+// ✅ useEffect pour gérer la recherche en temps réel
+useEffect(() => {
+  if (searchUser.trim() === "") {
+    setFilteredUsersData(response);
+  } else {
+    const filtered = response.filter(
+      (user) =>
         user.firstName?.toLowerCase().includes(searchUser.toLowerCase()) ||
         user.lastName?.toLowerCase().includes(searchUser.toLowerCase())
-      );
-    }
-
-    return filtered;
-  }, [response, selectedCategorie, selectedStatutCategorie, searchUser]);
+    );
+    setFilteredUsersData(filtered);
+  }
+}, [searchUser, response]);
 
 
   // ----------------modal pour la suppression
@@ -205,23 +220,27 @@ function UserAll() {
   // texte afficher dans la modale de suppression
   const [nameActive, setNameActive] = useState<string | undefined>("");
 
-  // fonction de filtrage
-  const handleFilter = () => {
-    // Les filtres sont appliqués automatiquement via useMemo
-    setFilter(false);
-  };
+ 
+// fonction de rechargement
+const [load, setLoad] = useState(false);
 
-  // fonction de rechargement
-  const [load, setLoad] = useState(false);
-  const handleReload = async () => {
-    setLoad(true);
-    setSelectedCategorie("");
-    setSelectedStatutCategorie("");
-    setSearchUser("");
-    setTimeout(() => {
-      setLoad(false);
-    }, 1000);
-  };
+const handleReload = async () => {
+  setLoad(true);
+
+  // reset des filtres
+  setSelectedCategorie("");
+  setSelectedStatutCategorie("");
+  setSearchUser("");
+
+  
+
+  // petit délai pour simuler le "reload"
+  setTimeout(() => {
+    // recharger toutes les données
+  setFilteredUsersData(response);
+    setLoad(false);
+  }, 1000);
+};
 
   //------------for loading before page is trying up 
   if (loading || isPending) {
@@ -527,7 +546,7 @@ function UserAll() {
       {/* dialogue pour le filtrage */}
       <Dialog open={filter} onOpenChange={setFilter} >
         <DialogContent className="sm:max-w-md ">
-          <form action={handleFilter} className="space-y-4">
+          
             <DialogHeader>
               <DialogTitle>Filtrage</DialogTitle>
             </DialogHeader>
@@ -578,11 +597,11 @@ function UserAll() {
                   Annuler
                 </Button>
               </DialogClose>
-              <Button type='submit' className="bg-[#FF4000]">
+              <Button type='submit' className="bg-[#FF4000]"  onClick={handleFilter}>
                 Confirmer
               </Button>
             </DialogFooter>
-          </form>
+         
         </DialogContent>
       </Dialog>
 

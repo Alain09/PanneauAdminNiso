@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@/generated/prisma";
-import { uploadFileToBlob } from "@/src/lib/vercelBlodAction";
+import { uploadFileToSupabase, validateFileSize, validateFileType } from "@/src/lib/subaStorage";
 
 const prisma = new PrismaClient();
 
@@ -70,20 +70,35 @@ export async function POST(request: NextRequest) {
             );
         }
 
-
-
         // Traitement des images des composants
         const composantsWithImages = await Promise.all(
             composants.map(async (comp: any, index: number) => {
                 const imageFile = res.get(`composant_image_${index}`) as File;
                 let imageUrl: string | null = null;
+                let imagePath: string | null = null;
 
                 if (imageFile && imageFile.size > 0) {
-                    const uploadedFile = await uploadFileToBlob(
-                        imageFile,
-                        `Composant_${comp.product}_${Date.now()}`
-                    );
-                    imageUrl = uploadedFile.url;
+                    // Validation du fichier
+                    if (!validateFileType(imageFile)) {
+                        throw new Error(`Type de fichier non autorisé pour le composant ${comp.product}. Utilisez JPG, PNG, WebP ou GIF.`);
+                    }
+
+                    if (!validateFileSize(imageFile, 5)) { // 5MB max
+                        throw new Error(`Fichier trop volumineux pour le composant ${comp.product}. Taille maximale: 5MB.`);
+                    }
+
+                    try {
+                        // Upload vers Supabase Storage
+                        const uploadResult = await uploadFileToSupabase(
+                            imageFile, 
+                            `Composant_${comp.product}_${Date.now()}`
+                        );
+                        imageUrl = uploadResult.url;
+                        imagePath = uploadResult.path;
+                    } catch (uploadError) {
+                        console.error("Erreur upload composant:", uploadError);
+                        throw new Error(`Erreur lors de l'upload de l'image du composant ${comp.product}`);
+                    }
                 }
 
                 return {
@@ -121,16 +136,30 @@ export async function POST(request: NextRequest) {
 
     } catch (error) {
         console.error("Erreur lors de la création:", error);
+        
+        // Gestion des erreurs spécifiques
+        if (error instanceof Error) {
+            if (error.message.includes("Type de fichier non autorisé") || 
+                error.message.includes("Fichier trop volumineux") ||
+                error.message.includes("Erreur lors de l'upload")) {
+                return NextResponse.json(
+                    { message: error.message, success: false },
+                    { status: 400 }
+                );
+            }
+        }
+        
         if (typeof error === "object" && error !== null && "code" in error && (error as any).code === "P2002") {
             return NextResponse.json(
                 { message: "Un catalogue avec cette catégorie et option existe déjà", success: false },
                 { status: 400 }
             );
         }
+        
         return NextResponse.json(
             {
                 message: "Erreur serveur",
-                error: error,
+                error: error instanceof Error ? error.message : "Erreur inconnue",
                 success: false
             },
             { status: 500 }

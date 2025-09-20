@@ -199,6 +199,7 @@ export default function Catalogue() {
 
   const handleRowClick = (row: ProductCatalogue) => {
     setSelectedRow(row);
+    
   };
 
   const handleViewDetails = (row: ProductCatalogue) => {
@@ -581,7 +582,7 @@ export default function Catalogue() {
                       alt={selectedImage.product}
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
-                      className="object-cover"
+                     className="object-contain"
                       priority={true}
                     />
                   ) : (

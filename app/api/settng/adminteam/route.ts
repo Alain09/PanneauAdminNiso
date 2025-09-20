@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@/generated/prisma";
-import { uploadFileToBlob } from "@/src/lib/vercelBlodAction";
+import { uploadFileToSupabase,validateFileSize, validateFileType } from "@/src/lib/subaStorage"; 
 
 const prisma = new PrismaClient();
 
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     const name = (res.get("name") as string) ?? "";
     const email = (res.get("email") as string) ?? "";
     const phone = (res.get("phone") as string) ?? "";
-    const province = (res.get("province") as string) ?? "";
+    const provence = (res.get("provence") as string) ?? "";
     const position = (res.get("position") as string) ?? "";
     const role = (res.get("role") as string) ?? "";
     const password = (res.get("password") as string) ?? "";
@@ -38,9 +38,38 @@ export async function POST(request: NextRequest) {
 
     // Upload image si présente
     let imageUrl: string | null = null;
-    if (file) {
-      const uploadedFile = await uploadFileToBlob(file, `Team_${name}`);
-      imageUrl = uploadedFile.url; // 👈 attention à renvoyer `.url`
+    let imagePath: string | null = null;
+
+
+   
+    if (file && file.size > 0) {
+      // Validation du fichier
+      if (!validateFileType(file)) {
+        return NextResponse.json(
+          { message: "Type de fichier non autorisé. Utilisez JPG, PNG, WebP ou GIF.", success: false },
+          { status: 400 }
+        );
+      }
+
+      if (!validateFileSize(file, 5)) { // 5MB max
+        return NextResponse.json(
+          { message: "Fichier trop volumineux. Taille maximale: 5MB.", success: false },
+          { status: 400 }
+        );
+      }
+
+      try {
+        // Upload vers Supabase Storage
+        const uploadResult = await uploadFileToSupabase(file, `Team_${name}`);
+        imageUrl = uploadResult.url;
+        imagePath = uploadResult.path;
+      } catch (uploadError) {
+        console.error("Erreur upload:", uploadError);
+        return NextResponse.json(
+          { message: "Erreur lors de l'upload de l'image", success: false },
+          { status: 500 }
+        );
+      }
     }
 
     // Appel de la route sign-up
@@ -59,7 +88,7 @@ export async function POST(request: NextRequest) {
         role,
         image: imageUrl,
         position,
-        province,
+        provence,
       }),
     });
 

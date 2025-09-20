@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 export const auth = betterAuth({
     user: {
         additionalFields: {
-            role: { type: 'string', required: true },
+            role: { type: 'string', required: true, returned: true},
             phone: { type: 'string', required: false },
             position: { type: 'string', required: false },
             provence: { type: 'string', required: false },

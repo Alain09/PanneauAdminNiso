@@ -50,12 +50,12 @@ export interface TeamMember {
 export interface Campagne {
   id?: string;
   nom?: string;
-  status?: string;
-  weekActif?: string;
-  campagneStatut?: string | "En cours" | "Terminé";
+  status?: boolean;
+  weekActif?: string | number;
+  campagneStatut?: string | "En cours" | "Terminé" | " En attente";
   dureeSelectionJours?: number;
   dureeTontineSemaines?: number;
-  selectionStart?: Date;
+  selectionStart?: Date | string;
   selectionEnd?: Date;
   tontineStart?: Date;
   tontineEnd?: Date;
@@ -81,8 +81,8 @@ export interface TontineOption {
 export interface Categories {
   id: string;
   category: string;
-  week?: string;
-  status?: string | "Payé" | "En retard" | "En cours";
+  week?:number;
+  status?: string |"Payé"|"En retard" | "En cours";
   totalToPayByWeekOfThisCategory: number;
   datePaiement?: Date;
 }
@@ -157,7 +157,7 @@ export interface StatisticCategories {
 
 //------------ ceci pour la courbe d'evolution des paiements par semaine
 export interface PaymentDataVariation {
-  weeks: string;
+  weeks: number;
   value: number;
 }
 
@@ -171,8 +171,8 @@ export interface UsersLatePayment {
   status?: string
   category?: string;
   amountPaidByWeek?: number;
-  weekActif?: string;
-  lastWeekPaid?: string;
+  weekActif?: number;
+  lastWeekPaid?: number;
 }
 
 //------- for the payment history of weekActif
@@ -185,10 +185,10 @@ export interface PaymentHistoryWeekActif {
   category?: string;
   options?: string[];
   amountPaidByWeek?: number;
-  weekActif?: string;
+  weekActif?: number;
 }
 
-
+{ /* 
 export const Donnees: UserProfile[] = [
   {
     id: "b3a7e8f2-6c4d-4a9b-8e1f-3d0c2b1a9f8e",
@@ -936,3 +936,4 @@ export const Donnees: UserProfile[] = [
 
 ]
 
+ */}

@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Name | Connexion",
+  title: "Niso",
   description: "page d'authentification",
 };
 

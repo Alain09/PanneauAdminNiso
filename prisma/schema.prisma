@@ -5,10 +5,13 @@ generator client {
   output   = "../generated/prisma"
 }
 
+
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
+        
 
 //////////////////////////
 // Auth / User Models
@@ -106,8 +109,8 @@ model ComposantCatalogue {
 model Campagne {
   id                   String       @id @default(cuid())
   nom                  String?
-  status               String?
-  weekActif            String?
+  status               Boolean?
+  weekActif            Int?
   campagneStatut       String?      @default("En cours")
   dureeSelectionJours  Int?
   dureeTontineSemaines Int?
@@ -134,6 +137,7 @@ model UserProfile {
   description                String?
   status                     String?  @default("En cours") // "En cours" | "Terminé"
   montantTotalGlobal         Int?     @default(0)
+  googleSheetId              String?  @unique // Nouveau champ optionnel et unique
   createdAt                  DateTime @default(now())
   updatedAt                  DateTime @updatedAt
 
@@ -200,7 +204,7 @@ model OptionComponent {
 model Categories {
   id                                   String    @id @default(cuid())
   category                             String
-  week                                 String?   // "sem 1", "sem 2", etc.
+  week                                 Int?   // "sem 1", "sem 2", etc.
   status                               String?   @default("En attente") // "Payé" | "En retard" | "En cours" | "En attente"
   totalToPayByWeekOfThisCategory       Int       @default(0)
   datePaiement                         DateTime?

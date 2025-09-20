@@ -1,7 +1,7 @@
 // pages/dashboard.tsx
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import {
     Users,
     CreditCard,
@@ -77,63 +77,164 @@ import {
 import { Startscard } from "@/src/components/dash_composant/staticard";
 import { useRouter } from "next/navigation";
 import CounTimes from "@/src/components/dash_composant/CounTimes";
-import { Donnees, PaymentDataVariation, StatisticCategories, PaymentHistoryWeekActif, UsersLatePayment } from "@/type";
-import { DataAction, ConvertInKilo, calculerDatesSemaine, formatDate } from "@/src/components/hook_perso";
-import { copyToClipboardForWhatsApp } from "@/src/components/dash_composant/ClibboardCopieWhatsapp";
+import { PaymentHistoryWeekActif, UsersLatePayment, UserProfile } from "@/type";
+import { useCountdown, DataAction, ConvertInKilo, calculerDatesSemaine, } from "@/src/components/hook_perso";
+import { copyToClipboardForWhatsApp, copyToClipboardLate } from "@/src/components/dash_composant/ClibboardCopieWhatsapp";
+import { useSession } from "@/src/lib/auth-client";
+
+
 
 export default function Dashboard() {
-    // api e gestion de recuperation des donnees depuis la base de donnees
-
     const [loading, setLoading] = useState<boolean>(false);
+    const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
+    const [sendError, setSendError] = useState("");
+    const [debutCamp, setDebutCamp] = useState<Date>()
+    const [finCamp, setFinCamp] = useState<Date>()
+    const [finSelect, setFinSelect] = useState<Date>()
+    const [debutSelect, setDebutSelect] = useState<Date>()
+    const [weekA, setWeekA] = useState<number | null>(null)
+    const [campagneStatut, setCampagneStatut] = useState<string>("")
 
+
+    const {data}=useSession()
+
+    // Récupération des données utilisateurs
     useEffect(() => {
-        const ActionDonnee = async () => {
+        const profileGetAllUsers = async () => {
+            const key_acces = process.env.NEXT_PUBLIC_API_ROUTE_SECRET;
+            setLoading(true);
+
             try {
-                setLoading(true);
-                await fetch("/api/dashboard", { method: "GET" });
-                setLoading(false);
+                const datas = await fetch("/api/users/", {
+                    method: "GET",
+                    headers: { "authorization": `${key_acces}` }
+                });
+
+                if (!datas.ok) {
+                    setSendError("Erreur lors du chargement des utilisateurs");
+                    setLoading(false);
+                    return;
+                }
+
+                const teamData = await datas.json();
+
+                if (!teamData.success) {
+                    setSendError(teamData.message);
+                } else {
+                    setAllUsers(teamData.data);
+                    setDebutCamp(teamData.debut)
+                    setFinCamp(teamData.fin)
+                    setDebutSelect(teamData.debutSelect)
+                    setFinSelect(teamData.finSelect)
+                    setWeekA(teamData.weekActif)
+                    setCampagneStatut(teamData.campagneStatut)
+                }
             } catch (error) {
-                console.log(error);
+                console.error("Erreur lors de la récupération des profiles :", error);
+                setSendError("Erreur serveur");
+            } finally {
                 setLoading(false);
             }
         };
 
-        ActionDonnee();
+        profileGetAllUsers();
     }, []);
 
-    // recuperationdes hook definis dans DataAction.ts
-    const { StructurationCategorie, VariationPaid, UsersLate, CaracterisqueUniques, UserPaiementHistory } = DataAction({ enter: Donnees })
-
-    // recuperation de les des categorie et des semaines de retard et la liste completes des semaines
-    const { weekss, uniqueCategories, uniqueWeeks } = CaracterisqueUniques()
-
-    //------------- statisque financieres pour les cardre in top -----// 
-    const { datas, TotalGobal, TotalWeekActive } = VariationPaid()
-
-    //---------------- pour la gestions des story de payement-------------------//
-    const [firtWeek, setFirstWeek] = useState<string>(uniqueWeeks[0] || "")
-
-
-    // Utiliser useMemo pour éviter les recréations inutiles
-    // Si UserPaiementHistory est définie dans le composant (instable)
-    const userPaiementHistoryMemoized = useCallback(UserPaiementHistory, []);
-
-    const { listeHistoryPaiement, uniqueStatuts, uniqueCategoriesHistory } = useMemo(() =>
-        userPaiementHistoryMemoized({ weekActived: firtWeek }),
-        [firtWeek, userPaiementHistoryMemoized]
+    // Mémoïsation des fonctions de calcul
+    const { StructurationCategorie, VariationPaid, UsersLate, CaracterisqueUniques, UserPaiementHistory } = useMemo(
+        () => DataAction({ enter: allUsers }),
+        [allUsers]
     );
 
-    //--------------------
+    // Calculs mémoïsés pour éviter les recalculs inutiles
+    const { weekss, uniqueCategories, uniqueWeeks } = useMemo(
+        () => CaracterisqueUniques(),
+        [CaracterisqueUniques]
+    );
+
+    const { datas, TotalGobal, TotalWeekActive } = useMemo(
+        () => VariationPaid(weekA),
+        [VariationPaid]
+    );
+
+
+    const lateUsers = useMemo(
+        () => UsersLate({ weekActived: weekA }),
+        [UsersLate]
+    );
+
+    const catCounts = useMemo(
+        () => StructurationCategorie(),
+        [StructurationCategorie]
+    );
+
+    // Gestion de la semaine active avec valeur par défaut sécurisée
+    const [firtWeek, setFirstWeek] = useState<number>(() => {
+        return uniqueWeeks.length > 0 ? uniqueWeeks[0] : 1;
+    });
+
+    // Mise à jour sécurisée de firtWeek lorsque uniqueWeeks change
+    useEffect(() => {
+        if (uniqueWeeks.length > 0 && !uniqueWeeks.includes(firtWeek)) {
+            setFirstWeek(uniqueWeeks[0]);
+        }
+    }, [uniqueWeeks, firtWeek]);
+
+    // Calcul mémoïsé de l'historique des paiements
+    const { listeHistoryPaiement, uniqueStatuts, uniqueCategoriesHistory } = useMemo(
+        () => UserPaiementHistory({ weekActived: firtWeek }),
+        [UserPaiementHistory, firtWeek]
+    );
+
+    // États pour la gestion des filtres
     const [searchUserHistory, setSearchUserHistory] = useState<string>("");
     const [selectedCategorieHistory, setSelectedCategorieHistory] = useState<string>("");
     const [statusCat, setStatusCat] = useState<string>("");
-    const [tabsUsersStory, setTabsUsersStory] = useState<PaymentHistoryWeekActif[]>(listeHistoryPaiement);
     const [filterModelHistory, setFilterModelHistory] = useState<boolean>(false);
+    const [loadHistory, setLoadHistory] = useState(false);
 
-    // Synchroniser tabsUsersStory avec listeHistoryPaiement - CORRIGÉ
+    // Filtrage mémoïsé des données d'historique
+    const [visibleWeeks, setVisibleWeeks] = useState<number[]>([]);
+    const [hiddenWeeks, setHiddenWeeks] = useState<number[]>([]);
+    const tabsRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
-        setTabsUsersStory(listeHistoryPaiement);
-    }, [listeHistoryPaiement]); // ← Seulement quand la source change
+        const calculateVisibleItems = () => {
+            if (!tabsRef.current || uniqueWeeks.length === 0) return;
+
+            const containerWidth = tabsRef.current.offsetWidth;
+            const tabWidth = 100; // Largeur estimée d'un onglet
+            const maxVisible = Math.floor(containerWidth / tabWidth);
+
+            setVisibleWeeks(uniqueWeeks.slice(0, maxVisible - 1)); // -1 pour le bouton "Plus"
+            setHiddenWeeks(uniqueWeeks.slice(maxVisible - 1));
+        };
+
+        calculateVisibleItems();
+        window.addEventListener('resize', calculateVisibleItems);
+
+        return () => window.removeEventListener('resize', calculateVisibleItems);
+    }, [uniqueWeeks]);
+
+    const filteredHistoryData = useMemo(() => {
+        if (!listeHistoryPaiement) return [];
+
+        return listeHistoryPaiement.filter((user) => {
+            const matchesCategoryH = selectedCategorieHistory ? user.category === selectedCategorieHistory : true;
+            const matchesStatusH = statusCat ? user.status === statusCat : true;
+            const matchesSearch = searchUserHistory ?
+                (user?.firstName?.toLowerCase().includes(searchUserHistory) ||
+                    user?.lastName?.toLowerCase().includes(searchUserHistory)) : true;
+            return matchesCategoryH && matchesStatusH && matchesSearch;
+        });
+    }, [listeHistoryPaiement, selectedCategorieHistory, statusCat, searchUserHistory]);
+
+    const [tabsUsersStory, setTabsUsersStory] = useState<PaymentHistoryWeekActif[]>(filteredHistoryData);
+
+    // Synchronisation avec les données filtrées
+    useEffect(() => {
+        setTabsUsersStory(filteredHistoryData);
+    }, [filteredHistoryData]);
 
     // Calcul des statistiques pour le diagramme en secteur
     const sectorStats = useMemo(() => {
@@ -160,74 +261,38 @@ export default function Dashboard() {
         };
     }, [tabsUsersStory]);
 
-    const SectorSat = [
+    const SectorSat = useMemo(() => [
         { name: 'En retard', value: sectorStats.latePercentage, color: '#fe0000' },
         { name: 'Payé', value: sectorStats.paidPercentage, color: '#24D26D' }
-    ];
+    ], [sectorStats.latePercentage, sectorStats.paidPercentage]);
 
-    // fonction de filtrage
-    const handleFilterHistory = () => {
-        const filteredDataHistory = listeHistoryPaiement.filter((user) => {
-            const matchesCategoryH = selectedCategorieHistory ? user.category === selectedCategorieHistory : true;
-            const matchesStatusH = statusCat ? user.status === statusCat : true;
-            const matchesSearch = searchUserHistory ?
-                (user?.firstName?.toLowerCase().includes(searchUserHistory) ||
-                    user?.lastName?.toLowerCase().includes(searchUserHistory)) : true;
-            return matchesCategoryH && matchesStatusH && matchesSearch;
-        });
-        setTabsUsersStory(filteredDataHistory);
-        setFilterModelHistory(false);
-    };
+    // Gestion des catégories
+    const [firstCat, setFirstCat] = useState<string>(("100"));
 
-    // fonction de rechargement
-    const [loadHistory, setLoadHistory] = useState(false)
-    const handleReloadHistory = () => {
-        setLoadHistory(true)
-        setTabsUsersStory(listeHistoryPaiement);
-        setSelectedCategorieHistory("");
-        setStatusCat("");
-        setSearchUserHistory("");
-        setTimeout(() => {
-            setLoadHistory(false)
-        }, 1000)
-    };
 
-    // Filter references when search query changes
+    // Mise à jour sécurisée de firtCat lorsque uniqueWeeks change
     useEffect(() => {
-        if (searchUserHistory.trim() === '') {
-            setTabsUsersStory(listeHistoryPaiement)
-        } else {
-            const filteredDataHistory = listeHistoryPaiement.filter((user) =>
-                user?.firstName?.toLowerCase().includes(searchUserHistory) ||
-                user?.lastName?.toLowerCase().includes(searchUserHistory))
-            setTabsUsersStory(filteredDataHistory);
+        if (catCounts.length > 0 && !uniqueWeeks.includes(firtWeek)) {
+            setFirstCat(catCounts[0]?.categorie ?? "100");
         }
-    }, [searchUserHistory,listeHistoryPaiement]);
-    //---------------- fin ------------------------------------------------//
+    }, [catCounts, firstCat]);
 
-    //------------- gestionnaire d'etat pour les paiements et les statistiques----------------//
-    const [evolutionPaid] = useState<PaymentDataVariation[]>(datas)
-    const [catCounts] = useState<StatisticCategories[]>(StructurationCategorie())
 
-    //gestion du categorie active dans les onglets
-    const [firstCat, setFirstCat] = useState<string>(catCounts[0]?.categorie as string || "")
 
-    //---------------------fin ------------------------------------------------//
 
-    // ----------------------- manage des utilisateurs en retard ------------------------------//
-    // gestion des userLate : utilisateurs en retad de paiement
-    const [lateUsers] = useState<UsersLatePayment[]>(UsersLate())
-
-    //--------------------
+    // Gestion des utilisateurs en retard
     const [searchUser, setSearchUser] = useState<string>("");
     const [selectedCategorie, setSelectedCategorie] = useState<string>("");
-    const [lastWeekPaidUser, setLastWeekPaidUser] = useState<string>("");
+    const [lastWeekPaidUser, setLastWeekPaidUser] = useState<number>();
     const [dataTabsUsers, setDataTabsUsers] = useState<UsersLatePayment[]>(lateUsers);
     const [filterModel, setFilterModel] = useState<boolean>(false);
+    const [load, setLoad] = useState(false);
 
-    // fonction de filtrage
-    const handleFilter = () => {
-        const filteredData = lateUsers.filter((user) => {
+    // Filtrage mémoïsé des utilisateurs en retard
+    const filteredLateUsers = useMemo(() => {
+        if (!lateUsers) return [];
+
+        return lateUsers.filter((user) => {
             const matchesCategory = selectedCategorie ? user?.category === selectedCategorie : true;
             const matchesStatus = lastWeekPaidUser ? user.lastWeekPaid === lastWeekPaidUser : true;
             const matchesSearch = searchUser ?
@@ -235,49 +300,55 @@ export default function Dashboard() {
                     user?.lastName?.toLowerCase().includes(searchUser)) : true;
             return matchesCategory && matchesStatus && matchesSearch;
         });
-        setDataTabsUsers(filteredData);
-        setFilterModel(false);
-    };
+    }, [lateUsers, selectedCategorie, lastWeekPaidUser, searchUser]);
 
-    // fonction de rechargement
-    const [load, setLoad] = useState(false)
-    const handleReload = () => {
-        setLoad(true)
-        setDataTabsUsers(lateUsers);
-        setSelectedCategorie("");
-        setSearchUser("");
-        setLastWeekPaidUser("");
-        setTimeout(() => {
-            setLoad(false)
-        }, 1000)
-    };
-
-    // Filter references when search query changes
+    // Synchronisation avec les données filtrées
     useEffect(() => {
-        if (searchUser.trim() === '') {
-            setDataTabsUsers(lateUsers)
+        setDataTabsUsers(filteredLateUsers);
+    }, [filteredLateUsers]);
+
+    // pour la copy 
+
+    const [openV, setOpenV] = useState(false);
+    const lateCopyClick = useCallback(async () => {
+        setOpenV(true);
+        const success = await copyToClipboardLate({
+            datas: dataTabsUsers,
+            weekActif: weekA,
+            debut: debutCamp as Date
+        });
+
+        if (success) {
+            setTimeout(() => {
+                setOpenV(false);
+            }, 2000);
         } else {
-            const filteredData = lateUsers.filter((user) =>
-                user?.firstName?.toLowerCase().includes(searchUser) ||
-                user?.lastName?.toLowerCase().includes(searchUser))
-            setDataTabsUsers(filteredData);
+            setOpenV(false);
         }
-    }, [searchUser, lateUsers])
+    }, [dataTabsUsers]);
 
-    // navigation des page --------------------------------------------
-    const route = useRouter()
 
-    // le chronometrage---------------------------------------------------------
-    const Standard = new Date('2025-09-30T00:00:00');
+
+
+    // Navigation
+    const route = useRouter();
+
+    // Chronométrage 
+    const debut = useMemo(() => new Date(debutCamp ?? new Date()), [debutCamp]);
+    const fin = useMemo(() => new Date(finCamp ?? new Date()), [finCamp]);
+
+    const debutSel = useMemo(() => new Date(debutSelect ?? new Date()), [debutSelect]);
+    const finSel = useMemo(() => new Date(finSelect ?? new Date()), [finSelect]);
+
 
     const [openValid, setOpenValid] = useState(false);
 
-    const handleCopyClick = async () => {
+    const handleCopyClick = useCallback(async () => {
         setOpenValid(true);
-
         const success = await copyToClipboardForWhatsApp({
             datas: tabsUsersStory,
-            weekActif: firtWeek
+            weekActif: firtWeek,
+            debut: debutCamp as Date
         });
 
         if (success) {
@@ -287,13 +358,61 @@ export default function Dashboard() {
         } else {
             setOpenValid(false);
         }
-    };
+    }, [tabsUsersStory, firtWeek]);
+
+    // Fonctions de gestion des filtres
+    const handleReloadHistory = useCallback(() => {
+        setLoadHistory(true);
+        setSelectedCategorieHistory("");
+        setStatusCat("");
+        setSearchUserHistory("");
+        setTimeout(() => {
+            setLoadHistory(false);
+        }, 1000);
+    }, []);
+
+    const handleReload = useCallback(() => {
+        setLoad(true);
+        setSelectedCategorie("");
+        setSearchUser("");
+        setLastWeekPaidUser(0);
+        setTimeout(() => {
+            setLoad(false);
+        }, 1000);
+    }, []);
+
+    // Choix des dates selon le statut
+    const startTime = campagneStatut === "En attente"
+        ? debutSel
+        : campagneStatut === "En cours"
+            ? debut
+            : null;
+
+    const endTime = campagneStatut === "En attente"
+        ? finSel
+        : campagneStatut === "En cours"
+            ? fin
+            : null;
+
+    // On récupère le compte à rebours
+    const { days, hours, minutes, seconds } = useCountdown({startTime : startTime , endTime : endTime});
+
+
 
     if (loading) {
         return (
             <div className="flex items-center justify-center h-screen">
                 <Loader2 className="h-8 w-8 animate-spin text-[#FF4000]" />
                 <span className="ml-2">Chargement des données...</span>
+            </div>
+        );
+    }
+
+    // Rendu conditionnel pour les cas où il n'y a pas de données
+    if (sendError) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <div className="text-red-500">{sendError}</div>
             </div>
         );
     }
@@ -308,13 +427,13 @@ export default function Dashboard() {
                         {/* Cards de statistiques */}
                         <div className="xl:col-span-2">
                             <div className="bg-gradient-to-l from-[#FFAE91] to-[#FF4000] rounded-lg text-white p-8 md:p-6 h-full min-h-[280px]">
-                                <h1 className="text-xl md:text-2xl font-bold mb-4">Hello, Everyone</h1>
+                                <h1 className="text-xl md:text-2xl font-bold mb-4">Hi, {data?.user.name}</h1>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 h-fit">
                                     <div className="h-full">
                                         <Startscard
                                             title="Utilisateurs"
                                             description="utilisateurs enregistrés"
-                                            value={`${ConvertInKilo({ value: 500 })}`.toString().padStart(2, "0")}
+                                            value={`${ConvertInKilo({ value: allUsers.length })}`.toString().padStart(2, "0")}
                                             icon={<Users className="w-4 h-4 text-[#FF4000]" />}
                                         />
                                     </div>
@@ -343,10 +462,28 @@ export default function Dashboard() {
                             <div className="bg-gradient-to-l from-[#FFAE91] to-[#FF4000]/90 shadow shadow-gray-50 border border-gray-100 rounded-lg p-4 md:p-6 h-full min-h-[280px] flex flex-col justify-center">
                                 <h2 className="text-base md:text-lg text-center font-semibold mb-4 text-white">CHRONOMETRE:</h2>
                                 <div className="flex justify-center items-center flex-col h-fit space-y-2 text-white">
-                                    <div><Clock12 className="text-white animate-spin duration-1000" strokeWidth={1.25} size={60} /></div>
-                                    <div className="text-center">{<CounTimes expiryTimestamp={Standard} />}</div>
+                                    <div><Clock12 className={` text-white ${((days === 0) && (minutes === 0) && (seconds === 0) && (hours === 0)) ? "" : "animate-spin duration-1000"} `} strokeWidth={1.25} size={60} /></div>
+                                    <div className="text-center">
+                                        {campagneStatut === "En attente" ? (
+                                            // Compteur pour la sélection
+                                            <CounTimes debut={debutSel} fin={finSel} />
+                                        ) : campagneStatut === "En cours" ? (
+                                            // Compteur pour la tontine
+                                            <CounTimes debut={debut} fin={fin} />
+                                        ) : campagneStatut === "Terminé" ? (
+                                            <p className="text-xs md:text-sm text-center text-red-500">
+                                                Campagne terminée
+                                            </p>
+                                        ) : null }
+                                    </div>
                                     <div className="flex justify-center items-center flex-col">
-                                        <p className="text-xs md:text-sm text-center">Campagne de selection des articles</p>
+                                        <p className="text-xs md:text-sm text-center">
+                                            {campagneStatut === "En attente" ? "Selection en cours " :
+                                                campagneStatut === "En cours" ? "Tontine en cours" :
+                                                    campagneStatut === "Terminé" ? "Campagne terminée" :
+                                                        "Rien encore pret "}
+                                        </p>
+
                                     </div>
                                 </div>
                             </div>
@@ -363,28 +500,35 @@ export default function Dashboard() {
                                         <h2 className="font-semibold text-sm md:text-base">Évolution des paiements</h2>
                                     </div>
                                     <div className="h-[280px] md:h-[320px]">
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <AreaChart data={evolutionPaid} margin={{ top: 5, bottom: 5 }}>
-                                                <defs>
-                                                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="5%" stopColor="#FF4000" stopOpacity={0.8} />
-                                                        <stop offset="95%" stopColor="#FF4000" stopOpacity={0.1} />
-                                                    </linearGradient>
-                                                </defs>
-                                                <XAxis dataKey="weeks" tick={{ fontSize: 10 }} />
-                                                <YAxis tick={{ fontSize: 10 }} />
-                                                <Tooltip
-                                                    contentStyle={{ borderRadius: "8px", backgroundColor: "#fff", border: "1px solid #cccccc" }}
-                                                />
-                                                <Area
-                                                    type="monotone"
-                                                    dataKey="value"
-                                                    stroke="#FF4000"
-                                                    fillOpacity={1}
-                                                    fill="url(#colorValue)"
-                                                />
-                                            </AreaChart>
-                                        </ResponsiveContainer>
+                                        {datas.length > 0 ? (
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <AreaChart data={datas} margin={{ top: 5, bottom: 5 }}>
+                                                    <defs>
+                                                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                                                            <stop offset="5%" stopColor="#FF4000" stopOpacity={0.8} />
+                                                            <stop offset="95%" stopColor="#FF4000" stopOpacity={0.1} />
+                                                        </linearGradient>
+                                                    </defs>
+                                                    <XAxis dataKey="weeks" tick={{ fontSize: 10 }} tickFormatter={(value) => `sem ${value}`} />
+                                                    <YAxis tick={{ fontSize: 10 }} />
+                                                    <Tooltip
+                                                        contentStyle={{ borderRadius: "8px", backgroundColor: "#fff", border: "1px solid #cccccc" }}
+                                                        labelFormatter={(label) => `sem ${label}`}
+                                                    />
+                                                    <Area
+                                                        type="monotone"
+                                                        dataKey="value"
+                                                        stroke="#FF4000"
+                                                        fillOpacity={1}
+                                                        fill="url(#colorValue)"
+                                                    />
+                                                </AreaChart>
+                                            </ResponsiveContainer>
+                                        ) : (
+                                            <div className="flex items-center justify-center h-full">
+                                                <p className="text-gray-500">Aucune donnée disponible</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </CardContent>
                             </Card>
@@ -397,41 +541,49 @@ export default function Dashboard() {
                                     <CardContent className="p-4 md:p-6">
                                         <div className="flex flex-row justify-between items-start sm:items-center mb-4 gap-2 pb-4 sm:pb-0">
                                             <h2 className="font-semibold text-sm md:text-base">Analyse de contenus</h2>
-                                            <TabsList className="h-8 items-center justify-center flex-wrap">
-                                                {catCounts.map((cat) => (
-                                                    <TabsTrigger
-                                                        key={cat.id}
-                                                        value={cat.categorie as string}
-                                                        className="text-xs px-2 data-[state=active]:bg-[#FF4000] data-[state=active]:text-white"
-                                                        onClick={() => setFirstCat(cat.categorie as string)}
-                                                    >
-                                                        {cat.categorie}
-                                                    </TabsTrigger>
-                                                ))}
-                                            </TabsList>
+                                            {catCounts.length > 0 && (
+                                                <TabsList className="h-8 items-center justify-center flex-wrap">
+                                                    {catCounts.map((cat) => (
+                                                        <TabsTrigger
+                                                            key={cat.id}
+                                                            value={cat.categorie as string}
+                                                            className="text-xs px-2 data-[state=active]:bg-[#FF4000] data-[state=active]:text-white"
+                                                            onClick={() => setFirstCat(cat.categorie as string)}
+                                                        >
+                                                            {cat.categorie}
+                                                        </TabsTrigger>
+                                                    ))}
+                                                </TabsList>
+                                            )}
                                         </div>
                                         <div className="h-[240px] md:h-[280px]">
-                                            <TabsContent value={firstCat} className="h-full">
-                                                {catCounts.map((cat) => {
-                                                    if (cat.categorie === firstCat) {
-                                                        return (
-                                                            <ResponsiveContainer key={cat.id} width="100%" height="100%">
-                                                                <BarChart data={cat.listeOptions} margin={{ top: 5, bottom: 5 }}>
-                                                                    <XAxis dataKey="option" tick={{ fontSize: 10 }} />
-                                                                    <YAxis tick={{ fontSize: 10 }} />
-                                                                    <Tooltip
-                                                                        contentStyle={{ borderRadius: "8px", backgroundColor: "#fff", border: "1px solid #cccccc" }}
-                                                                        formatter={(count) => [count.toString().padStart(2, "0"), "quantité"]}
-                                                                        labelFormatter={() => `Options`}
-                                                                    />
-                                                                    <Bar dataKey="count" fill="#FF4000" />
-                                                                </BarChart>
-                                                            </ResponsiveContainer>
-                                                        )
-                                                    }
-                                                    return null;
-                                                })}
-                                            </TabsContent>
+                                            {catCounts.length > 0 ? (
+                                                <TabsContent value={firstCat} className="h-full">
+                                                    {catCounts.map((cat) => {
+                                                        if (cat.categorie === firstCat && cat.listeOptions && cat.listeOptions.length > 0) {
+                                                            return (
+                                                                <ResponsiveContainer key={cat.id} width="100%" height="100%">
+                                                                    <BarChart data={cat.listeOptions} margin={{ top: 5, bottom: 5 }}>
+                                                                        <XAxis dataKey="option" tick={{ fontSize: 10 }} />
+                                                                        <YAxis tick={{ fontSize: 10 }} />
+                                                                        <Tooltip
+                                                                            contentStyle={{ borderRadius: "8px", backgroundColor: "#fff", border: "1px solid #cccccc" }}
+                                                                            formatter={(count) => [count.toString().padStart(2, "0"), "quantité"]}
+                                                                            labelFormatter={() => `Options`}
+                                                                        />
+                                                                        <Bar dataKey="count" fill="#FF4000" />
+                                                                    </BarChart>
+                                                                </ResponsiveContainer>
+                                                            )
+                                                        }
+
+                                                    })}
+                                                </TabsContent>
+                                            ) : (
+                                                <div className="flex items-center justify-center h-full">
+                                                    <p className="text-gray-500">Aucune catégorie disponible</p>
+                                                </div>
+                                            )}
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -440,25 +592,54 @@ export default function Dashboard() {
                     </div>
 
                     {/* Section Paiements de la semaine */}
-                    <Tabs defaultValue={firtWeek} className="mt-6">
+                    <Tabs defaultValue={firtWeek.toString()} className="mt-6">
                         <Card className="shadow shadow-gray-50 p-2">
+
                             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mt-4 px-2">
                                 <h2 className="font-semibold text-base md:text-lg">Listes des paiements de la semaine</h2>
-                                <TabsList className="h-10 items-center justify-center flex-wrap">
-                                    {uniqueWeeks.map((week, index) => (
-                                        <TabsTrigger
-                                            key={index}
-                                            value={week as string}
-                                            className="text-xs md:text-sm px-2 data-[state=active]:bg-[#FF4000] data-[state=active]:text-white"
-                                            onClick={() => setFirstWeek(week as string)}
-                                        >
-                                            {week}
-                                        </TabsTrigger>
-                                    ))}
-                                </TabsList>
+
+                                {uniqueWeeks.length > 0 && (
+                                    <div className="flex items-center gap-2" ref={tabsRef}>
+                                        <TabsList className="h-10 items-center justify-center flex-nowrap">
+                                            {visibleWeeks.map((week, index) => (
+                                                <TabsTrigger
+                                                    key={index}
+                                                    value={week.toString()}
+                                                    className="text-xs px-2 whitespace-nowrap data-[state=active]:bg-[#FF4000] data-[state=active]:text-white"
+                                                    onClick={() => setFirstWeek(week)}
+                                                >
+                                                    {`sem ${week}`}
+                                                </TabsTrigger>
+                                            ))}
+
+                                            {hiddenWeeks.length > 0 && (
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="outline" size="sm" className="h-8 text-xs">
+                                                            •••
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        {hiddenWeeks.map((week, index) => (
+                                                            <DropdownMenuItem key={index} asChild>
+                                                                <TabsTrigger
+                                                                    value={week.toString()}
+                                                                    onClick={() => setFirstWeek(week)}
+                                                                    className="w-full text-left px-2 py-1 text-sm data-[state=active]:bg-[#FF4000] data-[state=active]:text-white"
+                                                                >
+                                                                    Semaine {week}
+                                                                </TabsTrigger>
+                                                            </DropdownMenuItem>
+                                                        ))}
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            )}
+                                        </TabsList>
+                                    </div>
+                                )}
                             </div>
 
-                            <TabsContent value={firtWeek} className="mt-4">
+                            <TabsContent value={firtWeek.toString()}>
                                 <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
                                     {/* Tableau principal */}
                                     <div className="xl:col-span-3">
@@ -468,7 +649,7 @@ export default function Dashboard() {
                                                 <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-5 mb-4 px-4 pt-4">
                                                     <div className="flex items-center space-x-2 flex-shrink-0">
                                                         <span className="px-2 py-1.5 border rounded-md text-xs md:text-sm whitespace-nowrap">
-                                                            {formatDate(calculerDatesSemaine(firtWeek, new Date('2025-01-01')).dateFin)}
+                                                            {calculerDatesSemaine(firtWeek, new Date(debutCamp ?? new Date())).intervalleFormaté}
                                                         </span>
                                                     </div>
 
@@ -516,7 +697,7 @@ export default function Dashboard() {
                                                 </div>
 
                                                 {/* Table responsive */}
-                                                <div className="overflow-x-auto max-h-[400px] md:max-h-[500px] lg:max-h-[600px] xl:max-h-[700px] 2xl:max-h-[800px] overflow-y-auto  ">
+                                                <div className="overflow-x-auto max-h-[400px] md:max-h-[500px] lg:max-h-[600px] xl:max-h-[700px] 2xl:max-h-[800px] overflow-y-auto">
                                                     <Table>
                                                         <TableHeader>
                                                             <TableRow>
@@ -530,48 +711,56 @@ export default function Dashboard() {
                                                             </TableRow>
                                                         </TableHeader>
                                                         <TableBody>
-                                                            {tabsUsersStory.map((user, index) => (
-                                                                <TableRow key={index} className={`${index % 2 === 0 ? "bg-[#FFAE91]/10" : ""}`}>
-                                                                    <TableCell>
-                                                                        <div className="flex items-center">
-                                                                            <Avatar className="h-8 w-8 bg-[#FFAE91] text-white mr-2 flex items-center justify-center flex-shrink-0">
-                                                                                <span className="text-xs">{user.lastName?.charAt(0)}</span>
-                                                                            </Avatar>
-                                                                            <div className="min-w-0">
-                                                                                <p className="font-medium truncate">{user.firstName} {user.lastName}</p>
-                                                                                <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                                                            {tabsUsersStory.length > 0 ? (
+                                                                tabsUsersStory.map((user, index) => (
+                                                                    <TableRow key={index} className={`${index % 2 === 0 ? "bg-[#FFAE91]/10" : ""}`}>
+                                                                        <TableCell>
+                                                                            <div className="flex items-center">
+                                                                                <Avatar className="h-8 w-8 bg-[#FFAE91] text-white mr-2 flex items-center justify-center flex-shrink-0">
+                                                                                    <span className="text-xs">{user.lastName?.charAt(0) || 'U'}</span>
+                                                                                </Avatar>
+                                                                                <div className="min-w-0">
+                                                                                    <p className="font-medium truncate">{user.firstName} {user.lastName}</p>
+                                                                                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                                                                                </div>
                                                                             </div>
-                                                                        </div>
-                                                                    </TableCell>
-                                                                    <TableCell className="text-center">
-                                                                        <span className={`${user.status === "En retard" ? "text-red-600 bg-red-100" : "text-green-600 bg-green-100"} text-xs py-1 px-2 rounded whitespace-nowrap`}>
-                                                                            {user.status}
-                                                                        </span>
-                                                                    </TableCell>
-                                                                    <TableCell className="text-center whitespace-nowrap">{user.category} Fcfa</TableCell>
-                                                                    <TableCell className="text-center">
-                                                                        <span className="text-xs py-1 px-2 rounded block truncate max-w-[120px]" title={user?.options?.join('; ')}>
-                                                                            [{user?.options?.join('; ')}]
-                                                                        </span>
-                                                                    </TableCell>
-                                                                    <TableCell className="text-center">
-                                                                        <span className="text-xs text-[#FF4000] bg-[#FFAE91]/20 py-1 px-2 rounded whitespace-nowrap">
-                                                                            {user.weekActif}
-                                                                        </span>
-                                                                    </TableCell>
-                                                                    <TableCell className="text-center whitespace-nowrap">{user.amountPaidByWeek} Fcfa</TableCell>
-                                                                    <TableCell className="text-center">
-                                                                        <Button
-                                                                            variant="ghost"
-                                                                            className="h-8 w-8 p-0"
-                                                                            title="Voir les details"
-                                                                            onClick={() => route.push(`/dashboard/users/view/${user.id}`)}
-                                                                        >
-                                                                            <Eye className="h-4 w-4 text-gray-500" />
-                                                                        </Button>
+                                                                        </TableCell>
+                                                                        <TableCell className="text-center">
+                                                                            <span className={`${user.status === "En retard" ? "text-red-600 bg-red-100" : "text-green-600 bg-green-100"} text-xs py-1 px-2 rounded whitespace-nowrap`}>
+                                                                                {user.status}
+                                                                            </span>
+                                                                        </TableCell>
+                                                                        <TableCell className="text-center whitespace-nowrap">{user.category} Fcfa</TableCell>
+                                                                        <TableCell className="text-center">
+                                                                            <span className="text-xs py-1 px-2 rounded block truncate max-w-[120px]" title={user?.options?.join('; ')}>
+                                                                                [{user?.options?.join('; ') || 'N/A'}]
+                                                                            </span>
+                                                                        </TableCell>
+                                                                        <TableCell className="text-center">
+                                                                            <span className="text-xs text-[#FF4000] bg-[#FFAE91]/20 py-1 px-2 rounded whitespace-nowrap">
+                                                                                {`sem ${user.weekActif}`}
+                                                                            </span>
+                                                                        </TableCell>
+                                                                        <TableCell className="text-center whitespace-nowrap">{user.amountPaidByWeek} Fcfa</TableCell>
+                                                                        <TableCell className="text-center">
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                className="h-8 w-8 p-0"
+                                                                                title="Voir les details"
+                                                                                onClick={() => route.push(`/dashboard/users/view/${user.id}`)}
+                                                                            >
+                                                                                <Eye className="h-4 w-4 text-gray-500" />
+                                                                            </Button>
+                                                                        </TableCell>
+                                                                    </TableRow>
+                                                                ))
+                                                            ) : (
+                                                                <TableRow>
+                                                                    <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                                                                        Aucun paiement trouvé pour cette semaine
                                                                     </TableCell>
                                                                 </TableRow>
-                                                            ))}
+                                                            )}
                                                         </TableBody>
                                                     </Table>
                                                 </div>
@@ -586,28 +775,34 @@ export default function Dashboard() {
                                             <div className="flex items-center flex-col space-y-4 text-gray-700">
                                                 {/* Graphique */}
                                                 <div className="w-full max-w-[250px]">
-                                                    <ResponsiveContainer width="100%" height={200}>
-                                                        <PieChart>
-                                                            <Pie
-                                                                data={SectorSat}
-                                                                cx="50%"
-                                                                cy="50%"
-                                                                innerRadius={50}
-                                                                outerRadius={80}
-                                                                paddingAngle={2}
-                                                                dataKey="value"
-                                                                labelLine={false}
-                                                            >
-                                                                {SectorSat.map((entry, index) => (
-                                                                    <Cell key={`cell-${index}`} fill={entry.color} />
-                                                                ))}
-                                                            </Pie>
-                                                            <Tooltip
-                                                                formatter={(value) => [`${value}%`, 'Pourcentage']}
-                                                            />
-                                                            <Legend />
-                                                        </PieChart>
-                                                    </ResponsiveContainer>
+                                                    {sectorStats.total > 0 ? (
+                                                        <ResponsiveContainer width="100%" height={200}>
+                                                            <PieChart>
+                                                                <Pie
+                                                                    data={SectorSat}
+                                                                    cx="50%"
+                                                                    cy="50%"
+                                                                    innerRadius={50}
+                                                                    outerRadius={80}
+                                                                    paddingAngle={2}
+                                                                    dataKey="value"
+                                                                    labelLine={false}
+                                                                >
+                                                                    {SectorSat.map((entry, index) => (
+                                                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                                                    ))}
+                                                                </Pie>
+                                                                <Tooltip
+                                                                    formatter={(value) => [`${value}%`, 'Pourcentage']}
+                                                                />
+                                                                <Legend />
+                                                            </PieChart>
+                                                        </ResponsiveContainer>
+                                                    ) : (
+                                                        <div className="flex items-center justify-center h-40">
+                                                            <p className="text-gray-500">Aucune donnée</p>
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 {/* Légende et pourcentages */}
@@ -629,9 +824,6 @@ export default function Dashboard() {
                                                             </div>
                                                         </div>
                                                     </div>
-
-
-            
                                                 </div>
                                             </div>
                                         </Card>
@@ -683,34 +875,18 @@ export default function Dashboard() {
                                         <Loader2 className={`mr-2 h-4 w-4 ${load ? "animate-spin duration-300" : ""}`} />
                                         Recharger
                                     </Button>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" className="p-2">
-                                                <MoreVertical className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent
-                                            align="end"
-                                            className="w-46 rounded-lg shadow-lg border border-gray-200 p-2"
-                                        >
-                                            <DropdownMenuItem className="px-3 py-2 text-sm cursor-pointer hover:rounded-lg hover:shadow-gray-200">
-                                                <div className="flex items-center">
-                                                    <div className="bg-gray-100 p-1.5 rounded-full mr-3">
-                                                        <FileText className="h-4 w-4 text-gray-500" />
-                                                    </div>
-                                                    <span>Exporter le pdf</span>
-                                                </div>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem className="px-3 py-2 text-sm cursor-pointer hover:rounded-lg hover:shadow-gray-200">
-                                                <div className="flex items-center">
-                                                    <div className="bg-gray-100 p-1.5 rounded-full mr-3">
-                                                        <File className="h-4 w-4 text-gray-500" />
-                                                    </div>
-                                                    <span>Exporter lexcel</span>
-                                                </div>
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+                                    <div
+                                        className="p-2 text-sm cursor-pointer flex justify-center items-center"
+                                        onClick={lateCopyClick}
+                                    >
+                                        <div className="bg-gray-100 p-2.5 rounded-full" title="Copier dans le presse-papier">
+                                            {openV ? (
+                                                <CopyCheck className="h-4 w-4 text-green-500" />
+                                            ) : (
+                                                <Copy className="h-4 w-4 text-gray-500" />
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -729,55 +905,63 @@ export default function Dashboard() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {dataTabsUsers.map((user, index) => (
-                                            <TableRow key={index} className={`${index % 2 === 0 ? "bg-[#FFAE91]/10" : ""}`}>
-                                                <TableCell>
-                                                    <div className="flex items-center">
-                                                        <Avatar className="h-8 w-8 bg-[#FFAE91] text-white mr-2 flex items-center justify-center flex-shrink-0">
-                                                            <span className="text-xs">{user.lastName?.charAt(0)}</span>
-                                                        </Avatar>
-                                                        <div className="min-w-0">
-                                                            <p className="font-medium truncate">{user.firstName} {user.lastName}</p>
-                                                            <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                                        {dataTabsUsers.length > 0 ? (
+                                            dataTabsUsers.map((user, index) => (
+                                                <TableRow key={index} className={`${index % 2 === 0 ? "bg-[#FFAE91]/10" : ""}`}>
+                                                    <TableCell>
+                                                        <div className="flex items-center">
+                                                            <Avatar className="h-8 w-8 bg-[#FFAE91] text-white mr-2 flex items-center justify-center flex-shrink-0">
+                                                                <span className="text-xs">{user.lastName?.charAt(0).toUpperCase() || 'U'}</span>
+                                                            </Avatar>
+                                                            <div className="min-w-0">
+                                                                <p className="font-medium truncate">{user.firstName} {user.lastName}</p>
+                                                                <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-center">
-                                                    <span className="text-xs text-red-600 bg-red-100 py-1 px-2 rounded whitespace-nowrap">{user.status}</span>
-                                                </TableCell>
-                                                <TableCell className="text-center whitespace-nowrap">{user.category} Fcfa</TableCell>
-                                                <TableCell className="text-center">
-                                                    <span className="text-xs text-green-600 bg-green-100 py-1 px-2 rounded whitespace-nowrap">{user.weekActif}</span>
-                                                </TableCell>
-                                                <TableCell className="text-center">
-                                                    <span className="text-xs text-blue-600 bg-blue-100 py-1 px-2 rounded whitespace-nowrap">{user.lastWeekPaid}</span>
-                                                </TableCell>
-                                                <TableCell className="text-center whitespace-nowrap">{user.amountPaidByWeek} Fcfa</TableCell>
-                                                <TableCell className="text-center">
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                                                <MoreVertical className="h-4 w-4" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent
-                                                            align="end"
-                                                            className="w-46 rounded-lg shadow-lg border border-gray-200 p-2"
-                                                        >
-                                                            <DropdownMenuItem className="px-2 py-1 text-sm cursor-pointer hover:rounded-lg hover:shadow-gray-200">
-                                                                <div className="flex items-center"
-                                                                    onClick={() => route.push(`/dashboard/users/view/${user.id}`)}>
-                                                                    <div className="bg-gray-100 p-1.5 rounded-full mr-3">
-                                                                        <Eye className="h-4 w-4 text-gray-500" />
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        <span className="text-xs text-red-600 bg-red-100 py-1 px-2 rounded whitespace-nowrap">{user.status}</span>
+                                                    </TableCell>
+                                                    <TableCell className="text-center whitespace-nowrap">{user.category} Fcfa</TableCell>
+                                                    <TableCell className="text-center">
+                                                        <span className="text-xs text-green-600 bg-green-100 py-1 px-2 rounded whitespace-nowrap"> {`sem ${user.weekActif}`}</span>
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        <span className="text-xs text-blue-600 bg-blue-100 py-1 px-2 rounded whitespace-nowrap"> {`sem ${user.lastWeekPaid}`}</span>
+                                                    </TableCell>
+                                                    <TableCell className="text-center whitespace-nowrap">{user.amountPaidByWeek} Fcfa</TableCell>
+                                                    <TableCell className="text-center">
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                                                    <MoreVertical className="h-4 w-4" />
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent
+                                                                align="end"
+                                                                className="w-46 rounded-lg shadow-lg border border-gray-200 p-2"
+                                                            >
+                                                                <DropdownMenuItem className="px-2 py-1 text-sm cursor-pointer hover:rounded-lg hover:shadow-gray-200">
+                                                                    <div className="flex items-center"
+                                                                        onClick={() => route.push(`/dashboard/users/view/${user.id}`)}>
+                                                                        <div className="bg-gray-100 p-1.5 rounded-full mr-3">
+                                                                            <Eye className="h-4 w-4 text-gray-500" />
+                                                                        </div>
+                                                                        <span>Details</span>
                                                                     </div>
-                                                                    <span>Details</span>
-                                                                </div>
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                                                    Aucun utilisateur en retard
                                                 </TableCell>
                                             </TableRow>
-                                        ))}
+                                        )}
                                     </TableBody>
                                 </Table>
                             </div>
@@ -814,13 +998,13 @@ export default function Dashboard() {
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Semaine</label>
-                                <Select onValueChange={setLastWeekPaidUser} value={lastWeekPaidUser}>
+                                <Select onValueChange={(value) => setLastWeekPaidUser(parseInt(value))} value={lastWeekPaidUser?.toString()}>
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Sélectionner la semaine" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {weekss.map((week, index) => (
-                                            <SelectItem key={index} value={week}>
+                                            <SelectItem key={index} value={week.toString()}>
                                                 {week}
                                             </SelectItem>
                                         ))}
@@ -837,7 +1021,7 @@ export default function Dashboard() {
                         </DialogClose>
                         <Button
                             type="button"
-                            onClick={handleFilter}
+                            onClick={() => setFilterModel(false)}
                             className="bg-[#FF4000] hover:bg-[#FF4000]/90">
                             Confirmer
                         </Button>
@@ -896,7 +1080,7 @@ export default function Dashboard() {
                         </DialogClose>
                         <Button
                             type="button"
-                            onClick={handleFilterHistory}
+                            onClick={() => setFilterModelHistory(false)}
                             className="bg-[#FF4000] hover:bg-[#FF4000]/90">
                             Confirmer
                         </Button>
