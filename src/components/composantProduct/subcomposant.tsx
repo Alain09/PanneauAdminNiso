@@ -71,7 +71,7 @@ function Subcomposant({ remote, composant, handleChange, index }: Structure) {
                 </div>
             </div>
             <div className="bg-[#FF4000] hover:bg-[#FF4000]/90 rounded-full cursor-pointer p-2"
-                onClick={() => { remote(composant.id) }}
+                onClick={() => { remote(composant?.id) }}
             >
                 <Trash2 className="w-4 h-4 text-white" />
             </div>

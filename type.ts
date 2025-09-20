@@ -24,7 +24,7 @@ export interface ProductCatalogue {
 
 // ici ComposantCatalogue represente un objet de composant la liste des articles aue constitue une option
 export interface ComposantCatalogue {
-  id?: string,
+  id: string,
   product: string,
   quantity: number,
   image?: File | string
