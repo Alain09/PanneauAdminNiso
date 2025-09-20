@@ -1,7 +1,7 @@
 "use client"
 import React from 'react'
 import { TontineOption } from '@/type'
-import { Edit, Edit2, Trash2 } from 'lucide-react'
+import { Edit,  Trash2 } from 'lucide-react'
 
 interface Structre {
     opt: TontineOption

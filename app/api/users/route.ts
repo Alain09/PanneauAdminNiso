@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
 
         // Upload image si présente avec validation
         let imageUrl: string | null = null;
-        let imagePath: string | null = null;
+    
 
         if (file && file.size > 0) {
             // Validation du fichier
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
                     `UserProfile_${firstName}_${lastName}_${Date.now()}` // Ajout timestamp pour éviter conflits
                 );
                 imageUrl = uploadedFile.url;
-                imagePath = uploadedFile.path;
+                
             } catch (uploadError) {
                 console.error("Erreur lors de l'upload de l'image:", uploadError);
                 return NextResponse.json(

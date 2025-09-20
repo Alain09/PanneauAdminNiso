@@ -4,6 +4,16 @@ import { uploadFileToSupabase, validateFileSize, validateFileType } from "@/src/
 
 const prisma = new PrismaClient();
 
+
+type ComposantInput = {
+    product: string;
+    quantity: string; // JSON envoie souvent des strings
+    image?: string | null;
+};
+
+
+
+
 // GET - Récupération de tous les catalogues de produits
 export async function GET() {
     try {
@@ -49,12 +59,13 @@ export async function POST(request: NextRequest) {
 
         // Récupération des composants (format JSON string)
         const composantsData = res.get("composant") as string;
-        let composants: any[] = [];
+        let composants: ComposantInput[] = [];
 
         if (composantsData) {
             try {
                 composants = JSON.parse(composantsData);
             } catch (parseError) {
+                console.log(parseError)
                 return NextResponse.json(
                     { message: "Format des composants invalide", success: false },
                     { status: 400 }
@@ -72,10 +83,10 @@ export async function POST(request: NextRequest) {
 
         // Traitement des images des composants
         const composantsWithImages = await Promise.all(
-            composants.map(async (comp: any, index: number) => {
+            composants.map(async (comp: ComposantInput, index: number) => {
                 const imageFile = res.get(`composant_image_${index}`) as File;
                 let imageUrl: string | null = null;
-                let imagePath: string | null = null;
+                
 
                 if (imageFile && imageFile.size > 0) {
                     // Validation du fichier
@@ -90,11 +101,11 @@ export async function POST(request: NextRequest) {
                     try {
                         // Upload vers Supabase Storage
                         const uploadResult = await uploadFileToSupabase(
-                            imageFile, 
+                            imageFile,
                             `Composant_${comp.product}_${Date.now()}`
                         );
                         imageUrl = uploadResult.url;
-                        imagePath = uploadResult.path;
+                      
                     } catch (uploadError) {
                         console.error("Erreur upload composant:", uploadError);
                         throw new Error(`Erreur lors de l'upload de l'image du composant ${comp.product}`);
@@ -136,10 +147,10 @@ export async function POST(request: NextRequest) {
 
     } catch (error) {
         console.error("Erreur lors de la création:", error);
-        
+
         // Gestion des erreurs spécifiques
         if (error instanceof Error) {
-            if (error.message.includes("Type de fichier non autorisé") || 
+            if (error.message.includes("Type de fichier non autorisé") ||
                 error.message.includes("Fichier trop volumineux") ||
                 error.message.includes("Erreur lors de l'upload")) {
                 return NextResponse.json(
@@ -148,14 +159,18 @@ export async function POST(request: NextRequest) {
                 );
             }
         }
-        
-        if (typeof error === "object" && error !== null && "code" in error && (error as any).code === "P2002") {
-            return NextResponse.json(
-                { message: "Un catalogue avec cette catégorie et option existe déjà", success: false },
-                { status: 400 }
-            );
+
+        if (typeof error === "object" && error !== null && "code" in error) {
+            const prismaError = error as { code?: string };
+            if (prismaError.code === "P2002") {
+                return NextResponse.json(
+                    { message: "Un catalogue avec cette catégorie et option existe déjà", success: false },
+                    { status: 400 }
+                );
+            }
         }
-        
+
+
         return NextResponse.json(
             {
                 message: "Erreur serveur",

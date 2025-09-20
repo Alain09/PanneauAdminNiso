@@ -67,18 +67,18 @@ export async function PATCH(
     }
 
     // Recalculer les dates seulement si fournies dans le body
-    let selectionStartDate = res.selectionStart
+    const selectionStartDate = res.selectionStart
       ? new Date(res.selectionStart)
       : existingCampagne.selectionStart;
 
-    let selectionEndDate = res.dureeSelectionJours
+    const selectionEndDate = res.dureeSelectionJours
       ? new Date( (selectionStartDate?? new Date()).getTime() + Number(res.dureeSelectionJours) * 24 * 60 * 60 * 1000)
       : existingCampagne.selectionEnd;
 
-    let tontineStartDate = new Date(selectionEndDate?? new Date());
+    const tontineStartDate = new Date(selectionEndDate?? new Date());
     tontineStartDate.setDate(tontineStartDate.getDate() + 1);
 
-    let tontineEndDate = res.dureeTontineSemaines
+    const tontineEndDate = res.dureeTontineSemaines
       ? new Date(tontineStartDate.getTime() + Number(res.dureeTontineSemaines) * 7 * 24 * 60 * 60 * 1000)
       : existingCampagne.tontineEnd;
 

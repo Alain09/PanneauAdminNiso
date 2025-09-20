@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@/generated/prisma";
+import { PrismaClient,Prisma } from "@/generated/prisma";
 import { deleteFileFromSupabase, uploadFileToSupabase, validateFileSize, validateFileType } from "@/src/lib/subaStorage";  
 
 const prisma = new PrismaClient();
+
+type ComposantInput = {
+  product: string;
+  quantity: string; // JSON envoyé contient souvent des strings
+  image?: string | null;
+};
+
+
+
+
+
 
 // GET - Récupération d'un catalogue spécifique
 export async function GET(
@@ -76,6 +87,7 @@ export async function PATCH(
         composant: true
       }
     });
+    
 
     if (!catalogueExistant) {
       return NextResponse.json(
@@ -85,7 +97,9 @@ export async function PATCH(
     }
 
     // Préparation des données de mise à jour
-    const updateData: any = {};
+   // ✅ Correct
+    const updateData: Prisma.ProductCatalogueUpdateInput = {};
+
     if (categorie) updateData.categorie = categorie;
     if (option) updateData.option = parseInt(option);
     if (price) updateData.price = parseInt(price);
@@ -93,7 +107,8 @@ export async function PATCH(
 
     // Traitement des composants si fournis
     if (composantsData) {
-      let nouveaux_composants: any[] = [];
+      let nouveaux_composants: ComposantInput[] = [];
+
 
       try {
         nouveaux_composants = JSON.parse(composantsData);
@@ -106,7 +121,7 @@ export async function PATCH(
 
       // Gestion des images avec validation
       const composantsWithImages = await Promise.all(
-        nouveaux_composants.map(async (comp: any, index: number) => {
+        nouveaux_composants.map(async (comp: ComposantInput, index: number) => {
           let imageUrl: string | null = null;
 
           // CAS 1: Nouvelle image uploadée (File)

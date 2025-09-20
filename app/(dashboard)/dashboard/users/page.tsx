@@ -1,7 +1,7 @@
 "use client"
 import { Startscard } from '@/src/components/dash_composant/staticard';
 import { AlertCircle, Eye, File, FileText, Loader2, Pencil, SquareCheckBig, Trash2, UserCogIcon, Users } from 'lucide-react';
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { Search, MoreVertical, Filter, Plus } from "lucide-react";
 

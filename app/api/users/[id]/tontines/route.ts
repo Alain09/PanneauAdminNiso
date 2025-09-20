@@ -155,7 +155,7 @@ export async function POST(
 
       // Mettre à jour les paiements hebdomadaires existants
       {/*  */ }
-      const existingPayments = await prisma.categories.findMany({
+      await prisma.categories.findMany({
         where: {
           categoriesStatistiquesPayementId: existingCategory.id
         },

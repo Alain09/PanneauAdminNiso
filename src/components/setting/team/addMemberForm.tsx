@@ -146,7 +146,7 @@ export default function AddMemberForm({ onSubmit, formData, setFormData, loading
                   <ImageIcon size={32} className="text-gray-500 dark:text-gray-400" />
                 </div>
                 <span className="mt-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Charger l'image de l'article
+                  Charger l&apos;image de l&apos;article
                 </span>
               </>
             )}

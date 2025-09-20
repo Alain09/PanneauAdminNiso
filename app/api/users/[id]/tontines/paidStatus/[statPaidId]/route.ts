@@ -1,6 +1,6 @@
 // api/users/[id]/tontine/paidStatus/[statPaidId]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@/generated/prisma";
+import { Prisma, PrismaClient } from "@/generated/prisma";
 
 
 const prisma = new PrismaClient();
@@ -66,7 +66,8 @@ export async function PATCH(
         }
 
         // Préparer les données de mise à jour
-        const updateData: any = { status };
+        const updateData: Prisma.CategoriesUpdateInput = { status };
+
         if (datePaiement) {
             updateData.datePaiement = new Date(datePaiement);
         } else if (status === "Payé") {
@@ -160,7 +161,7 @@ export async function PATCH(
         });
 
 
-     
+
 
         return NextResponse.json(
             {

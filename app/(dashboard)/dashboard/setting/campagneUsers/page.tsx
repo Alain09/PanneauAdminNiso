@@ -67,9 +67,9 @@ export default function Campagn() {
 
         setCampagneData(campDt.data);
         setSendError("");
-      } catch (error: any) {
+      } catch (error) {
         console.error(error);
-        setSendError(error.message || "Erreur serveur");
+        setSendError( "Erreur serveur");
       } finally {
         setLoading(false);
       }
@@ -442,7 +442,7 @@ export default function Campagn() {
             <DialogFooter className='mt-4'>
               <DialogClose asChild>
                 <Button variant="outline" className="mr-2"
-                  onClick={() => { setSendCreatError(""), setSendCreatSuccess("") }}
+                 
                 >
                   Annuler
                 </Button>

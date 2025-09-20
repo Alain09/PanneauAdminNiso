@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Input } from "@/src/components/ui/input";
 import { Textarea } from "@/src/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card";
-import { UserProfile } from "@/type";
+
 
 import Bande from "@/src/components/users/bande";
 import { useRouter } from "next/navigation";
@@ -56,16 +56,16 @@ export default function UserProfilNew() {
 
 
   //------------pour la mise a jour des name value 
-  interface HandleChangeEvent extends React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> { }
+ 
 
-  interface HandleChangeTarget extends EventTarget {
+  interface HandleChangeTarget  {
     name: string;
     value: string;
     type: string;
     files?: FileList;
   }
 
-  const handleChange = (e: HandleChangeEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type, files } = e.target as HandleChangeTarget;
 
     if (type === 'file') {
@@ -263,7 +263,7 @@ export default function UserProfilNew() {
                       onValueChange={(value: string) =>
                         handleChange({
                           target: { name: "position", value, type: "text" }
-                        } as any)
+                        } as React.ChangeEvent<HTMLInputElement>)
                       }
                     >
                       <SelectTrigger className="w-full h-10 md:h-[45px]">

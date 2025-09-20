@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 import { Button } from "@/src/components/ui/button";
-import { MoreVertical, Eye, X, AlertCircle, SquareCheckBig } from "lucide-react";
+import { MoreVertical,X, AlertCircle, SquareCheckBig } from "lucide-react";
 import { Card } from "@/src/components/ui/card";
 
 import { useRouter } from "next/navigation";
@@ -610,7 +610,7 @@ export default function Catalogue() {
                 {/* Footer optionnel */}
                 <div className="p-4  text-center">
                   <p className="text-sm text-gray-600">
-                    Cliquez à l'extérieur ou sur × pour fermer
+                    Cliquez à l\'extérieur ou sur x pour fermer
                   </p>
                 </div>
               </div>

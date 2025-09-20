@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     // Upload image si présente
     let imageUrl: string | null = null;
-    let imagePath: string | null = null;
+
 
 
    
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
         // Upload vers Supabase Storage
         const uploadResult = await uploadFileToSupabase(file, `Team_${name}`);
         imageUrl = uploadResult.url;
-        imagePath = uploadResult.path;
+        
       } catch (uploadError) {
         console.error("Erreur upload:", uploadError);
         return NextResponse.json(

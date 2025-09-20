@@ -51,6 +51,7 @@ export default function LoginPage() {
 
       }
     } catch (err) {
+      console.log(err)
       setError('Une erreur est survenue lors de la connexion')
 
     } finally {
@@ -107,7 +108,7 @@ export default function LoginPage() {
               Connexion
             </CardTitle>
             <CardDescription>
-              Entrez vos identifiants d'administrateur
+              Entrez vos identifiants d&apos;administrateur
             </CardDescription>
           </CardHeader>
           <CardContent>

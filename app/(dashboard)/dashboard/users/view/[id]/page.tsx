@@ -935,7 +935,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                 {/* Footer optionnel */}
                                 <div className="p-4  text-center">
                                     <p className="text-sm text-gray-600">
-                                        Cliquez à l'extérieur ou sur × pour fermer
+                                        Cliquez à l&aposextérieur ou sur x pour fermer
                                     </p>
                                 </div>
                             </div>

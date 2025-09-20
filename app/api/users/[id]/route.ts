@@ -1,6 +1,6 @@
 //users/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@/generated/prisma";
+import { PrismaClient ,Prisma } from "@/generated/prisma";
 import { deleteFileFromSupabase, uploadFileToSupabase, validateFileSize, validateFileType } from "@/src/lib/subaStorage";
 
 
@@ -270,7 +270,8 @@ export async function PATCH(
     }
 
     // Préparation des données à mettre à jour
-    const updateData: any = {};
+    const updateData: Prisma.UserProfileUpdateInput = {};
+
     
     if (firstName) updateData.firstName = firstName;
     if (lastName) updateData.lastName = lastName;

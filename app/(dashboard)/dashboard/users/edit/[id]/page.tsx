@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, use, useEffect, useMemo, useRef } from "react";
+import { useState, use, useEffect, useMemo, useRef, ChangeEvent } from "react";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Textarea } from "@/src/components/ui/textarea";
@@ -83,7 +83,7 @@ export default function UserProfilEdit({ params }: { params: Promise<{ id: strin
     };
 
     profileGetAllUserUnique();
-  }, [])
+  }, [id])
 
   // declaration des donnees specifique a l'utilisateur
 
@@ -165,16 +165,15 @@ export default function UserProfilEdit({ params }: { params: Promise<{ id: strin
 
 
   //------------pour la mise a jour des name value 
-  interface HandleChangeEvent extends React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> { }
-
-  interface HandleChangeTarget extends EventTarget {
+  
+  interface HandleChangeTarget {
     name: string;
     value: string;
     type: string;
     files?: FileList;
   }
 
-  const handleChange = (e: HandleChangeEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type, files } = e.target as HandleChangeTarget;
 
     if (type === "file") {
@@ -269,7 +268,7 @@ export default function UserProfilEdit({ params }: { params: Promise<{ id: strin
     quantity: 0
   })
 
-  const handleTontOpt = (e: HandleChangeEvent) => {
+  const handleTontOpt = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>)=> {
     const { name, value, type } = e.target as HandleChangeTarget;
 
     if (type === 'number') {
@@ -610,7 +609,7 @@ export default function UserProfilEdit({ params }: { params: Promise<{ id: strin
                       onValueChange={(value: string) =>
                         handleChange({
                           target: { name: "position", value, type: "text" }
-                        } as any)
+                        }  as React.ChangeEvent<HTMLInputElement>)
                       }
                     >
                       <SelectTrigger className="w-full h-10 md:h-[45px]">
@@ -768,7 +767,7 @@ export default function UserProfilEdit({ params }: { params: Promise<{ id: strin
                   onValueChange={(value: string) =>
                     handleTontOpt({
                       target: { name: "category", value, type: "text" }
-                    } as any)
+                    }  as React.ChangeEvent<HTMLInputElement>)
                   }
                 >
                   <SelectTrigger className="w-full h-10 md:h-[45px]">
@@ -791,7 +790,7 @@ export default function UserProfilEdit({ params }: { params: Promise<{ id: strin
                   onValueChange={(value: string) =>
                     handleTontOpt({
                       target: { name: "option", value, type: "text" }
-                    } as any)
+                    }  as React.ChangeEvent<HTMLInputElement>)
                   }
                 >
                   <SelectTrigger className="w-full h-10 md:h-[45px]">
@@ -837,11 +836,11 @@ export default function UserProfilEdit({ params }: { params: Promise<{ id: strin
       <Dialog open={updateModal} onOpenChange={setUpdateModal} >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Mis a jout de la valeur d'occurence</DialogTitle>
+            <DialogTitle>Mis a jout de la valeur d occurence</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              servir pour le nombre d'occurnce de <span className='font-semibold text-gray-900'>{updateTexte}</span>
+              servir pour le nombre d occurnce de <span className='font-semibold text-gray-900'>{updateTexte}</span>
             </p>
 
             {sendUpdateError &&

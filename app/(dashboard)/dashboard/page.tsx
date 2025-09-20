@@ -12,7 +12,6 @@ import {
     Filter,
     Clock12,
     Loader2,
-    File,
     Copy,
     CopyCheck
 } from "lucide-react";
@@ -154,13 +153,13 @@ export default function Dashboard() {
 
     const { datas, TotalGobal, TotalWeekActive } = useMemo(
         () => VariationPaid(weekA),
-        [VariationPaid]
+        [VariationPaid,weekA]
     );
 
 
     const lateUsers = useMemo(
         () => UsersLate({ weekActived: weekA }),
-        [UsersLate]
+        [UsersLate,weekA]
     );
 
     const catCounts = useMemo(
@@ -275,7 +274,7 @@ export default function Dashboard() {
         if (catCounts.length > 0 && !uniqueWeeks.includes(firtWeek)) {
             setFirstCat(catCounts[0]?.categorie ?? "100");
         }
-    }, [catCounts, firstCat]);
+    }, [catCounts, firstCat,firtWeek,uniqueWeeks]);
 
 
 
@@ -325,7 +324,7 @@ export default function Dashboard() {
         } else {
             setOpenV(false);
         }
-    }, [dataTabsUsers]);
+    }, [dataTabsUsers,debutCamp,weekA]);
 
 
 
@@ -358,7 +357,7 @@ export default function Dashboard() {
         } else {
             setOpenValid(false);
         }
-    }, [tabsUsersStory, firtWeek]);
+    }, [tabsUsersStory, firtWeek,debutCamp]);
 
     // Fonctions de gestion des filtres
     const handleReloadHistory = useCallback(() => {
