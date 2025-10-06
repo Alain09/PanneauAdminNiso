@@ -200,11 +200,24 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
             if (result.success) {
                 setSendUpdateSuccess(result.message);
 
-                setTimeout(() => {
+                // Rafraîchir toutes les données utilisateur
+                const refreshData = await fetch(`/api/users/${id}`, {
+                    method: "GET",
+                    headers: { "authorization": process.env.NEXT_PUBLIC_API_ROUTE_SECRET || "" }
+                });
+
+                if (refreshData.ok) {
+                    const refreshedUserData = await refreshData.json();
+                    setUserUnique(refreshedUserData.data);
                     setSendUpdateSuccess("");
-                    setModal(false)
-                }, 1500); // Fermer après succès
-                route.refresh();
+                    setModal(false);
+                }
+
+                //------------------
+                {/*  setTimeout(() => {
+                    setSendUpdateSuccess("");
+                    setModal(false);
+                }, 1200); */}
 
             } else {
                 setSendUpdateError(result.message);
@@ -237,7 +250,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
         name: ""
     })
 
-   
+
     //------------for loading before page is trying up 
     if (loading || isPending) {
         return (
@@ -307,7 +320,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                                     <Edit className="w-4 h-4" />
 
                                                 </Button>
-                                               
+
 
                                             </div>
                                         </div>
@@ -337,7 +350,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                                 <StatisCardUser title="Total à payer " value={String(user.totalPaidByWeek)} icon={<FileText className="w-4 h-4 text-orange-500" />} />
                                             </div>
 
-                                           
+
 
                                             <div className="border rounded-lg overflow-hidden">
                                                 <div className=" overflow-x-hidden max-h-[400px] md:max-h-[500px] lg:max-h-[600px] xl:max-h-[700px] 2xl:max-h-[800px] overflow-y-auto">
@@ -531,10 +544,10 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                                     <div className="flex items-center flex-col gap-4 text-sm text-gray-500 mb-4">
                                         <div className="flex items-center justify-between w-full gap-1 border-b border-gray-200 pb-3">
                                             <div className="text-sm font-medium text-gray-600">
-                                                <span>Email</span>
+                                                <span>Profession</span>
                                             </div>
                                             <div className="px-2 py-1 w-fit border border-gray-100 rounded-md bg-gray-50">
-                                                <span className="text-sm font-medium text-gray-600">{userUnique.email}</span>
+                                                <span className="text-sm font-medium text-gray-600">{userUnique.profession}</span>
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-between w-full gap-1 border-b border-gray-200 pb-3">
@@ -643,11 +656,17 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                         {/* User Profile Details */}
                         <div>
                             <div className="flex flex-col items-center mb-6">
-                                <div className="w-32 h-32 rounded-full mb-4">
+                                <div className=" mb-4">
                                     {userUnique.image && (userUnique.image as string).startsWith("http") ? (
-                                        <Image className="rounded-full object-cover" width={150} height={150} src={userUnique.image as string} alt={userUnique.firstName} />
+                                        <Image
+                                            src={userUnique.image as string}
+                                            alt={userUnique.firstName}
+                                            width={128}
+                                            height={128}
+                                            className="rounded-full aspect-square object-cover"
+                                        />
                                     ) : (
-                                        <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded-full">
+                                        <div className="w-32 h-32  bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded-full">
                                             <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
@@ -662,10 +681,10 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                             <div className="flex items-center flex-col gap-4 text-sm text-gray-500 mb-4">
                                 <div className="flex items-center justify-between w-full gap-1 border-b border-gray-200 pb-3">
                                     <div className="text-sm font-medium text-gray-600">
-                                        <span>Email</span>
+                                        <span>Profession</span>
                                     </div>
                                     <div className="px-2 py-1 w-fit border border-gray-100 rounded-md bg-gray-50">
-                                        <span className="text-sm font-medium text-gray-600">{userUnique.email}</span>
+                                        <span className="text-sm font-medium text-gray-600">{userUnique.profession}</span>
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between w-full gap-1 border-b border-gray-200 pb-3">

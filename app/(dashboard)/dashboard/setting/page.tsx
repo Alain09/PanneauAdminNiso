@@ -63,7 +63,7 @@ function Page() {
                 title={item.title} 
                 description={item.description} 
                 icon={item.icon} 
-                linkIcon={item.linkIcon} 
+  
                 path={item.path}
               />
             ))

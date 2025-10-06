@@ -3,6 +3,7 @@
 import React from 'react'
 import { Menu } from "lucide-react"
 import { useSession } from '@/src/lib/auth-client'
+import { useRouter } from 'next/navigation'
 
 interface Size {
     size: boolean
@@ -14,6 +15,7 @@ interface Size {
 
 function Header({ size, isMobile, isTablet, setMobileMenuOpen }: Size) {
     const {data}=useSession()
+    const route = useRouter()
     return (
         <header 
             className={`
@@ -61,11 +63,14 @@ function Header({ size, isMobile, isTablet, setMobileMenuOpen }: Size) {
                 </div>
 
                 {/* User Avatar */}
-                <div className={`
+                <div 
+                onClick={() => route.push('/dashboard/setting/admin')}
+                
+                className={`
                     ${isMobile ? "w-12 h-12" : "w-[75px] h-12"} 
                     shadow shadow-gray-50 bg-blue-600 border 
                     border-gray-100 rounded-lg flex justify-center 
-                    items-center flex-shrink-0
+                    items-center flex-shrink-0 cursor-pointer
                 `}>
                     <span className="font-medium text-white text-sm">{data?.user.name.charAt(0).toUpperCase()}</span>
                 </div>

@@ -83,10 +83,7 @@ export const copyToClipboardLate = async ({ datas, weekActif,debut }: Userlate):
         }
 
         // Formater la date
-        const bod = calculerDatesSemaine(weekActif, new Date(debut))
-            ;
-
-
+        const bod = calculerDatesSemaine(weekActif, new Date(debut));
         // Créer le texte à copier
         let textToCopy = `💙 *${weekActif === 1 ? "1ème" : `${weekActif}ème`} semaine* 💙\n`;
         textToCopy += `Du (${formatDate(bod.dateDebut)} au ${formatDate(bod.dateFin)}) \n\n`;
@@ -109,7 +106,7 @@ export const copyToClipboardLate = async ({ datas, weekActif,debut }: Userlate):
         return true;
 
     } catch (err) {
-        console.error('Erreur lors de la copie: ', err);
+        console.log('Erreur lors de la copie: ', err);
         alert("Erreur lors de la copie");
         return false;
     }

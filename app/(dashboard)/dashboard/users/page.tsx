@@ -1,9 +1,9 @@
 "use client"
 import { Startscard } from '@/src/components/dash_composant/staticard';
-import { AlertCircle, Eye, File, FileText, Loader2, Pencil, SquareCheckBig, Trash2, UserCogIcon, Users } from 'lucide-react';
+import { AlertCircle, Eye, File, FileText, Loader2, Pencil, SquareCheckBig, Trash2, UserCogIcon, UserPlus, Users } from 'lucide-react';
 import React, { useEffect, useState, useRef } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { Search, MoreVertical, Filter, Plus } from "lucide-react";
+import { Search, MoreVertical, Filter } from "lucide-react";
 
 import {
   Dialog,
@@ -45,6 +45,8 @@ import { DataBaseUsersTabs, UserProfile } from '@/type';
 import { DataAction } from '@/src/components/hook_perso';
 import { useSession } from '@/src/lib/auth-client';
 import { Alert, AlertDescription } from '@/src/components/ui/alert';
+import { exportToPDF } from '@/src/components/users/export_to_pdf';
+import { exportToExcel } from '@/src/components/users/export_to_excel';
 
 function UserAll() {
   const [allUsers, setAllUsers] = useState<UserProfile[]>([])
@@ -113,45 +115,45 @@ function UserAll() {
   const { response, statistics } = UsersStructuration()
 
   // Données filtrées et recherchées
- // ✅ State pour stocker les données filtrées
-const [filteredUsersData, setFilteredUsersData] = useState(response ?? []);
+  // ✅ State pour stocker les données filtrées
+  const [filteredUsersData, setFilteredUsersData] = useState(response ?? []);
 
-// ✅ Fonction de filtrage (déclenchée uniquement au clic sur "Confirmer")
-const handleFilter = () => {
-  const filtered = response.filter((user) => {
-    const matchesCategory = selectedCategorie
-      ? user.category === selectedCategorie
-      : true;
+  // ✅ Fonction de filtrage (déclenchée uniquement au clic sur "Confirmer")
+  const handleFilter = () => {
+    const filtered = response.filter((user) => {
+      const matchesCategory = selectedCategorie
+        ? user.category === selectedCategorie
+        : true;
 
-    const matchesStatus = selectedStatutCategorie
-      ? user.status === selectedStatutCategorie
-      : true;
+      const matchesStatus = selectedStatutCategorie
+        ? user.status === selectedStatutCategorie
+        : true;
 
-    const matchesSearch = searchUser.trim() !== ""
-      ? user.firstName?.toLowerCase().includes(searchUser.toLowerCase()) ||
+      const matchesSearch = searchUser.trim() !== ""
+        ? user.firstName?.toLowerCase().includes(searchUser.toLowerCase()) ||
         user.lastName?.toLowerCase().includes(searchUser.toLowerCase())
-      : true;
+        : true;
 
-    return matchesCategory && matchesStatus && matchesSearch;
-  });
+      return matchesCategory && matchesStatus && matchesSearch;
+    });
 
-  setFilteredUsersData(filtered);
-  setFilter(false); // ferme la modal
-};
-
-// ✅ useEffect pour gérer la recherche en temps réel
-useEffect(() => {
-  if (searchUser.trim() === "") {
-    setFilteredUsersData(response);
-  } else {
-    const filtered = response.filter(
-      (user) =>
-        user.firstName?.toLowerCase().includes(searchUser.toLowerCase()) ||
-        user.lastName?.toLowerCase().includes(searchUser.toLowerCase())
-    );
     setFilteredUsersData(filtered);
-  }
-}, [searchUser, response]);
+    setFilter(false); // ferme la modal
+  };
+
+  // ✅ useEffect pour gérer la recherche en temps réel
+  useEffect(() => {
+    if (searchUser.trim() === "") {
+      setFilteredUsersData(response);
+    } else {
+      const filtered = response.filter(
+        (user) =>
+          user.firstName?.toLowerCase().includes(searchUser.toLowerCase()) ||
+          user.lastName?.toLowerCase().includes(searchUser.toLowerCase())
+      );
+      setFilteredUsersData(filtered);
+    }
+  }, [searchUser, response]);
 
 
   // ----------------modal pour la suppression
@@ -209,47 +211,45 @@ useEffect(() => {
   };
 
   // ******************* 
-  useEffect(()=>{
-    if(!openDeleteModale){
+  useEffect(() => {
+    if (!openDeleteModale) {
       setSendSubmitSuccess("")
     }
-  },[openDeleteModale])
+  }, [openDeleteModale])
 
   //-----------------
 
   // texte afficher dans la modale de suppression
   const [nameActive, setNameActive] = useState<string | undefined>("");
 
- 
-// fonction de rechargement
-const [load, setLoad] = useState(false);
 
-const handleReload = async () => {
-  setLoad(true);
+  // fonction de rechargement
+  const [load, setLoad] = useState(false);
 
-  // reset des filtres
-  setSelectedCategorie("");
-  setSelectedStatutCategorie("");
-  setSearchUser("");
+  const handleReload = async () => {
+    setLoad(true);
 
-  
+    // reset des filtres
+    setSelectedCategorie("");
+    setSelectedStatutCategorie("");
+    setSearchUser("");
 
-  // petit délai pour simuler le "reload"
-  setTimeout(() => {
-    // recharger toutes les données
-  setFilteredUsersData(response);
-    setLoad(false);
-  }, 1000);
-};
+
+
+    // petit délai pour simuler le "reload"
+    setTimeout(() => {
+      // recharger toutes les données
+      setFilteredUsersData(response);
+      setLoad(false);
+    }, 1000);
+  };
 
   //------------for loading before page is trying up 
   if (loading || isPending) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Chargement des utilisateurs...</p>
-        </div>
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-[#FF4000]" />
+        <span className="ml-2">Chargement des données...</span>
       </div>
     );
   }
@@ -324,7 +324,7 @@ const handleReload = async () => {
                     <span className="text-xl md:text-2xl font-bold">{statistics.SectorSat[0]?.value}%</span>
                     <div className="flex items-center mt-1">
                       <div className="w-3 h-3 rounded-full bg-[#009CFE] mr-2"></div>
-                      <span className="text-sm md:text-base">{statistics.SectorSat[0]?.name}</span>
+                      <span className="text-sm md:text-base">{`${statistics.SectorSat[0]?.name} (${statistics.valuesEncours})`}</span>
                     </div>
                   </div>
                 )}
@@ -334,7 +334,7 @@ const handleReload = async () => {
                     <span className="text-xl md:text-2xl font-bold">{statistics.SectorSat[1]?.value}%</span>
                     <div className="flex items-center mt-1">
                       <div className="w-3 h-3 rounded-full bg-[#24D26D] mr-2"></div>
-                      <span className="text-sm md:text-base">{statistics.SectorSat[1]?.name}</span>
+                      <span className="text-sm md:text-base">{`${statistics.SectorSat[1]?.name} (${statistics.valuesTermine.toString().padStart(2, "0")})`}</span>
                     </div>
                   </div>
                 )}
@@ -386,13 +386,20 @@ const handleReload = async () => {
 
                 <Button
                   variant="default"
-                  className="flex items-center cursor-pointer text-xs md:text-sm h-9"
+                  className="hidden md:flex items-center cursor-pointer text-xs md:text-sm h-9"
                   onClick={() => route.push("/dashboard/users/new")}
                 >
-                  <Plus className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+                  <UserPlus className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
                   New user
                 </Button>
 
+                <Button
+                  variant="default"
+                  className="md:hidden flex items-center cursor-pointer text-xs md:text-sm h-9"
+                  onClick={() => route.push("/dashboard/users/new")}
+                >
+                  <UserPlus className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+                </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="p-2 h-9 w-9">
@@ -405,7 +412,9 @@ const handleReload = async () => {
                   >
                     {/* telecharger le pdf */}
                     <DropdownMenuItem className="px-3 py-2 text-sm cursor-pointer hover:rounded-lg hover:shadow-gray-200">
-                      <div className="flex items-center">
+                      <div className="flex items-center"
+                      onClick={()=>exportToPDF(filteredUsersData)}
+                      >
                         <div className="bg-gray-100 p-1.5 rounded-full mr-3">
                           <FileText className="h-4 w-4 text-gray-500" />
                         </div>
@@ -415,7 +424,9 @@ const handleReload = async () => {
 
                     {/* telecharger le fichier excel */}
                     <DropdownMenuItem className="px-3 py-2 text-sm cursor-pointer hover:rounded-lg hover:shadow-gray-200">
-                      <div className="flex items-center">
+                      <div className="flex items-center"
+                      onClick={() => {exportToExcel(filteredUsersData)}}
+                      >
                         <div className="bg-gray-100 p-1.5 rounded-full mr-3">
                           <File className="h-4 w-4 text-gray-500" />
                         </div>
@@ -546,62 +557,62 @@ const handleReload = async () => {
       {/* dialogue pour le filtrage */}
       <Dialog open={filter} onOpenChange={setFilter} >
         <DialogContent className="sm:max-w-md ">
-          
-            <DialogHeader>
-              <DialogTitle>Filtrage</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 ">
-              <p className="text-sm text-muted-foreground">
-                Filtrer selon les critères de sélection
-              </p>
 
-              <div className="space-y-4">
-                {/* Sélecteur de catégorie */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Catégorie</label>
-                  <Select onValueChange={setSelectedCategorie} value={selectedCategorie}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Sélectionner une catégorie" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {statistics.uniqueCategories.map((category, index) => (
-                        <SelectItem key={index} value={category as string}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+          <DialogHeader>
+            <DialogTitle>Filtrage</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 ">
+            <p className="text-sm text-muted-foreground">
+              Filtrer selon les critères de sélection
+            </p>
 
-                {/* Sélecteur de statut*/}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Statut</label>
-                  <Select onValueChange={setSelectedStatutCategorie} value={selectedStatutCategorie}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Sélectionner un statut" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {statistics.uniqueStatuts.map((statut, index) => (
-                        <SelectItem key={index} value={statut as string}>
-                          {statut}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            <div className="space-y-4">
+              {/* Sélecteur de catégorie */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Catégorie</label>
+                <Select onValueChange={setSelectedCategorie} value={selectedCategorie}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Sélectionner une catégorie" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statistics.uniqueCategories.map((category, index) => (
+                      <SelectItem key={index} value={category as string}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Sélecteur de statut*/}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Statut</label>
+                <Select onValueChange={setSelectedStatutCategorie} value={selectedStatutCategorie}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Sélectionner un statut" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statistics.uniqueStatuts.map((statut, index) => (
+                      <SelectItem key={index} value={statut as string}>
+                        {statut}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-            <DialogFooter className=' mt-5'>
-              <DialogClose asChild>
-                <Button variant="outline" className="mr-2">
-                  Annuler
-                </Button>
-              </DialogClose>
-              <Button type='submit' className="bg-[#FF4000]"  onClick={handleFilter}>
-                Confirmer
+          </div>
+          <DialogFooter className=' mt-5'>
+            <DialogClose asChild>
+              <Button variant="outline" className="mr-2">
+                Annuler
               </Button>
-            </DialogFooter>
-         
+            </DialogClose>
+            <Button type='submit' className="bg-[#FF4000]" onClick={handleFilter}>
+              Confirmer
+            </Button>
+          </DialogFooter>
+
         </DialogContent>
       </Dialog>
 
@@ -636,7 +647,7 @@ const handleReload = async () => {
               {/* Entrer */}
               <div className="space-y-2">
                 <Input
-                 ref={ref}
+                  ref={ref}
                   className=" w-full "
                   onChange={(e) => targetEnter(e)}
                 />
@@ -646,14 +657,14 @@ const handleReload = async () => {
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline" className="mr-2"
-               onClick={() => {
-                setSendSubmitError(""); setSendSubmitError(""); 
-                
-                if (ref.current) {
-                  ref.current.value="";        // vide l'input
-                }
-              }}
-              disabled={loadSubmit}
+                onClick={() => {
+                  setSendSubmitError(""); setSendSubmitError("");
+
+                  if (ref.current) {
+                    ref.current.value = "";        // vide l'input
+                  }
+                }}
+                disabled={loadSubmit}
               >
                 Annuler
               </Button>
@@ -661,7 +672,7 @@ const handleReload = async () => {
             <Button
               disabled={aut || loadSubmit}
               type="submit"
-              onClick={(e)=>handleDelete(e)}
+              onClick={(e) => handleDelete(e)}
               className="bg-orange-500 hover:bg-orange-600">
               {loadSubmit ? "en cour..." : "Confirmer"}
             </Button>

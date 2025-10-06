@@ -52,7 +52,7 @@ export function DataAction({ enter }: StructureAction) {
 
     //fonction courbe d'evolution des paiements  par semaine 
     // reception des données de paiement ( sem, montanttotal)
-    const VariationPaid = (weekActif?: number|null) => {
+    const VariationPaid = (weekActif?: number | null) => {
         if (!enter || enter.length === 0) {
             return {
                 datas: [],
@@ -170,7 +170,25 @@ export function DataAction({ enter }: StructureAction) {
             )
         ) as UsersLatePayment[]
 
-        return choiceliste || [];
+
+        // Ensuite, on ne garde que le plus récent pour chaque utilisateur
+        const latestLatePaymentsByUser = Object.values(
+            choiceliste.reduce((acc, payment) => {
+                const existing = acc[payment.id as string];
+                if (!existing || (existing.lastWeekPaid ?? 0) > (payment.lastWeekPaid ?? 1)) {
+                    acc[payment.id as string] = payment;
+                }
+                return acc;
+            }, {} as Record<string, UsersLatePayment>)
+        );
+
+        // Étape 3 : Trier par ordre alphabétique du nom de famille
+        latestLatePaymentsByUser.sort((a, b) =>
+            (a.firstName ?? "").localeCompare(b.firstName ?? "", "fr", { sensitivity: "base" })
+        );
+
+
+        return latestLatePaymentsByUser || [];
     }
 
     // fonction de retour des utilisateurs avec statut de paiement en retart ou payé
@@ -198,6 +216,11 @@ export function DataAction({ enter }: StructureAction) {
                 } as PaymentHistoryWeekActif))
             )
         ) as PaymentHistoryWeekActif[]
+
+        // Étape 3 : Trier par ordre alphabétique du nom de famille
+        listeHistoryPaiement.sort((a, b) =>
+            (a.firstName ?? "").localeCompare(b.firstName ?? "", "fr", { sensitivity: "base" })
+        );
 
         // recuperationdes status de liseHistoryPaiement
         const statusAll = listeHistoryPaiement?.flatMap((user) => user.status) as string[];
@@ -254,7 +277,10 @@ export function DataAction({ enter }: StructureAction) {
             }) as DataBaseUsersTabs[]
         }, [enter]);
 
-
+        // Trier par ordre alphabétique du nom de famille
+        response.sort((a, b) =>
+            (a.firstName ?? "").localeCompare(b.firstName ?? "", "fr", { sensitivity: "base" })
+        );
 
         // Calcul des statistiques pour le circular a droite
         const statistics = useMemo(() => {
@@ -293,7 +319,7 @@ export function DataAction({ enter }: StructureAction) {
                 valuesTermine,
                 autoGestionTotal
             };
-        }, [response,enter]);
+        }, [response, enter]);
 
 
         return { response, statistics }; // dans le cas ou il y aura aucun utilisateur defini
@@ -437,8 +463,8 @@ import { useState, useEffect } from 'react';
 
 export function useCountdown({ startTime, endTime }: { startTime: Date | null; endTime: Date | null }) {
     const calcRemaining = useCallback(() => {
-    return Math.max(0, (endTime?.getTime() ?? Date.now()) - Date.now());
-}, [endTime]); // dépend uniquement de endTime
+        return Math.max(0, (endTime?.getTime() ?? Date.now()) - Date.now());
+    }, [endTime]); // dépend uniquement de endTime
 
     const [remaining, setRemaining] = useState(calcRemaining());
 
@@ -447,7 +473,7 @@ export function useCountdown({ startTime, endTime }: { startTime: Date | null; e
             setRemaining(calcRemaining());
         }, 1000);
         return () => clearInterval(intervalId);
-    }, [startTime, endTime,calcRemaining]);
+    }, [startTime, endTime, calcRemaining]);
 
     // convertir millisecondes en jrs/hrs/min/sec
     const days = Math.floor(remaining / (1000 * 60 * 60 * 24));

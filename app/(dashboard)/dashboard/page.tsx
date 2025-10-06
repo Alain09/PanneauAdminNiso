@@ -44,6 +44,7 @@ import {
     DialogFooter,
     DialogClose
 } from "@/src/components/ui/dialog";
+import { ScrollArea, ScrollBar } from "@/src/components/ui/scroll-area";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -95,7 +96,7 @@ export default function Dashboard() {
     const [campagneStatut, setCampagneStatut] = useState<string>("")
 
 
-    const {data}=useSession()
+    const { data } = useSession()
 
     // Récupération des données utilisateurs
     useEffect(() => {
@@ -153,13 +154,13 @@ export default function Dashboard() {
 
     const { datas, TotalGobal, TotalWeekActive } = useMemo(
         () => VariationPaid(weekA),
-        [VariationPaid,weekA]
+        [VariationPaid, weekA]
     );
 
 
     const lateUsers = useMemo(
         () => UsersLate({ weekActived: weekA }),
-        [UsersLate,weekA]
+        [UsersLate, weekA]
     );
 
     const catCounts = useMemo(
@@ -193,27 +194,9 @@ export default function Dashboard() {
     const [loadHistory, setLoadHistory] = useState(false);
 
     // Filtrage mémoïsé des données d'historique
-    const [visibleWeeks, setVisibleWeeks] = useState<number[]>([]);
-    const [hiddenWeeks, setHiddenWeeks] = useState<number[]>([]);
-    const tabsRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        const calculateVisibleItems = () => {
-            if (!tabsRef.current || uniqueWeeks.length === 0) return;
 
-            const containerWidth = tabsRef.current.offsetWidth;
-            const tabWidth = 100; // Largeur estimée d'un onglet
-            const maxVisible = Math.floor(containerWidth / tabWidth);
 
-            setVisibleWeeks(uniqueWeeks.slice(0, maxVisible - 1)); // -1 pour le bouton "Plus"
-            setHiddenWeeks(uniqueWeeks.slice(maxVisible - 1));
-        };
-
-        calculateVisibleItems();
-        window.addEventListener('resize', calculateVisibleItems);
-
-        return () => window.removeEventListener('resize', calculateVisibleItems);
-    }, [uniqueWeeks]);
 
     const filteredHistoryData = useMemo(() => {
         if (!listeHistoryPaiement) return [];
@@ -274,7 +257,7 @@ export default function Dashboard() {
         if (catCounts.length > 0 && !uniqueWeeks.includes(firtWeek)) {
             setFirstCat(catCounts[0]?.categorie ?? "100");
         }
-    }, [catCounts, firstCat,firtWeek,uniqueWeeks]);
+    }, [catCounts, firstCat, firtWeek, uniqueWeeks]);
 
 
 
@@ -282,7 +265,7 @@ export default function Dashboard() {
     // Gestion des utilisateurs en retard
     const [searchUser, setSearchUser] = useState<string>("");
     const [selectedCategorie, setSelectedCategorie] = useState<string>("");
-    const [lastWeekPaidUser, setLastWeekPaidUser] = useState<number>();
+    const [lastWeekPaidUser, setLastWeekPaidUser] = useState<number | null>(null);
     const [dataTabsUsers, setDataTabsUsers] = useState<UsersLatePayment[]>(lateUsers);
     const [filterModel, setFilterModel] = useState<boolean>(false);
     const [load, setLoad] = useState(false);
@@ -306,14 +289,15 @@ export default function Dashboard() {
         setDataTabsUsers(filteredLateUsers);
     }, [filteredLateUsers]);
 
-    // pour la copy 
 
+
+    // pour la copy 
     const [openV, setOpenV] = useState(false);
     const lateCopyClick = useCallback(async () => {
         setOpenV(true);
         const success = await copyToClipboardLate({
             datas: dataTabsUsers,
-            weekActif: weekA,
+            weekActif: lastWeekPaidUser,
             debut: debutCamp as Date
         });
 
@@ -324,7 +308,7 @@ export default function Dashboard() {
         } else {
             setOpenV(false);
         }
-    }, [dataTabsUsers,debutCamp,weekA]);
+    }, [dataTabsUsers, debutCamp, lastWeekPaidUser]);
 
 
 
@@ -357,7 +341,7 @@ export default function Dashboard() {
         } else {
             setOpenValid(false);
         }
-    }, [tabsUsersStory, firtWeek,debutCamp]);
+    }, [tabsUsersStory, firtWeek, debutCamp]);
 
     // Fonctions de gestion des filtres
     const handleReloadHistory = useCallback(() => {
@@ -394,7 +378,7 @@ export default function Dashboard() {
             : null;
 
     // On récupère le compte à rebours
-    const { days, hours, minutes, seconds } = useCountdown({startTime : startTime , endTime : endTime});
+    const { days, hours, minutes, seconds } = useCountdown({ startTime: startTime, endTime: endTime });
 
 
 
@@ -473,12 +457,12 @@ export default function Dashboard() {
                                             <p className="text-xs md:text-sm text-center text-red-500">
                                                 Campagne terminée
                                             </p>
-                                        ) : null }
+                                        ) : null}
                                     </div>
                                     <div className="flex justify-center items-center flex-col">
                                         <p className="text-xs md:text-sm text-center">
                                             {campagneStatut === "En attente" ? "Selection en cours " :
-                                                campagneStatut === "En cours" ? "Tontine en cours" :
+                                                campagneStatut === "En cours" ? `Tontine en cours ( ${weekA ? `semaine ${weekA}` : ""  } )` :
                                                     campagneStatut === "Terminé" ? "Campagne terminée" :
                                                         "Rien encore pret "}
                                         </p>
@@ -592,50 +576,30 @@ export default function Dashboard() {
 
                     {/* Section Paiements de la semaine */}
                     <Tabs defaultValue={firtWeek.toString()} className="mt-6">
-                        <Card className="shadow shadow-gray-50 p-2">
+                        <Card className="shadow shadow-gray-50 p-2 w-full">
 
-                            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mt-4 px-2">
-                                <h2 className="font-semibold text-base md:text-lg">Listes des paiements de la semaine</h2>
+                            <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-5 md:gap-10 mt-4  ">
+                                <h2 className="font-semibold text-base md:text-lg w-full md:w-1/3 ">Listes des paiements de la semaine</h2>
+                                <ScrollArea className="md:w-fit   rounded-md border whitespace-nowrap">
+                                    {uniqueWeeks.length > 0 && (
+                                        <div className="flex  gap-2 w-full" >
+                                            <TabsList className="h-10 flex items-center justify-center flex-nowrap">
+                                                {uniqueWeeks.map((week, index) => (
+                                                    <TabsTrigger
+                                                        key={index}
+                                                        value={week.toString()}
+                                                        className="text-xs px-2 whitespace-nowrap data-[state=active]:bg-[#FF4000] data-[state=active]:text-white"
+                                                        onClick={() => setFirstWeek(week)}
+                                                    >
+                                                        {`sem ${week}`}
+                                                    </TabsTrigger>
+                                                ))}
+                                            </TabsList>
 
-                                {uniqueWeeks.length > 0 && (
-                                    <div className="flex items-center gap-2" ref={tabsRef}>
-                                        <TabsList className="h-10 items-center justify-center flex-nowrap">
-                                            {visibleWeeks.map((week, index) => (
-                                                <TabsTrigger
-                                                    key={index}
-                                                    value={week.toString()}
-                                                    className="text-xs px-2 whitespace-nowrap data-[state=active]:bg-[#FF4000] data-[state=active]:text-white"
-                                                    onClick={() => setFirstWeek(week)}
-                                                >
-                                                    {`sem ${week}`}
-                                                </TabsTrigger>
-                                            ))}
-
-                                            {hiddenWeeks.length > 0 && (
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="outline" size="sm" className="h-8 text-xs">
-                                                            •••
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        {hiddenWeeks.map((week, index) => (
-                                                            <DropdownMenuItem key={index} asChild>
-                                                                <TabsTrigger
-                                                                    value={week.toString()}
-                                                                    onClick={() => setFirstWeek(week)}
-                                                                    className="w-full text-left px-2 py-1 text-sm data-[state=active]:bg-[#FF4000] data-[state=active]:text-white"
-                                                                >
-                                                                    Semaine {week}
-                                                                </TabsTrigger>
-                                                            </DropdownMenuItem>
-                                                        ))}
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            )}
-                                        </TabsList>
-                                    </div>
-                                )}
+                                        </div>
+                                    )}
+                                    <ScrollBar orientation="horizontal" />
+                                </ScrollArea>
                             </div>
 
                             <TabsContent value={firtWeek.toString()}>
@@ -1086,6 +1050,6 @@ export default function Dashboard() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     );
 }

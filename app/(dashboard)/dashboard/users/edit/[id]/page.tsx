@@ -37,6 +37,10 @@ export default function UserProfilEdit({ params }: { params: Promise<{ id: strin
     profession: "",
   });
 
+
+  //---------------------------
+
+  
   const { isPending } = useSession()
   const [sendError, setSendError] = useState("");
   const [loading, setLoading] = useState(false)
@@ -505,13 +509,13 @@ export default function UserProfilEdit({ params }: { params: Promise<{ id: strin
           <Alert className="border-green-200 bg-green-50">
             <SquareCheckBig className="h-4 w-4 text-green-500" />
             <AlertDescription className="text-green-700">
-              {sendSubmitSuccess} hdhdrhhr
+              {sendSubmitSuccess} 
             </AlertDescription>
           </Alert>
         }
       </div>
       <Card className="p-4 md:p-6 shadow-gray-100 border border-gray-100">
-        <div className="text-sm text-gray-500 mb-4">ID: {id}</div>
+     
         <form onSubmit={handleSubmitInfoPerso}>
 
           {/* Information personnelle section */}
@@ -731,7 +735,7 @@ export default function UserProfilEdit({ params }: { params: Promise<{ id: strin
 
       {/* modal pour la creation des options */}
       <Dialog open={modal} onOpenChange={setModal} >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md md:mt-10">
           <DialogHeader>
             <DialogTitle>Ajout de categories</DialogTitle>
           </DialogHeader>
@@ -793,7 +797,7 @@ export default function UserProfilEdit({ params }: { params: Promise<{ id: strin
                     }  as React.ChangeEvent<HTMLInputElement>)
                   }
                 >
-                  <SelectTrigger className="w-full h-10 md:h-[45px]">
+                  <SelectTrigger className="w-full h-10 md:h-[30px]">
                     <SelectValue placeholder="Sélectionner une option" />
                   </SelectTrigger>
                   <SelectContent>
