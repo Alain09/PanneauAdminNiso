@@ -4,8 +4,10 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 // ou le chemin approprié
 import { PrismaClient } from '@/generated/prisma';
 
-
+const isProd = process.env.NODE_ENV === "production";
 const prisma = new PrismaClient();
+console.log("Trusted origins:", isProd ? process.env.NEXT_PUBLIC_PROD_URL : process.env.NEXT_PUBLIC_DEV_URL);
+
 
 export const auth = betterAuth({
     user: {
@@ -16,6 +18,8 @@ export const auth = betterAuth({
             provence: { type: 'string', required: false },
         },
     },
+    trustedOrigins : isProd ? [process.env.NEXT_PUBLIC_PROD_URL!] : [process.env.NEXT_PUBLIC_DEV_URL!],
+   
     
     secret: process.env.BETTER_AUTH_SECRET,
     emailAndPassword: {
